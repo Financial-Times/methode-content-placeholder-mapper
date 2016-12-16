@@ -126,10 +126,16 @@ func buildBrands() []Brand {
 }
 
 func buildAlternativeTitles(promoTitle string) AlternativeTitles {
+	if promoTitle == "" {
+		return AlternativeTitles{}
+	}
 	return AlternativeTitles{PromotionalTitle: promoTitle}
 }
 
 func buildAlternativeImages(fileRef string) AlternativeImages {
+	if fileRef == "" {
+		return AlternativeImages{}
+	}
 	imageUuid := extractImageUuid(fileRef)
 	return AlternativeImages{PromotionalImage: ftApiContentUriPrefix + imageUuid}
 }
@@ -139,6 +145,9 @@ func extractImageUuid(fileRef string) string {
 }
 
 func buildAlternativeStandfirst(promoStandfirst string) AlternativeStandfirst {
+	if promoStandfirst == "" {
+		return AlternativeStandfirst{}
+	}
 	return AlternativeStandfirst{PromotionalStandfirst: promoStandfirst}
 }
 
