@@ -1,0 +1,12 @@
+machine:
+  services:
+    - docker
+dependencies:
+  pre:
+    - go get github.com/axw/gocov/gocov; go get github.com/matm/gocov-html
+    - docker build .
+test:
+  override:
+    - gocov test ./... > coverage.json
+  post:
+    - gocov-html coverage.json > $CIRCLE_ARTIFACTS/coverage.html
