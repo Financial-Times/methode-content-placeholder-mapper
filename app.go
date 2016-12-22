@@ -7,9 +7,11 @@ import (
 	"strconv"
 	"time"
 
+	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
 	"github.com/Financial-Times/service-status-go/httphandlers"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
@@ -98,7 +100,7 @@ func main() {
 		messageConsumer := consumer.NewConsumer(consumerConfig, m.HandlePlaceholderMessages, http.Client{})
 		messageProducer := producer.NewMessageProducer(producerConfig)
 
-		go serve(*port)
+		go serve(*port, resources.NewMapperHealthcheck(consumerConfig, producerConfig))
 
 		m.StartMappingMessages(messageConsumer, messageProducer)
 	}
@@ -107,10 +109,19 @@ func main() {
 	}
 }
 
-func serve(port int) {
-	//TODO to implement
+func serve(port int, hc *resources.MapperHealthcheck) {
+
 	r := mux.NewRouter()
-	//r.HandleFunc(httphandlers.GTGPath, hc.GTG)
+
+	hcHandler := fthealth.Handler(
+		"Dependent services healthcheck",
+		"Checks if all the dependent services are reachable and healthy.",
+		hc.ConsumerQueueCheck(),
+		hc.ProducerQueueCheck(),
+	)
+
+	r.HandleFunc("/__health", hcHandler)
+	r.HandleFunc(httphandlers.GTGPath, hc.GTG)
 	r.HandleFunc(httphandlers.BuildInfoPath, httphandlers.BuildInfoHandler)
 	r.HandleFunc(httphandlers.PingPath, httphandlers.PingHandler)
 

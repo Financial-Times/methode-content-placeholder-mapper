@@ -19,7 +19,7 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-const methodeSystemID = "methode-web-pub"
+const methodeSystemID = "http://cmdb.ft.com/systems/methode-web-pub"
 const methodeDateFormat = "20060102150405"
 const contentPlaceholderSourceCode = "ContentPlaceholder"
 const eomCompandStory = "EOM::CompoundStory"
@@ -183,7 +183,7 @@ func (m *mapper) StartMappingMessages(c consumer.Consumer, p producer.MessagePro
 	m.messageConsumer = c
 	m.messageProducer = p
 
-	log.Infof("Starting queue consumer: %#v", m.messageConsumer)
+	log.Infof("Starting queue consumer...")
 	var consumerWaitGroup sync.WaitGroup
 	consumerWaitGroup.Add(1)
 	go func() {
