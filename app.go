@@ -4,12 +4,15 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
+	"github.com/Financial-Times/service-status-go/httphandlers"
 	log "github.com/Sirupsen/logrus"
+	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
 )
 
@@ -106,5 +109,13 @@ func main() {
 
 func serve(port int) {
 	//TODO to implement
+	r := mux.NewRouter()
+	//r.HandleFunc(httphandlers.GTGPath, hc.GTG)
+	r.HandleFunc(httphandlers.BuildInfoPath, httphandlers.BuildInfoHandler)
+	r.HandleFunc(httphandlers.PingPath, httphandlers.PingHandler)
 
+	http.Handle("/", r)
+
+	err := http.ListenAndServe(":"+strconv.Itoa(port), nil)
+	log.Fatal(err)
 }
