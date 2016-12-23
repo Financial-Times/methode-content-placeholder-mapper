@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"errors"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
@@ -15,6 +17,7 @@ import (
 
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
+	tid "github.com/Financial-Times/transactionid-utils-go"
 	log "github.com/Sirupsen/logrus"
 	uuid "github.com/satori/go.uuid"
 )
@@ -33,6 +36,8 @@ const mapperURIBase = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.
 type Mapper interface {
 	HandlePlaceholderMessages(msg consumer.Message)
 	StartMappingMessages(c consumer.Consumer, p producer.MessageProducer)
+	NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (MethodeContentPlaceholder, error)
+	MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContentPlaceholder, error)
 }
 
 type mapper struct {
@@ -63,12 +68,12 @@ func (m *mapper) HandlePlaceholderMessages(msg consumer.Message) {
 }
 
 func (m *mapper) mapMessage(msg consumer.Message) (producer.Message, string, error) {
-	methodePlaceholder, err := newMethodeContentPlaceholder(msg)
+	methodePlaceholder, err := m.newMethodeContentPlaceholderFromConsumerMessage(msg)
 	if err != nil {
 		return producer.Message{}, "", err
 	}
 
-	upPlaceholder, err := m.mapContentPlaceholder(methodePlaceholder)
+	upPlaceholder, err := m.MapContentPlaceholder(methodePlaceholder)
 	if err != nil {
 		return producer.Message{}, "", err
 	}
@@ -81,7 +86,7 @@ func (m *mapper) mapMessage(msg consumer.Message) (producer.Message, string, err
 	return pubEventMsg, upPlaceholder.UUID, nil
 }
 
-func (m *mapper) mapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContentPlaceholder, error) {
+func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContentPlaceholder, error) {
 	// When a methode placeholder has been delete, we map the message with an empty body
 	if mpc.attributes.IsDeleted {
 		return UpContentPlaceholder{
@@ -234,17 +239,27 @@ type LeadImage struct {
 	FileRef string `xml:"fileref,attr"`
 }
 
-func newMethodeContentPlaceholder(msg consumer.Message) (MethodeContentPlaceholder, error) {
+func (m *mapper) NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (MethodeContentPlaceholder, error) {
+	transactionID := tid.GetTransactionIDFromRequest(r)
+	lastModified := time.Now().String()
+	messageBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return MethodeContentPlaceholder{}, err
+	}
+	return m.newMethodeContentPlaceholder(messageBody, transactionID, lastModified)
+}
+
+func (m *mapper) newMethodeContentPlaceholder(messageBody []byte, transactionID string, lastModified string) (MethodeContentPlaceholder, error) {
 	var p MethodeContentPlaceholder
-	if err := json.Unmarshal([]byte(msg.Body), &p); err != nil {
+	if err := json.Unmarshal(messageBody, &p); err != nil {
 		return MethodeContentPlaceholder{}, err
 	}
 	if p.Type != eomCompandStory {
 		return MethodeContentPlaceholder{}, errors.New("Methode content has not type " + eomCompandStory)
 	}
 
-	p.transactionID = msg.Headers["X-Request-Id"]
-	p.lastModified = msg.Headers["Message-Timestamp"]
+	p.transactionID = transactionID
+	p.lastModified = lastModified
 
 	attrs, err := buildAttributes(p.AttributesXML)
 	if err != nil {
@@ -262,6 +277,13 @@ func newMethodeContentPlaceholder(msg consumer.Message) (MethodeContentPlacehold
 		return MethodeContentPlaceholder{}, errors.New("Methode content is not a content placeholder")
 	}
 	return p, nil
+}
+
+func (m *mapper) newMethodeContentPlaceholderFromConsumerMessage(msg consumer.Message) (MethodeContentPlaceholder, error) {
+	transactionID := msg.Headers["X-Request-Id"]
+	lastModified := msg.Headers["Message-Timestamp"]
+
+	return m.newMethodeContentPlaceholder([]byte(msg.Body), transactionID, lastModified)
 }
 
 func buildAttributes(attributesXml string) (Attributes, error) {

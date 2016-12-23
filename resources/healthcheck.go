@@ -10,7 +10,7 @@ import (
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/prometheus/common/log"
+	log "github.com/Sirupsen/logrus"
 )
 
 type MapperHealthcheck struct {

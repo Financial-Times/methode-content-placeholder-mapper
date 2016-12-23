@@ -106,7 +106,7 @@ func main() {
 		messageConsumer := consumer.NewConsumer(consumerConfig, m.HandlePlaceholderMessages, http.Client{})
 		messageProducer := producer.NewMessageProducer(producerConfig)
 
-		go serve(*port, resources.NewMapperHealthcheck(consumerConfig, producerConfig))
+		go serve(*port, resources.NewMapperHealthcheck(consumerConfig, producerConfig), resources.NewContentTransformHandler(m))
 
 		m.StartMappingMessages(messageConsumer, messageProducer)
 	}
@@ -115,7 +115,7 @@ func main() {
 	}
 }
 
-func serve(port int, hc *resources.MapperHealthcheck) {
+func serve(port int, hc *resources.MapperHealthcheck, cth *resources.ContentTransformHandler) {
 
 	r := mux.NewRouter()
 
@@ -125,11 +125,11 @@ func serve(port int, hc *resources.MapperHealthcheck) {
 		hc.ConsumerQueueCheck(),
 		hc.ProducerQueueCheck(),
 	)
-
+	r.Handle("/content-transform/{uuid}", cth).Methods("POST")
 	r.HandleFunc("/__health", hcHandler)
-	r.HandleFunc(httphandlers.GTGPath, hc.GTG)
-	r.HandleFunc(httphandlers.BuildInfoPath, httphandlers.BuildInfoHandler)
-	r.HandleFunc(httphandlers.PingPath, httphandlers.PingHandler)
+	r.HandleFunc(httphandlers.GTGPath, hc.GTG).Methods("GET")
+	r.HandleFunc(httphandlers.BuildInfoPath, httphandlers.BuildInfoHandler).Methods("GET")
+	r.HandleFunc(httphandlers.PingPath, httphandlers.PingHandler).Methods("GET")
 
 	http.Handle("/", r)
 

@@ -1,7 +1,9 @@
 package mapper
 
 import (
+	"bytes"
 	"io/ioutil"
+	"net/http/httptest"
 	"regexp"
 	"testing"
 	"time"
@@ -96,15 +98,15 @@ func buildIgPlaceholderOnlyHeadlinePubEvent() producer.Message {
 }
 
 func TestHandleMethodePlaceholderEvent(t *testing.T) {
-	mockProducer := new(MockQueueProducer)
-	mockProducer.On("SendMessage", "", mock.AnythingOfType("producer.Message")).Return(nil)
+	producerMock := new(QueueProducerMock)
+	producerMock.On("SendMessage", "", mock.AnythingOfType("producer.Message")).Return(nil)
 
-	mapper := &mapper{messageProducer: mockProducer}
+	mapper := &mapper{messageProducer: producerMock}
 
 	methodeMsg := buildIgMethodePlaceholderUpdateMsg()
 	mapper.HandlePlaceholderMessages(methodeMsg)
 
-	mockProducer.AssertCalled(t, "SendMessage", "", mock.AnythingOfType("producer.Message"))
+	producerMock.AssertCalled(t, "SendMessage", "", mock.AnythingOfType("producer.Message"))
 
 }
 
@@ -117,14 +119,14 @@ func TestDoNotMapMethodeArticleDeleteEvent(t *testing.T) {
 }
 
 func TestDoNotHandleMethodeArticleDeleteEvent(t *testing.T) {
-	mockProducer := new(MockQueueProducer)
+	producerMock := new(QueueProducerMock)
 
-	mapper := &mapper{messageProducer: mockProducer}
+	mapper := &mapper{messageProducer: producerMock}
 
 	methodeArticleMsg := buildMethodeArticleDeleteMsg()
 	mapper.HandlePlaceholderMessages(methodeArticleMsg)
 
-	mockProducer.AssertNotCalled(t, "SendMessage")
+	producerMock.AssertNotCalled(t, "SendMessage")
 
 }
 
@@ -157,14 +159,14 @@ func buildIgMethodePlaceholderWithWrongUrlUpdateMsg() consumer.Message {
 }
 
 func TestDoNotHandleBritecoveVideoEvent(t *testing.T) {
-	mockProducer := new(MockQueueProducer)
+	producerMock := new(QueueProducerMock)
 
-	mapper := &mapper{messageProducer: mockProducer}
+	mapper := &mapper{messageProducer: producerMock}
 
 	videoMsg := buildBritecoveVideoMsg()
 	mapper.HandlePlaceholderMessages(videoMsg)
 
-	mockProducer.AssertNotCalled(t, "SendMessage")
+	producerMock.AssertNotCalled(t, "SendMessage")
 
 }
 
@@ -221,11 +223,34 @@ func buildProducerMessage(filePath string) producer.Message {
 	}
 }
 
-type MockQueueProducer struct {
+type QueueProducerMock struct {
 	mock.Mock
 }
 
-func (p *MockQueueProducer) SendMessage(s string, msg producer.Message) error {
+func (p *QueueProducerMock) SendMessage(s string, msg producer.Message) error {
 	args := p.Called(s, msg)
 	return args.Error(0)
+}
+
+func TestSuccesfulBuildOfPlaceholderFromHTTPRequest(t *testing.T) {
+	placeholderBody, err := ioutil.ReadFile("test_resources/ig_methode_placeholder_update.json")
+	if err != nil {
+		panic(err)
+	}
+	req := httptest.NewRequest("POST", "http://example.com/foo", bytes.NewReader(placeholderBody))
+	mapper := New()
+	methodePlacheholder, err := mapper.NewMethodeContentPlaceholderFromHTTPRequest(req)
+	assert.Nil(t, err, "It should not return an error")
+	assert.NotZero(t, methodePlacheholder, "pippo")
+}
+
+func TestUnSuccesfulBuildOfPlaceholderFromHTTPRequest(t *testing.T) {
+	methodeArticleBody, err := ioutil.ReadFile("test_resources/methode_article_delete.json")
+	if err != nil {
+		panic(err)
+	}
+	req := httptest.NewRequest("GET", "http://example.com/foo", bytes.NewReader(methodeArticleBody))
+	mapper := New()
+	_, err = mapper.NewMethodeContentPlaceholderFromHTTPRequest(req)
+	assert.EqualError(t, err, "Methode content is not a content placeholder", "It should return an error")
 }
