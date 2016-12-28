@@ -2,7 +2,7 @@ FROM alpine:3.5
 
 COPY . .git /methode-content-placeholder-mapper/
 
-RUN apk --update add git bzr go \
+RUN apk --update add git go libc-dev \
   && export GOPATH=/gopath \
   && REPO_PATH="github.com/Financial-Times/methode-content-placeholder-mapper" \
   && mkdir -p $GOPATH/src/${REPO_PATH} \
@@ -21,7 +21,7 @@ RUN apk --update add git bzr go \
   && mv methode-content-placeholder-mapper /methode-content-placeholder-mapper-app \
   && rm -rf /notifications-push \
   && mv /methode-content-placeholder-mapper-app /methode-content-placeholder-mapper \
-  && apk del go git bzr \
+  && apk del go git libc-dev \
   && rm -rf $GOPATH /var/cache/apk/*
 
 CMD [ "/methode-content-placeholder-mapper" ]
