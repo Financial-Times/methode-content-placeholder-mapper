@@ -19,7 +19,7 @@ RUN apk --update add git go libc-dev \
   && go get -t ./... \
   && go build -ldflags="${LDFLAGS}" \
   && mv methode-content-placeholder-mapper /methode-content-placeholder-mapper-app \
-  && rm -rf /notifications-push \
+  && rm -rf /methode-content-placeholder-mapper \
   && mv /methode-content-placeholder-mapper-app /methode-content-placeholder-mapper \
   && apk del go git libc-dev \
   && rm -rf $GOPATH /var/cache/apk/*
