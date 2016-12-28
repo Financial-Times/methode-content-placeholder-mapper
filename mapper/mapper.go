@@ -36,8 +36,8 @@ const mapperURIBase = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.
 type Mapper interface {
 	HandlePlaceholderMessages(msg consumer.Message)
 	StartMappingMessages(c consumer.Consumer, p producer.MessageProducer)
-	NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (MethodeContentPlaceholder, error)
-	MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContentPlaceholder, error)
+	NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (MethodeContentPlaceholder, *MappingError)
+	MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContentPlaceholder, *MappingError)
 }
 
 type mapper struct {
@@ -55,19 +55,19 @@ func (m *mapper) HandlePlaceholderMessages(msg consumer.Message) {
 		log.WithField("transaction_id", tid).WithField("Origin-System-Id", msg.Headers["Origin-System-Id"]).Info("Ignoring message with different Origin-System-Id")
 		return
 	}
-	placeholderMsg, placeholderUUID, err := m.mapMessage(msg)
-	if err != nil {
-		log.WithField("transaction_id", tid).WithError(err).Warn("Error in mapping message")
+	placeholderMsg, placeholderUUID, mappingErr := m.mapMessage(msg)
+	if mappingErr != nil {
+		log.WithField("transaction_id", tid).WithField("uuid", mappingErr.ContentUUID).WithError(mappingErr).Warn("Error in mapping message")
 		return
 	}
-	err = m.messageProducer.SendMessage("", placeholderMsg)
+	err := m.messageProducer.SendMessage("", placeholderMsg)
 	if err != nil {
-		log.WithField("transaction_id", tid).WithError(err).Warn("Error sending transformed message to queue")
+		log.WithField("transaction_id", tid).WithField("uuid", placeholderUUID).WithError(err).Warn("Error sending transformed message to queue")
 	}
 	log.WithField("transaction_id", tid).WithField("uuid", placeholderUUID).Info("Content mapped and sent to the queue")
 }
 
-func (m *mapper) mapMessage(msg consumer.Message) (producer.Message, string, error) {
+func (m *mapper) mapMessage(msg consumer.Message) (producer.Message, string, *MappingError) {
 	methodePlaceholder, err := m.newMethodeContentPlaceholderFromConsumerMessage(msg)
 	if err != nil {
 		return producer.Message{}, "", err
@@ -86,7 +86,7 @@ func (m *mapper) mapMessage(msg consumer.Message) (producer.Message, string, err
 	return pubEventMsg, upPlaceholder.UUID, nil
 }
 
-func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContentPlaceholder, error) {
+func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContentPlaceholder, *MappingError) {
 	// When a methode placeholder has been delete, we map the message with an empty body
 	if mpc.attributes.IsDeleted {
 		return UpContentPlaceholder{
@@ -97,12 +97,12 @@ func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContent
 	}
 	err := validateHeadline(mpc.body.LeadHeadline)
 	if err != nil {
-		return UpContentPlaceholder{}, err
+		return UpContentPlaceholder{}, newMappingError().withMessage(err.Error()).forContent(mpc.UUID)
 	}
 
 	publishDate, err := buildPublishedDate(mpc.attributes.LastPublicationDate)
 	if err != nil {
-		return UpContentPlaceholder{}, err
+		return UpContentPlaceholder{}, newMappingError().withMessage(err.Error()).forContent(mpc.UUID)
 	}
 
 	upPlaceholder := UpContentPlaceholder{
@@ -239,23 +239,23 @@ type LeadImage struct {
 	FileRef string `xml:"fileref,attr"`
 }
 
-func (m *mapper) NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (MethodeContentPlaceholder, error) {
+func (m *mapper) NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (MethodeContentPlaceholder, *MappingError) {
 	transactionID := tid.GetTransactionIDFromRequest(r)
 	lastModified := time.Now().String()
 	messageBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		return MethodeContentPlaceholder{}, err
+		return MethodeContentPlaceholder{}, newMappingError().withMessage(err.Error())
 	}
 	return m.newMethodeContentPlaceholder(messageBody, transactionID, lastModified)
 }
 
-func (m *mapper) newMethodeContentPlaceholder(messageBody []byte, transactionID string, lastModified string) (MethodeContentPlaceholder, error) {
+func (m *mapper) newMethodeContentPlaceholder(messageBody []byte, transactionID string, lastModified string) (MethodeContentPlaceholder, *MappingError) {
 	var p MethodeContentPlaceholder
 	if err := json.Unmarshal(messageBody, &p); err != nil {
-		return MethodeContentPlaceholder{}, err
+		return MethodeContentPlaceholder{}, newMappingError().withMessage(err.Error())
 	}
 	if p.Type != eomCompandStory {
-		return MethodeContentPlaceholder{}, errors.New("Methode content has not type " + eomCompandStory)
+		return MethodeContentPlaceholder{}, newMappingError().withMessage("Methode content has not type " + eomCompandStory).forContent(p.UUID)
 	}
 
 	p.transactionID = transactionID
@@ -263,23 +263,23 @@ func (m *mapper) newMethodeContentPlaceholder(messageBody []byte, transactionID 
 
 	attrs, err := buildAttributes(p.AttributesXML)
 	if err != nil {
-		return MethodeContentPlaceholder{}, err
+		return MethodeContentPlaceholder{}, newMappingError().withMessage(err.Error()).forContent(p.UUID)
 	}
 	p.attributes = attrs
 
 	body, err := buildMethodeBody(p.Value)
 	if err != nil {
-		return MethodeContentPlaceholder{}, err
+		return MethodeContentPlaceholder{}, newMappingError().withMessage(err.Error()).forContent(p.UUID)
 	}
 	p.body = body
 
 	if p.attributes.SourceCode != contentPlaceholderSourceCode {
-		return MethodeContentPlaceholder{}, errors.New("Methode content is not a content placeholder")
+		return MethodeContentPlaceholder{}, newMappingError().withMessage("Methode content is not a content placeholder").forContent(p.UUID)
 	}
 	return p, nil
 }
 
-func (m *mapper) newMethodeContentPlaceholderFromConsumerMessage(msg consumer.Message) (MethodeContentPlaceholder, error) {
+func (m *mapper) newMethodeContentPlaceholderFromConsumerMessage(msg consumer.Message) (MethodeContentPlaceholder, *MappingError) {
 	transactionID := msg.Headers["X-Request-Id"]
 	lastModified := msg.Headers["Message-Timestamp"]
 
@@ -341,13 +341,13 @@ type AlternativeStandfirst struct {
 	PromotionalStandfirst string `json:"promotionalStandfirst"`
 }
 
-func (p UpContentPlaceholder) toPublicationEventMessage() (producer.Message, error) {
+func (p UpContentPlaceholder) toPublicationEventMessage() (producer.Message, *MappingError) {
 
 	publicationEvent := p.toPublicationEvent()
 
 	jsonPublicationEvent, err := json.Marshal(publicationEvent)
 	if err != nil {
-		return producer.Message{}, err
+		return producer.Message{}, newMappingError().withMessage(err.Error()).forContent(p.UUID)
 	}
 
 	headers := map[string]string{
@@ -387,4 +387,27 @@ type publicationEvent struct {
 	ContentURI   string                `json:"contentUri"`
 	Payload      *UpContentPlaceholder `json:"payload,omitempty"`
 	LastModified string                `json:"lastModified"`
+}
+
+type MappingError struct {
+	ContentUUID  string
+	ErrorMessage string
+}
+
+func (e MappingError) Error() string {
+	return e.ErrorMessage
+}
+
+func newMappingError() *MappingError {
+	return &MappingError{}
+}
+
+func (e *MappingError) withMessage(errorMsg string) *MappingError {
+	e.ErrorMessage = errorMsg
+	return e
+}
+
+func (e *MappingError) forContent(uuid string) *MappingError {
+	e.ContentUUID = uuid
+	return e
 }
