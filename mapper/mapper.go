@@ -97,12 +97,12 @@ func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContent
 	}
 	err := validateHeadline(mpc.body.LeadHeadline)
 	if err != nil {
-		return UpContentPlaceholder{}, newMappingError().withMessage(err.Error()).forContent(mpc.UUID)
+		return UpContentPlaceholder{}, NewMappingError().WithMessage(err.Error()).ForContent(mpc.UUID)
 	}
 
 	publishDate, err := buildPublishedDate(mpc.attributes.LastPublicationDate)
 	if err != nil {
-		return UpContentPlaceholder{}, newMappingError().withMessage(err.Error()).forContent(mpc.UUID)
+		return UpContentPlaceholder{}, NewMappingError().WithMessage(err.Error()).ForContent(mpc.UUID)
 	}
 
 	upPlaceholder := UpContentPlaceholder{
@@ -244,7 +244,7 @@ func (m *mapper) NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (M
 	lastModified := time.Now().String()
 	messageBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		return MethodeContentPlaceholder{}, newMappingError().withMessage(err.Error())
+		return MethodeContentPlaceholder{}, NewMappingError().WithMessage(err.Error())
 	}
 	return m.newMethodeContentPlaceholder(messageBody, transactionID, lastModified)
 }
@@ -252,10 +252,10 @@ func (m *mapper) NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (M
 func (m *mapper) newMethodeContentPlaceholder(messageBody []byte, transactionID string, lastModified string) (MethodeContentPlaceholder, *MappingError) {
 	var p MethodeContentPlaceholder
 	if err := json.Unmarshal(messageBody, &p); err != nil {
-		return MethodeContentPlaceholder{}, newMappingError().withMessage(err.Error())
+		return MethodeContentPlaceholder{}, NewMappingError().WithMessage(err.Error())
 	}
 	if p.Type != eomCompandStory {
-		return MethodeContentPlaceholder{}, newMappingError().withMessage("Methode content has not type " + eomCompandStory).forContent(p.UUID)
+		return MethodeContentPlaceholder{}, NewMappingError().WithMessage("Methode content has not type " + eomCompandStory).ForContent(p.UUID)
 	}
 
 	p.transactionID = transactionID
@@ -263,18 +263,18 @@ func (m *mapper) newMethodeContentPlaceholder(messageBody []byte, transactionID 
 
 	attrs, err := buildAttributes(p.AttributesXML)
 	if err != nil {
-		return MethodeContentPlaceholder{}, newMappingError().withMessage(err.Error()).forContent(p.UUID)
+		return MethodeContentPlaceholder{}, NewMappingError().WithMessage(err.Error()).ForContent(p.UUID)
 	}
 	p.attributes = attrs
 
 	body, err := buildMethodeBody(p.Value)
 	if err != nil {
-		return MethodeContentPlaceholder{}, newMappingError().withMessage(err.Error()).forContent(p.UUID)
+		return MethodeContentPlaceholder{}, NewMappingError().WithMessage(err.Error()).ForContent(p.UUID)
 	}
 	p.body = body
 
 	if p.attributes.SourceCode != contentPlaceholderSourceCode {
-		return MethodeContentPlaceholder{}, newMappingError().withMessage("Methode content is not a content placeholder").forContent(p.UUID)
+		return MethodeContentPlaceholder{}, NewMappingError().WithMessage("Methode content is not a content placeholder").ForContent(p.UUID)
 	}
 	return p, nil
 }
@@ -347,7 +347,7 @@ func (p UpContentPlaceholder) toPublicationEventMessage() (producer.Message, *Ma
 
 	jsonPublicationEvent, err := json.Marshal(publicationEvent)
 	if err != nil {
-		return producer.Message{}, newMappingError().withMessage(err.Error()).forContent(p.UUID)
+		return producer.Message{}, NewMappingError().WithMessage(err.Error()).ForContent(p.UUID)
 	}
 
 	headers := map[string]string{
@@ -398,16 +398,16 @@ func (e MappingError) Error() string {
 	return e.ErrorMessage
 }
 
-func newMappingError() *MappingError {
+func NewMappingError() *MappingError {
 	return &MappingError{}
 }
 
-func (e *MappingError) withMessage(errorMsg string) *MappingError {
+func (e *MappingError) WithMessage(errorMsg string) *MappingError {
 	e.ErrorMessage = errorMsg
 	return e
 }
 
-func (e *MappingError) forContent(uuid string) *MappingError {
+func (e *MappingError) ForContent(uuid string) *MappingError {
 	e.ContentUUID = uuid
 	return e
 }

@@ -2,7 +2,6 @@ package resources
 
 import (
 	"bytes"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,8 +18,8 @@ const mapperURL = "http://example.com/content-transform/2eb712b6-70bf-4f18-a958-
 
 func TestSucessfulContentTransformation(t *testing.T) {
 	m := new(MapperMock)
-	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, nil)
-	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(mapper.UpContentPlaceholder{}, nil)
+	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, (*mapper.MappingError)(nil))
+	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(mapper.UpContentPlaceholder{}, (*mapper.MappingError)(nil))
 	h := NewContentTransformHandler(m)
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
@@ -32,7 +31,7 @@ func TestSucessfulContentTransformation(t *testing.T) {
 
 func TestUnsucessfulMethodePlaceholderBuild(t *testing.T) {
 	m := new(MapperMock)
-	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, errors.New("What is it?"))
+	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, mapper.NewMappingError().WithMessage("What is it?"))
 	h := NewContentTransformHandler(m)
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
@@ -45,8 +44,8 @@ func TestUnsucessfulMethodePlaceholderBuild(t *testing.T) {
 
 func TestUnsucessfulPlaceholderMapping(t *testing.T) {
 	m := new(MapperMock)
-	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, nil)
-	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(mapper.UpContentPlaceholder{}, errors.New("All map and no play makes MCPM a dull boy"))
+	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, (*mapper.MappingError)(nil))
+	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(mapper.UpContentPlaceholder{}, mapper.NewMappingError().WithMessage("All map and no play makes MCPM a dull boy"))
 	h := NewContentTransformHandler(m)
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
@@ -69,12 +68,12 @@ func (m *MapperMock) StartMappingMessages(c consumer.Consumer, p producer.Messag
 	m.Called(c, p)
 }
 
-func (m *MapperMock) NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (mapper.MethodeContentPlaceholder, error) {
+func (m *MapperMock) NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (mapper.MethodeContentPlaceholder, *mapper.MappingError) {
 	args := m.Called(r)
-	return args.Get(0).(mapper.MethodeContentPlaceholder), args.Error(1)
+	return args.Get(0).(mapper.MethodeContentPlaceholder), args.Get(1).(*mapper.MappingError)
 }
 
-func (m *MapperMock) MapContentPlaceholder(mpc mapper.MethodeContentPlaceholder) (mapper.UpContentPlaceholder, error) {
+func (m *MapperMock) MapContentPlaceholder(mpc mapper.MethodeContentPlaceholder) (mapper.UpContentPlaceholder, *mapper.MappingError) {
 	args := m.Called(mpc)
-	return args.Get(0).(mapper.UpContentPlaceholder), args.Error(1)
+	return args.Get(0).(mapper.UpContentPlaceholder), args.Get(1).(*mapper.MappingError)
 }
