@@ -30,15 +30,15 @@ func init() {
 func main() {
 	app := cli.App("methode-content-placeholder-mapper", "A microservice to map Methode content placeholders to UPP content")
 	readAddresses := app.Strings(cli.StringsOpt{
-		Name:   "queue-addresses",
+		Name:   "read-queue-addresses",
 		Value:  nil,
 		Desc:   "Addresses to connect to the consumer queue (hostnames).",
 		EnvVar: "Q_READ_ADDR",
 	})
 	writeAddress := app.String(cli.StringOpt{
-		Name:   "queue-addres",
+		Name:   "write-queue-address",
 		Value:  "",
-		Desc:   "Addresses to connect to the consumer queue (hostnames).",
+		Desc:   "Addresses to connect to the producer queue (hostnames).",
 		EnvVar: "Q_WRITE_ADDR",
 	})
 	group := app.String(cli.StringOpt{
@@ -55,7 +55,7 @@ func main() {
 	})
 	readQueue := app.String(cli.StringOpt{
 		Name:   "read-queue",
-		Value:  "",
+		Value:  "kafka",
 		Desc:   "The queue to read the meassages from.",
 		EnvVar: "Q_READ_QUEUE",
 	})
@@ -67,7 +67,7 @@ func main() {
 	})
 	writeQueue := app.String(cli.StringOpt{
 		Name:   "write-queue",
-		Value:  "",
+		Value:  "kafka",
 		Desc:   "The queue to write the meassages to.",
 		EnvVar: "Q_WRITE_QUEUE",
 	})
