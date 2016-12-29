@@ -25,7 +25,7 @@ import (
 const methodeSystemID = "http://cmdb.ft.com/systems/methode-web-pub"
 const methodeDateFormat = "20060102150405"
 const contentPlaceholderSourceCode = "ContentPlaceholder"
-const eomCompandStory = "EOM::CompoundStory"
+const eomCompoundStory = "EOM::CompoundStory"
 
 const upDateFormat = "2006-01-02T03:04:05.000Z0700"
 const ftBrand = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
@@ -254,8 +254,8 @@ func (m *mapper) newMethodeContentPlaceholder(messageBody []byte, transactionID 
 	if err := json.Unmarshal(messageBody, &p); err != nil {
 		return MethodeContentPlaceholder{}, NewMappingError().WithMessage(err.Error())
 	}
-	if p.Type != eomCompandStory {
-		return MethodeContentPlaceholder{}, NewMappingError().WithMessage("Methode content has not type " + eomCompandStory).ForContent(p.UUID)
+	if p.Type != eomCompoundStory {
+		return MethodeContentPlaceholder{}, NewMappingError().WithMessage("Methode content has not type " + eomCompoundStory).ForContent(p.UUID)
 	}
 
 	p.transactionID = transactionID
