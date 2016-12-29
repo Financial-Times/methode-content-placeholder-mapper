@@ -23,13 +23,13 @@ go test ./...
                 && export Q_GROUP="methode-messages" \
                 && export Q_READ_TOPIC=NativeCmsPublicationEvents \
                 && export Q_WRITE_TOPIC=CmsPublicationEvents \
-                && ./notifications-push
+                && ./methode-content-placeholder-mapper
 ```
-    
+
 * Run by command-line parameters:
 
 ```
-            ./notifications-push \
+            ./methode-content-placeholder-mapper \
                 --read-queue-addresses="http://source1.queue.ft.com:8080,http://source2.queue.ft.com:8080" \
                 --write-queue-address="http://target.queue.ft.com:8080" \
                 --group="methode-messages"

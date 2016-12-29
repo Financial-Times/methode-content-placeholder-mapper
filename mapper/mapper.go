@@ -267,14 +267,16 @@ func (m *mapper) newMethodeContentPlaceholder(messageBody []byte, transactionID 
 	}
 	p.attributes = attrs
 
+	if p.attributes.SourceCode != contentPlaceholderSourceCode {
+		return MethodeContentPlaceholder{}, NewMappingError().WithMessage("Methode content is not a content placeholder").ForContent(p.UUID)
+	}
+
 	body, err := buildMethodeBody(p.Value)
 	if err != nil {
 		return MethodeContentPlaceholder{}, NewMappingError().WithMessage(err.Error()).ForContent(p.UUID)
 	}
 	p.body = body
-	if p.attributes.SourceCode != contentPlaceholderSourceCode {
-		return MethodeContentPlaceholder{}, NewMappingError().WithMessage("Methode content is not a content placeholder").ForContent(p.UUID)
-	}
+
 	return p, nil
 }
 
