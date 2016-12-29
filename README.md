@@ -8,15 +8,15 @@ All the consumed messages that contain a Methode placeholder are mapped, then MC
 How to Build & Run the binary
 -----------------------------
 
-1. Build and test:
+* Build and test:
+
 ```
 go build
 go test ./...
 ```
 
-2. Run:
+* Run by environment variables:
 
-    * via environment variables:
 ```
             export Q_READ_ADDR="http://source1.queue.ft.com:8080,http://source2.queue.ft.com:8080" \
                 && export Q_WRITE_ADDR="http://target.queue.ft.com:8080" \
@@ -25,7 +25,9 @@ go test ./...
                 && export Q_WRITE_TOPIC=CmsPublicationEvents \
                 && ./notifications-push
 ```
-    * or via command-line parameters:
+    
+* Run by command-line parameters:
+
 ```
             ./notifications-push \
                 --read-queue-addresses="http://source1.queue.ft.com:8080,http://source2.queue.ft.com:8080" \
