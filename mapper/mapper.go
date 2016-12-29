@@ -129,7 +129,6 @@ func validateHeadline(headline LeadHeadline) error {
 		return errors.New("Methode Content headline does not contain a link")
 	}
 	_, err := url.ParseRequestURI(headline.Url)
-	//fmt.Println(url.Parse(headline.Url))
 	if err != nil {
 		return errors.New("Methode Content headline does not contain a valid URL - " + err.Error())
 	}
@@ -145,12 +144,12 @@ func buildIdentifiers(uuid string) []Identifier {
 }
 
 func buildBrands() []Brand {
-	//TODO check brands for IG and podcast
 	brand := Brand{ID: ftBrand}
 	return []Brand{brand}
 }
 
 func buildAlternativeTitles(promoTitle string) *AlternativeTitles {
+	promoTitle = strings.TrimSpace(promoTitle)
 	if promoTitle == "" {
 		return nil
 	}
@@ -170,6 +169,7 @@ func extractImageUUID(fileRef string) string {
 }
 
 func buildAlternativeStandfirst(promoStandfirst string) *AlternativeStandfirst {
+	promoStandfirst = strings.TrimSpace(promoStandfirst)
 	if promoStandfirst == "" {
 		return nil
 	}
@@ -272,7 +272,6 @@ func (m *mapper) newMethodeContentPlaceholder(messageBody []byte, transactionID 
 		return MethodeContentPlaceholder{}, NewMappingError().WithMessage(err.Error()).ForContent(p.UUID)
 	}
 	p.body = body
-
 	if p.attributes.SourceCode != contentPlaceholderSourceCode {
 		return MethodeContentPlaceholder{}, NewMappingError().WithMessage("Methode content is not a content placeholder").ForContent(p.UUID)
 	}
