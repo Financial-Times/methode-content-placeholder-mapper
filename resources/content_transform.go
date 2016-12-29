@@ -42,6 +42,6 @@ func (h *ContentTransformHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 }
 
 func writeError(w http.ResponseWriter, err error, transactionID string, uuid string, requestURI string) {
-	log.WithField("trasaction_id", transactionID).WithField("uuid", uuid).WithField("request_uri", requestURI).WithError(err).Warn(fmt.Sprintf("Returned HTTP status: %v", http.StatusUnprocessableEntity))
+	log.WithField("trasaction_id", transactionID).WithField("uuid", uuid).WithField("request_uri", requestURI).WithError(err).Error(fmt.Sprintf("Returned HTTP status: %v", http.StatusUnprocessableEntity))
 	http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 }
