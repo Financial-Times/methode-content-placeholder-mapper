@@ -32,13 +32,13 @@ func main() {
 	readAddresses := app.Strings(cli.StringsOpt{
 		Name:   "read-queue-addresses",
 		Value:  nil,
-		Desc:   "Addresses to connect to the consumer queue (hostnames).",
+		Desc:   "Addresses to connect to the consumer queue (URLs).",
 		EnvVar: "Q_READ_ADDR",
 	})
 	writeAddress := app.String(cli.StringOpt{
 		Name:   "write-queue-address",
 		Value:  "",
-		Desc:   "Addresses to connect to the producer queue (hostnames).",
+		Desc:   "Addresses to connect to the producer queue (URL).",
 		EnvVar: "Q_WRITE_ADDR",
 	})
 	group := app.String(cli.StringOpt{
