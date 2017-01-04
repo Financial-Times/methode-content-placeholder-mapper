@@ -33,7 +33,6 @@ func TestCorrectMappingToUpdateEvent(t *testing.T) {
 	assert.Regexp(t, uuidRegexp, actualPubEventMsg.Headers["Message-Id"], "The Message ID should be a valid UUID")
 	_, parseErr := time.Parse(upDateFormat, actualPubEventMsg.Headers["Message-Timestamp"])
 	assert.Nil(t, parseErr, "The message timestamp should have a consistent format")
-
 }
 
 func buildIgMethodePlaceholderUpdateMsg() consumer.Message {
@@ -99,14 +98,14 @@ func buildIgPlaceholderOnlyHeadlinePubEvent() producer.Message {
 
 func TestHandleMethodePlaceholderEvent(t *testing.T) {
 	producerMock := new(QueueProducerMock)
-	producerMock.On("SendMessage", "", mock.AnythingOfType("producer.Message")).Return(nil)
+	producerMock.On("SendMessage", mock.AnythingOfType("string"), mock.AnythingOfType("producer.Message")).Return(nil)
 
 	mapper := &mapper{messageProducer: producerMock}
 
 	methodeMsg := buildIgMethodePlaceholderUpdateMsg()
 	mapper.HandlePlaceholderMessages(methodeMsg)
 
-	producerMock.AssertCalled(t, "SendMessage", "", mock.AnythingOfType("producer.Message"))
+	producerMock.AssertCalled(t, "SendMessage", mock.AnythingOfType("string"), mock.AnythingOfType("producer.Message"))
 
 }
 
@@ -135,42 +134,42 @@ func buildMethodeArticleDeleteMsg() consumer.Message {
 }
 
 func TestDoNotMapPlaceholderWithNoURLInHeadline(t *testing.T) {
-	placeholderMsg := buildIgMethodePlaceholderNoUrlUpdateMsg()
+	placeholderMsg := buildIgMethodePlaceholderNoURLUpdateMsg()
 	mapper := &mapper{}
 
 	_, _, err := mapper.mapMessage(placeholderMsg)
 	assert.EqualError(t, err, "Methode Content headline does not contain a link", "The mapping of the placeholder should be unsuccessful")
 }
 
-func buildIgMethodePlaceholderNoUrlUpdateMsg() consumer.Message {
+func buildIgMethodePlaceholderNoURLUpdateMsg() consumer.Message {
 	return buildMethodeMsg("test_resources/ig_methode_placeholder_no_url.json")
 }
 
 func TestDoNotMapPlaceholderWithWrongURLInHeadline(t *testing.T) {
-	placeholderMsg := buildIgMethodePlaceholderWithWrongUrlUpdateMsg()
+	placeholderMsg := buildIgMethodePlaceholderWithWrongURLUpdateMsg()
 	mapper := &mapper{}
 
 	_, _, err := mapper.mapMessage(placeholderMsg)
 	assert.EqualError(t, err, "Methode Content headline does not contain a valid URL - parse pippo: invalid URI for request", "The mapping of the placeholder should be unsuccessful")
 }
 
-func buildIgMethodePlaceholderWithWrongUrlUpdateMsg() consumer.Message {
+func buildIgMethodePlaceholderWithWrongURLUpdateMsg() consumer.Message {
 	return buildMethodeMsg("test_resources/ig_methode_placeholder_wrong_url.json")
 }
 
-func TestDoNotHandleBritecoveVideoEvent(t *testing.T) {
+func TestDoNotHandleBrightcoveVideoEvent(t *testing.T) {
 	producerMock := new(QueueProducerMock)
 
 	mapper := &mapper{messageProducer: producerMock}
 
-	videoMsg := buildBritecoveVideoMsg()
+	videoMsg := buildBrightcoveVideoMsg()
 	mapper.HandlePlaceholderMessages(videoMsg)
 
 	producerMock.AssertNotCalled(t, "SendMessage")
 
 }
 
-func buildBritecoveVideoMsg() consumer.Message {
+func buildBrightcoveVideoMsg() consumer.Message {
 	return consumer.Message{
 		Body: "",
 		Headers: map[string]string{

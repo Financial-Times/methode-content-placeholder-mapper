@@ -53,10 +53,10 @@ func main() {
 		Desc:   "The topic to read the meassages from.",
 		EnvVar: "Q_READ_TOPIC",
 	})
-	readQueue := app.String(cli.StringOpt{
-		Name:   "read-queue",
+	readQueueHostHeader := app.String(cli.StringOpt{
+		Name:   "read-queue-host-header",
 		Value:  "kafka",
-		Desc:   "The queue to read the meassages from.",
+		Desc:   "The host header for the queue to read the meassages from.",
 		EnvVar: "Q_READ_QUEUE",
 	})
 	writeTopic := app.String(cli.StringOpt{
@@ -65,10 +65,10 @@ func main() {
 		Desc:   "The topic to write the meassages to.",
 		EnvVar: "Q_WRITE_TOPIC",
 	})
-	writeQueue := app.String(cli.StringOpt{
-		Name:   "write-queue",
+	writeQueueHostHeader := app.String(cli.StringOpt{
+		Name:   "write-queue-host-header",
 		Value:  "kafka",
-		Desc:   "The queue to write the meassages to.",
+		Desc:   "The host header for the queue to write the meassages to.",
 		EnvVar: "Q_WRITE_QUEUE",
 	})
 	authorization := app.String(cli.StringOpt{
@@ -89,7 +89,7 @@ func main() {
 			Addrs:                *readAddresses,
 			Group:                *group,
 			Topic:                *readTopic,
-			Queue:                *readQueue,
+			Queue:                *readQueueHostHeader,
 			ConcurrentProcessing: false,
 			AutoCommitEnable:     true,
 			AuthorizationKey:     *authorization,
@@ -98,7 +98,7 @@ func main() {
 		producerConfig := producer.MessageProducerConfig{
 			Addr:          *writeAddress,
 			Topic:         *writeTopic,
-			Queue:         *writeQueue,
+			Queue:         *writeQueueHostHeader,
 			Authorization: *authorization,
 		}
 

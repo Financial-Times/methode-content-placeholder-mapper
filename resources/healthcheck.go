@@ -13,12 +13,14 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+// MapperHealthcheck represents the health check for the methode content placeholder mapper
 type MapperHealthcheck struct {
 	Client         *http.Client
 	ConsumerConfig consumer.QueueConfig
 	ProducerConfig producer.MessageProducerConfig
 }
 
+// NewMapperHealthcheck returns a new instance of the MapperHealthcheck
 func NewMapperHealthcheck(consumerConfig consumer.QueueConfig, producerConfig producer.MessageProducerConfig) *MapperHealthcheck {
 	return &MapperHealthcheck{
 		Client:         &http.Client{},
@@ -27,6 +29,7 @@ func NewMapperHealthcheck(consumerConfig consumer.QueueConfig, producerConfig pr
 	}
 }
 
+// GTG is the HTTP handler function for the Good-To-Go of the methode content placeholder mapper
 func (hc *MapperHealthcheck) GTG(w http.ResponseWriter, req *http.Request) {
 	if _, err := hc.checkAggregateConsumerProxiesReachable(); err != nil {
 		w.WriteHeader(http.StatusServiceUnavailable)
@@ -36,6 +39,7 @@ func (hc *MapperHealthcheck) GTG(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// ConsumerQueueCheck returns the Check of the consumer queue connection
 func (hc *MapperHealthcheck) ConsumerQueueCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   "Methode content placeholders will not reach this app, nor will they be mapped to UP placeholders.",
@@ -47,6 +51,7 @@ func (hc *MapperHealthcheck) ConsumerQueueCheck() fthealth.Check {
 	}
 }
 
+// ProducerQueueCheck returns the Check of the producer queue connection
 func (hc *MapperHealthcheck) ProducerQueueCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   "Methode content placeholders mappings will not be publish",
@@ -62,10 +67,12 @@ func (hc *MapperHealthcheck) checkAggregateConsumerProxiesReachable() (string, e
 	errMsg := ""
 	for _, address := range hc.ConsumerConfig.Addrs {
 		err := hc.checkMessageQueueProxyReachable(address, hc.ConsumerConfig.AuthorizationKey, hc.ConsumerConfig.Queue)
-		if err == nil {
-			return "Connectivity to consumer proxies is OK.", nil
+		if err != nil {
+			errMsg = errMsg + fmt.Sprintf("For %s there is an error %v \n", address, err.Error())
 		}
-		errMsg = errMsg + fmt.Sprintf("For %s there is an error %v \n", address, err.Error())
+	}
+	if errMsg == "" {
+		return "Connectivity to consumer proxies is OK.", nil
 	}
 	return "Error connecting to consumer proxies", errors.New(errMsg)
 }
@@ -116,7 +123,7 @@ func checkIfTopicIsPresent(body []byte, searchedTopic string) error {
 
 	err := json.Unmarshal(body, &topics)
 	if err != nil {
-		return fmt.Errorf("Error occured and topic could not be found. %v", err.Error())
+		return fmt.Errorf("Error occurred and topic could not be found. %v", err.Error())
 	}
 
 	for _, topic := range topics {
