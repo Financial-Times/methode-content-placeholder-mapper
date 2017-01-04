@@ -33,6 +33,7 @@ const methodeAuthority = "http://api.ft.com/system/FTCOM-METHODE"
 const ftAPIContentURIPrefix = "http://api.ft.com/content/"
 const mapperURIBase = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/content/"
 
+// Mapper is a generic interface for content paceholder mapper
 type Mapper interface {
 	HandlePlaceholderMessages(msg consumer.Message)
 	StartMappingMessages(c consumer.Consumer, p producer.MessageProducer)
@@ -45,6 +46,7 @@ type mapper struct {
 	messageProducer producer.MessageProducer
 }
 
+// New returns a new Mapper instance
 func New() Mapper {
 	return &mapper{}
 }
@@ -60,9 +62,10 @@ func (m *mapper) HandlePlaceholderMessages(msg consumer.Message) {
 		log.WithField("transaction_id", tid).WithField("uuid", mappingErr.ContentUUID).WithError(mappingErr).Warn("Error in mapping message")
 		return
 	}
-	err := m.messageProducer.SendMessage("", placeholderMsg)
+	err := m.messageProducer.SendMessage(placeholderUUID, placeholderMsg)
 	if err != nil {
 		log.WithField("transaction_id", tid).WithField("uuid", placeholderUUID).WithError(err).Warn("Error sending transformed message to queue")
+		return
 	}
 	log.WithField("transaction_id", tid).WithField("uuid", placeholderUUID).Info("Content mapped and sent to the queue")
 }
@@ -106,17 +109,17 @@ func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContent
 	}
 
 	upPlaceholder := UpContentPlaceholder{
-		UUID:                  mpc.UUID,
-		Identifiers:           buildIdentifiers(mpc.UUID),
-		Brands:                buildBrands(),
-		WebUrl:                mpc.body.LeadHeadline.Url,
-		AlternativeTitles:     buildAlternativeTitles(mpc.body.LeadHeadline.Text),
-		AlternativeImages:     buildAlternativeImages(mpc.body.LeadImage.FileRef),
-		AlternativeStandfirst: buildAlternativeStandfirst(mpc.body.LongStandfirst),
-		PublishedDate:         publishDate,
-		PublishReference:      mpc.transactionID,
-		LastModified:          mpc.lastModified,
-		CanBeSyndicated:       "verify",
+		UUID:                   mpc.UUID,
+		Identifiers:            buildIdentifiers(mpc.UUID),
+		Brands:                 buildBrands(),
+		WebURL:                 mpc.body.LeadHeadline.URL,
+		AlternativeTitles:      buildAlternativeTitles(mpc.body.LeadHeadline.Text),
+		AlternativeImages:      buildAlternativeImages(mpc.body.LeadImage.FileRef),
+		AlternativeStandfirsts: buildAlternativeStandfirsts(mpc.body.LongStandfirst),
+		PublishedDate:          publishDate,
+		PublishReference:       mpc.transactionID,
+		LastModified:           mpc.lastModified,
+		CanBeSyndicated:        "verify",
 	}
 	return upPlaceholder, nil
 }
@@ -125,10 +128,10 @@ func validateHeadline(headline LeadHeadline) error {
 	if headline.Text == "" {
 		return errors.New("Methode Content headline does not contain text")
 	}
-	if headline.Url == "" {
+	if headline.URL == "" {
 		return errors.New("Methode Content headline does not contain a link")
 	}
-	_, err := url.ParseRequestURI(headline.Url)
+	_, err := url.ParseRequestURI(headline.URL)
 	if err != nil {
 		return errors.New("Methode Content headline does not contain a valid URL - " + err.Error())
 	}
@@ -168,12 +171,12 @@ func extractImageUUID(fileRef string) string {
 	return strings.Split(fileRef, "uuid=")[1]
 }
 
-func buildAlternativeStandfirst(promoStandfirst string) *AlternativeStandfirst {
+func buildAlternativeStandfirsts(promoStandfirst string) *AlternativeStandfirsts {
 	promoStandfirst = strings.TrimSpace(promoStandfirst)
 	if promoStandfirst == "" {
 		return nil
 	}
-	return &AlternativeStandfirst{PromotionalStandfirst: promoStandfirst}
+	return &AlternativeStandfirsts{PromotionalStandfirst: promoStandfirst}
 }
 
 func buildPublishedDate(lastPublicationDate string) (string, error) {
@@ -202,6 +205,7 @@ func (m *mapper) StartMappingMessages(c consumer.Consumer, p producer.MessagePro
 	consumerWaitGroup.Wait()
 }
 
+// MethodeContentPlaceholder is a data structure that models native methode content placeholders
 type MethodeContentPlaceholder struct {
 	AttributesXML    string `json:"attributes"`
 	SystemAttributes string `json:"systemAttributes"`
@@ -216,6 +220,7 @@ type MethodeContentPlaceholder struct {
 	lastModified     string
 }
 
+// Attributes is the data structure that models methode content placeholders attributes
 type Attributes struct {
 	XMLName             xml.Name `xml:"ObjectMetadata"`
 	SourceCode          string   `xml:"EditorialNotes>Sources>Source>SourceCode"`
@@ -223,6 +228,7 @@ type Attributes struct {
 	IsDeleted           bool     `xml:"OutputChannels>DIFTcom>DIFTcomMarkDeleted"`
 }
 
+// MethodeBody represents the body of a methode content placeholder
 type MethodeBody struct {
 	XMLName        xml.Name     `xml:"doc"`
 	LeadHeadline   LeadHeadline `xml:"lead>lead-headline>headline>ln>a"`
@@ -230,11 +236,13 @@ type MethodeBody struct {
 	LongStandfirst string       `xml:"lead>web-stand-first>p"`
 }
 
+// LeadHeadline reppresents the LeadHeadline of a content placeholder
 type LeadHeadline struct {
 	Text string `xml:",chardata"`
-	Url  string `xml:"href,attr"`
+	URL  string `xml:"href,attr"`
 }
 
+// LeadImage represents the image attribute of a methode content placeholder
 type LeadImage struct {
 	FileRef string `xml:"fileref,attr"`
 }
@@ -287,58 +295,64 @@ func (m *mapper) newMethodeContentPlaceholderFromConsumerMessage(msg consumer.Me
 	return m.newMethodeContentPlaceholder([]byte(msg.Body), transactionID, lastModified)
 }
 
-func buildAttributes(attributesXml string) (Attributes, error) {
+func buildAttributes(attributesXML string) (Attributes, error) {
 	var attrs Attributes
-	if err := xml.Unmarshal([]byte(attributesXml), &attrs); err != nil {
+	if err := xml.Unmarshal([]byte(attributesXML), &attrs); err != nil {
 		return Attributes{}, err
 	}
 	return attrs, nil
 }
 
-func buildMethodeBody(methodeBodyXmlBase64 string) (MethodeBody, error) {
-	methodeBodyXml, err := base64.StdEncoding.DecodeString(methodeBodyXmlBase64)
+func buildMethodeBody(methodeBodyXMLBase64 string) (MethodeBody, error) {
+	methodeBodyXML, err := base64.StdEncoding.DecodeString(methodeBodyXMLBase64)
 	if err != nil {
 		return MethodeBody{}, err
 	}
 	var body MethodeBody
-	if err := xml.Unmarshal([]byte(methodeBodyXml), &body); err != nil {
+	if err := xml.Unmarshal([]byte(methodeBodyXML), &body); err != nil {
 		return MethodeBody{}, err
 	}
 	return body, nil
 }
 
+// UpContentPlaceholder reppresents the content placeholder representation according to UP model
 type UpContentPlaceholder struct {
-	UUID                  string                 `json:"uuid"`
-	Identifiers           []Identifier           `json:"identifiers"`
-	Brands                []Brand                `json:"brands"`
-	AlternativeTitles     *AlternativeTitles     `json:"alternativeTitles"`
-	AlternativeImages     *AlternativeImages     `json:"alternativeImages"`
-	AlternativeStandfirst *AlternativeStandfirst `json:"alternativeStandfirst"`
-	PublishedDate         string                 `json:"publishedDate"`
-	PublishReference      string                 `json:"publishReference"`
-	LastModified          string                 `json:"lastModified"`
-	WebUrl                string                 `json:"webUrl"`
-	CanBeSyndicated       string                 `json:"canBeSyndicated"`
+	UUID                   string                  `json:"uuid"`
+	Identifiers            []Identifier            `json:"identifiers"`
+	Brands                 []Brand                 `json:"brands"`
+	AlternativeTitles      *AlternativeTitles      `json:"alternativeTitles"`
+	AlternativeImages      *AlternativeImages      `json:"alternativeImages"`
+	AlternativeStandfirsts *AlternativeStandfirsts `json:"alternativeStandfirsts"`
+	PublishedDate          string                  `json:"publishedDate"`
+	PublishReference       string                  `json:"publishReference"`
+	LastModified           string                  `json:"lastModified"`
+	WebURL                 string                  `json:"webUrl"`
+	CanBeSyndicated        string                  `json:"canBeSyndicated"`
 }
 
+// Identifier represents content identifiers according to UP data model
 type Identifier struct {
 	Authority       string `json:"authority"`
 	IdentifierValue string `json:"identifierValue"`
 }
 
+// Brand represents a content brand according to UP data model
 type Brand struct {
 	ID string `json:"id"`
 }
 
+// AlternativeTitles represents the alternative titles for content according to UP data model
 type AlternativeTitles struct {
 	PromotionalTitle string `json:"promotionalTitle"`
 }
 
+// AlternativeImages represents the alternative images for content according to UP data model
 type AlternativeImages struct {
 	PromotionalImage string `json:"promotionalImage"`
 }
 
-type AlternativeStandfirst struct {
+// AlternativeStandfirsts represents the alternative standfirsts for content according to UP data model
+type AlternativeStandfirsts struct {
 	PromotionalStandfirst string `json:"promotionalStandfirst"`
 }
 
@@ -381,7 +395,7 @@ func (p UpContentPlaceholder) toPublicationEvent() publicationEvent {
 func (p UpContentPlaceholder) isDeleted() bool {
 	// A successful mapping the UpContentPlaceholder of a Delete event implies
 	// no body transformation, therefore empty WebUrl attribute
-	return p.WebUrl == ""
+	return p.WebURL == ""
 }
 
 type publicationEvent struct {
@@ -390,6 +404,7 @@ type publicationEvent struct {
 	LastModified string                `json:"lastModified"`
 }
 
+// MappingError is an error that can be returned by the content placeholder mapper
 type MappingError struct {
 	ContentUUID  string
 	ErrorMessage string
@@ -399,15 +414,18 @@ func (e MappingError) Error() string {
 	return e.ErrorMessage
 }
 
+// NewMappingError returs a new instance of a MappingError
 func NewMappingError() *MappingError {
 	return &MappingError{}
 }
 
+// WithMessage adds a message to a mapping error
 func (e *MappingError) WithMessage(errorMsg string) *MappingError {
 	e.ErrorMessage = errorMsg
 	return e
 }
 
+// ForContent associate the mapping error to a specific piece of content
 func (e *MappingError) ForContent(uuid string) *MappingError {
 	e.ContentUUID = uuid
 	return e

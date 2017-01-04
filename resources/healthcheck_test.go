@@ -102,9 +102,11 @@ func TestTopicMissing(t *testing.T) {
 	var result fthealth.HealthResult
 	decoder.Decode(&result)
 
-	check := result.Checks[0]
 	assert.False(t, result.Ok)
-	assert.False(t, check.Ok)
+	consumerCheck := result.Checks[0]
+	assert.False(t, consumerCheck.Ok)
+	producerCheck := result.Checks[1]
+	assert.False(t, producerCheck.Ok)
 }
 
 func TestTopicsUnparseable(t *testing.T) {
@@ -129,9 +131,11 @@ func TestTopicsUnparseable(t *testing.T) {
 	var result fthealth.HealthResult
 	decoder.Decode(&result)
 
-	check := result.Checks[0]
 	assert.False(t, result.Ok)
-	assert.False(t, check.Ok)
+	consumerCheck := result.Checks[0]
+	assert.False(t, consumerCheck.Ok)
+	producerCheck := result.Checks[1]
+	assert.False(t, producerCheck.Ok)
 }
 
 func TestFailingKafka(t *testing.T) {
@@ -155,12 +159,14 @@ func TestFailingKafka(t *testing.T) {
 	var result fthealth.HealthResult
 	decoder.Decode(&result)
 
-	check := result.Checks[0]
 	assert.False(t, result.Ok)
-	assert.False(t, check.Ok)
+	consumerCheck := result.Checks[0]
+	assert.False(t, consumerCheck.Ok)
+	producerCheck := result.Checks[1]
+	assert.False(t, producerCheck.Ok)
 }
 
-func TestNoKafka(t *testing.T) {
+func TestNoKafkaAtAll(t *testing.T) {
 	w := httptest.NewRecorder()
 	req, err := http.NewRequest("GET", "/__health", nil)
 	if err != nil {
@@ -179,9 +185,129 @@ func TestNoKafka(t *testing.T) {
 	var result fthealth.HealthResult
 	decoder.Decode(&result)
 
-	check := result.Checks[0]
 	assert.False(t, result.Ok)
-	assert.False(t, check.Ok)
+	consumerCheck := result.Checks[0]
+	assert.False(t, consumerCheck.Ok)
+	producerCheck := result.Checks[1]
+	assert.False(t, producerCheck.Ok)
+}
+
+func TestNoKafkaConsumer(t *testing.T) {
+	kafka := setupMockKafka(t, 200, mockedTopics)
+	defer kafka.Close()
+
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/__health", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	consumerConfigMock.Addrs = []string{"a-fake-url"}
+	producerConfigMock.Addr = kafka.URL
+	hc := NewMapperHealthcheck(consumerConfigMock, producerConfigMock)
+	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerQueueCheck(), hc.ProducerQueueCheck())(w, req)
+
+	assert.Equal(t, 200, w.Code)
+
+	decoder := json.NewDecoder(w.Body)
+
+	var result fthealth.HealthResult
+	decoder.Decode(&result)
+
+	assert.False(t, result.Ok)
+	consumerCheck := result.Checks[0]
+	assert.False(t, consumerCheck.Ok)
+	producerCheck := result.Checks[1]
+	assert.True(t, producerCheck.Ok)
+}
+
+func TestNoKafkaProducer(t *testing.T) {
+	kafka := setupMockKafka(t, 200, mockedTopics)
+	defer kafka.Close()
+
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/__health", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	consumerConfigMock.Addrs = []string{kafka.URL}
+	producerConfigMock.Addr = "a-fake-url"
+	hc := NewMapperHealthcheck(consumerConfigMock, producerConfigMock)
+	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerQueueCheck(), hc.ProducerQueueCheck())(w, req)
+
+	assert.Equal(t, 200, w.Code)
+
+	decoder := json.NewDecoder(w.Body)
+
+	var result fthealth.HealthResult
+	decoder.Decode(&result)
+
+	assert.False(t, result.Ok)
+	consumerCheck := result.Checks[0]
+	assert.True(t, consumerCheck.Ok)
+	producerCheck := result.Checks[1]
+	assert.False(t, producerCheck.Ok)
+}
+
+func TestMultipleKafkaConsumersFail(t *testing.T) {
+	kafka := setupMockKafka(t, 200, mockedTopics)
+	defer kafka.Close()
+
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/__health", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	consumerConfigMock.Addrs = []string{kafka.URL, "a-fake-url"}
+	producerConfigMock.Addr = kafka.URL
+	hc := NewMapperHealthcheck(consumerConfigMock, producerConfigMock)
+	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerQueueCheck(), hc.ProducerQueueCheck())(w, req)
+
+	assert.Equal(t, 200, w.Code)
+
+	decoder := json.NewDecoder(w.Body)
+
+	var result fthealth.HealthResult
+	decoder.Decode(&result)
+
+	assert.False(t, result.Ok)
+	consumerCheck := result.Checks[0]
+	assert.False(t, consumerCheck.Ok)
+	producerCheck := result.Checks[1]
+	assert.True(t, producerCheck.Ok)
+}
+
+func TestMultipleKafkaConsumersOK(t *testing.T) {
+	kafka1 := setupMockKafka(t, 200, mockedTopics)
+	defer kafka1.Close()
+	kafka2 := setupMockKafka(t, 200, mockedTopics)
+	defer kafka2.Close()
+
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/__health", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	consumerConfigMock.Addrs = []string{kafka1.URL, kafka2.URL}
+	producerConfigMock.Addr = kafka1.URL
+	hc := NewMapperHealthcheck(consumerConfigMock, producerConfigMock)
+	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerQueueCheck(), hc.ProducerQueueCheck())(w, req)
+
+	assert.Equal(t, 200, w.Code)
+
+	decoder := json.NewDecoder(w.Body)
+
+	var result fthealth.HealthResult
+	decoder.Decode(&result)
+
+	assert.True(t, result.Ok)
+	consumerCheck := result.Checks[0]
+	assert.True(t, consumerCheck.Ok)
+	producerCheck := result.Checks[1]
+	assert.True(t, producerCheck.Ok)
 }
 
 func TestGTG(t *testing.T) {

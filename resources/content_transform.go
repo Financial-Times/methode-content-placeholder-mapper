@@ -11,10 +11,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// ContentTransformHandler is a HTTP handler to map methode contetn placeholders
 type ContentTransformHandler struct {
 	mapper mapper.Mapper
 }
 
+// NewContentTransformHandler returns a new instance of a ContentTransformHandler
 func NewContentTransformHandler(m mapper.Mapper) *ContentTransformHandler {
 	return &ContentTransformHandler{m}
 }
@@ -23,7 +25,7 @@ func (h *ContentTransformHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	vars := mux.Vars(r)
 	uuid := vars["uuid"]
 	transactionID := tid.GetTransactionIDFromRequest(r)
-	log.WithField("trasaction_id", transactionID).WithField("uuid", uuid).WithField("request_uri", r.RequestURI).Info("Received transformation request")
+	log.WithField("transaction_id", transactionID).WithField("uuid", uuid).WithField("request_uri", r.RequestURI).Info("Received transformation request")
 	methodePlaceholder, err := h.mapper.NewMethodeContentPlaceholderFromHTTPRequest(r)
 	if err != nil {
 		writeError(w, err, transactionID, uuid, r.RequestURI)
@@ -38,10 +40,10 @@ func (h *ContentTransformHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	w.Header().Add("Content-Type", "application/json")
 	encoder := json.NewEncoder(w)
 	encoder.Encode(upPlaceholder)
-	log.WithField("trasaction_id", transactionID).WithField("uuid", uuid).WithField("request_uri", r.RequestURI).Info("Transformation successful")
+	log.WithField("transaction_id", transactionID).WithField("uuid", uuid).WithField("request_uri", r.RequestURI).Info("Transformation successful")
 }
 
 func writeError(w http.ResponseWriter, err error, transactionID string, uuid string, requestURI string) {
-	log.WithField("trasaction_id", transactionID).WithField("uuid", uuid).WithField("request_uri", requestURI).WithError(err).Error(fmt.Sprintf("Returned HTTP status: %v", http.StatusUnprocessableEntity))
+	log.WithField("transaction_id", transactionID).WithField("uuid", uuid).WithField("request_uri", requestURI).WithError(err).Error(fmt.Sprintf("Returned HTTP status: %v", http.StatusUnprocessableEntity))
 	http.Error(w, err.Error(), http.StatusUnprocessableEntity)
 }

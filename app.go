@@ -32,13 +32,13 @@ func main() {
 	readAddresses := app.Strings(cli.StringsOpt{
 		Name:   "read-queue-addresses",
 		Value:  nil,
-		Desc:   "Addresses to connect to the consumer queue (hostnames).",
+		Desc:   "Addresses to connect to the consumer queue (URLs).",
 		EnvVar: "Q_READ_ADDR",
 	})
 	writeAddress := app.String(cli.StringOpt{
 		Name:   "write-queue-address",
 		Value:  "",
-		Desc:   "Addresses to connect to the producer queue (hostnames).",
+		Desc:   "Address to connect to the producer queue (URL).",
 		EnvVar: "Q_WRITE_ADDR",
 	})
 	group := app.String(cli.StringOpt{
@@ -53,11 +53,11 @@ func main() {
 		Desc:   "The topic to read the meassages from.",
 		EnvVar: "Q_READ_TOPIC",
 	})
-	readQueue := app.String(cli.StringOpt{
-		Name:   "read-queue",
+	readQueueHostHeader := app.String(cli.StringOpt{
+		Name:   "read-queue-host-header",
 		Value:  "kafka",
-		Desc:   "The queue to read the meassages from.",
-		EnvVar: "Q_READ_QUEUE",
+		Desc:   "The host header for the queue to read the meassages from.",
+		EnvVar: "Q_READ_QUEUE_HOST_HEADER",
 	})
 	writeTopic := app.String(cli.StringOpt{
 		Name:   "write-topic",
@@ -65,11 +65,11 @@ func main() {
 		Desc:   "The topic to write the meassages to.",
 		EnvVar: "Q_WRITE_TOPIC",
 	})
-	writeQueue := app.String(cli.StringOpt{
-		Name:   "write-queue",
+	writeQueueHostHeader := app.String(cli.StringOpt{
+		Name:   "write-queue-host-header",
 		Value:  "kafka",
-		Desc:   "The queue to write the meassages to.",
-		EnvVar: "Q_WRITE_QUEUE",
+		Desc:   "The host header for the queue to write the meassages to.",
+		EnvVar: "Q_WRITE_QUEUE_HOST_HEADER",
 	})
 	authorization := app.String(cli.StringOpt{
 		Name:   "authorization",
@@ -89,7 +89,7 @@ func main() {
 			Addrs:                *readAddresses,
 			Group:                *group,
 			Topic:                *readTopic,
-			Queue:                *readQueue,
+			Queue:                *readQueueHostHeader,
 			ConcurrentProcessing: false,
 			AutoCommitEnable:     true,
 			AuthorizationKey:     *authorization,
@@ -98,7 +98,7 @@ func main() {
 		producerConfig := producer.MessageProducerConfig{
 			Addr:          *writeAddress,
 			Topic:         *writeTopic,
-			Queue:         *writeQueue,
+			Queue:         *writeQueueHostHeader,
 			Authorization: *authorization,
 		}
 
