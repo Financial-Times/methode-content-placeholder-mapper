@@ -57,7 +57,7 @@ func main() {
 		Name:   "read-queue-host-header",
 		Value:  "kafka",
 		Desc:   "The host header for the queue to read the meassages from.",
-		EnvVar: "Q_READ_QUEUE",
+		EnvVar: "Q_READ_QUEUE_HOST_HEADER",
 	})
 	writeTopic := app.String(cli.StringOpt{
 		Name:   "write-topic",
@@ -69,7 +69,7 @@ func main() {
 		Name:   "write-queue-host-header",
 		Value:  "kafka",
 		Desc:   "The host header for the queue to write the meassages to.",
-		EnvVar: "Q_WRITE_QUEUE",
+		EnvVar: "Q_WRITE_QUEUE_HOST_HEADER",
 	})
 	authorization := app.String(cli.StringOpt{
 		Name:   "authorization",
