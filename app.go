@@ -38,7 +38,7 @@ func main() {
 	writeAddress := app.String(cli.StringOpt{
 		Name:   "write-queue-address",
 		Value:  "",
-		Desc:   "Addresses to connect to the producer queue (URL).",
+		Desc:   "Address to connect to the producer queue (URL).",
 		EnvVar: "Q_WRITE_ADDR",
 	})
 	group := app.String(cli.StringOpt{

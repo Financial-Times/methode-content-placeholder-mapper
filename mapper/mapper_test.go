@@ -2,6 +2,7 @@ package mapper
 
 import (
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"net/http/httptest"
 	"regexp"
@@ -85,7 +86,6 @@ func TestCorrectMappingToUpdateEventWithHeadlineOnly(t *testing.T) {
 	assert.Regexp(t, uuidRegexp, actualPubEventMsg.Headers["Message-Id"], "The Message ID should be a valid UUID")
 	_, parseErr := time.Parse(upDateFormat, actualPubEventMsg.Headers["Message-Timestamp"])
 	assert.Nil(t, parseErr, "The message timestamp should have a consistent format")
-
 }
 
 func buildIgMethodePlaceholderOnlyHeadlineUpdateMsg() consumer.Message {
@@ -106,7 +106,6 @@ func TestHandleMethodePlaceholderEvent(t *testing.T) {
 	mapper.HandlePlaceholderMessages(methodeMsg)
 
 	producerMock.AssertCalled(t, "SendMessage", mock.AnythingOfType("string"), mock.AnythingOfType("producer.Message"))
-
 }
 
 func TestDoNotMapMethodeArticleDeleteEvent(t *testing.T) {
@@ -126,7 +125,18 @@ func TestDoNotHandleMethodeArticleDeleteEvent(t *testing.T) {
 	mapper.HandlePlaceholderMessages(methodeArticleMsg)
 
 	producerMock.AssertNotCalled(t, "SendMessage")
+}
 
+func TestNotHandleMethodePlaceholderEventWhenProducerReturnsError(t *testing.T) {
+	producerMock := new(QueueProducerMock)
+	producerMock.On("SendMessage", mock.AnythingOfType("string"), mock.AnythingOfType("producer.Message")).Return(errors.New("I do not want to send the message! I'm on strike!"))
+
+	mapper := &mapper{messageProducer: producerMock}
+
+	methodeMsg := buildIgMethodePlaceholderUpdateMsg()
+	mapper.HandlePlaceholderMessages(methodeMsg)
+
+	producerMock.AssertCalled(t, "SendMessage", mock.AnythingOfType("string"), mock.AnythingOfType("producer.Message"))
 }
 
 func buildMethodeArticleDeleteMsg() consumer.Message {
@@ -166,7 +176,6 @@ func TestDoNotHandleBrightcoveVideoEvent(t *testing.T) {
 	mapper.HandlePlaceholderMessages(videoMsg)
 
 	producerMock.AssertNotCalled(t, "SendMessage")
-
 }
 
 func buildBrightcoveVideoMsg() consumer.Message {

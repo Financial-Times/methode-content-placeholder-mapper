@@ -65,6 +65,7 @@ func (m *mapper) HandlePlaceholderMessages(msg consumer.Message) {
 	err := m.messageProducer.SendMessage(placeholderUUID, placeholderMsg)
 	if err != nil {
 		log.WithField("transaction_id", tid).WithField("uuid", placeholderUUID).WithError(err).Warn("Error sending transformed message to queue")
+		return
 	}
 	log.WithField("transaction_id", tid).WithField("uuid", placeholderUUID).Info("Content mapped and sent to the queue")
 }
