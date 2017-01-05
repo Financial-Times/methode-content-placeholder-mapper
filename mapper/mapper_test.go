@@ -160,11 +160,23 @@ func TestDoNotMapPlaceholderWithWrongURLInHeadline(t *testing.T) {
 	mapper := &mapper{}
 
 	_, _, err := mapper.mapMessage(placeholderMsg)
-	assert.EqualError(t, err, "Methode Content headline does not contain a valid URL - parse pippo: invalid URI for request", "The mapping of the placeholder should be unsuccessful")
+	assert.EqualError(t, err, "Methode Content headline does not contain a valid URL - parse %gh&%ij: invalid URL escape \"%gh\"", "The mapping of the placeholder should be unsuccessful")
 }
 
 func buildIgMethodePlaceholderWithWrongURLUpdateMsg() consumer.Message {
 	return buildMethodeMsg("test_resources/ig_methode_placeholder_wrong_url.json")
+}
+
+func TestDoNotMapPlaceholderWithRelativeURLInHeadline(t *testing.T) {
+	placeholderMsg := buildIgMethodePlaceholderWithRelativeURLUpdateMsg()
+	mapper := &mapper{}
+
+	_, _, err := mapper.mapMessage(placeholderMsg)
+	assert.EqualError(t, err, "Methode Content headline does not contain an absolute URL", "The mapping of the placeholder should be unsuccessful")
+}
+
+func buildIgMethodePlaceholderWithRelativeURLUpdateMsg() consumer.Message {
+	return buildMethodeMsg("test_resources/ig_methode_placeholder_relative_url.json")
 }
 
 func TestDoNotHandleBrightcoveVideoEvent(t *testing.T) {
