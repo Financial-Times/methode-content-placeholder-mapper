@@ -131,9 +131,12 @@ func validateHeadline(headline LeadHeadline) error {
 	if headline.URL == "" {
 		return errors.New("Methode Content headline does not contain a link")
 	}
-	_, err := url.ParseRequestURI(headline.URL)
+	headlineURL, err := url.Parse(headline.URL)
 	if err != nil {
 		return errors.New("Methode Content headline does not contain a valid URL - " + err.Error())
+	}
+	if !headlineURL.IsAbs() {
+		return errors.New("Methode Content headline does not contain an absolute URL")
 	}
 	return nil
 }
