@@ -44,7 +44,7 @@ func (hc *MapperHealthcheck) ConsumerQueueCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   "Methode content placeholders will not reach this app, nor will they be mapped to UP placeholders.",
 		Name:             "ConsumerQueueProxyReachable",
-		PanicGuide:       "TBD",
+		PanicGuide:       "https://dewey.ft.com/up-mcpm.html",
 		Severity:         1,
 		TechnicalSummary: "Consumer message queue proxy is not reachable/healthy",
 		Checker:          hc.checkAggregateConsumerProxiesReachable,
@@ -56,7 +56,7 @@ func (hc *MapperHealthcheck) ProducerQueueCheck() fthealth.Check {
 	return fthealth.Check{
 		BusinessImpact:   "Methode content placeholders mappings will not be publish",
 		Name:             "ProducerQueueProxyReachable",
-		PanicGuide:       "TBD",
+		PanicGuide:       "https://dewey.ft.com/up-mcpm.html",
 		Severity:         1,
 		TechnicalSummary: "Producer message queue proxy is not reachable/healthy",
 		Checker:          hc.checkProducerProxyReachable,
