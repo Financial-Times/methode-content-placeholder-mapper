@@ -24,7 +24,7 @@ func TestSucessfulContentTransformation(t *testing.T) {
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
 	w := httptest.NewRecorder()
-	h.ServeHTTP(w, req)
+	h.ServeMapEndpoint(w, req)
 
 	assert.Equal(t, w.Code, http.StatusOK, "It should return status 200")
 }
@@ -36,7 +36,7 @@ func TestUnsucessfulMethodePlaceholderBuild(t *testing.T) {
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
 	w := httptest.NewRecorder()
-	h.ServeHTTP(w, req)
+	h.ServeMapEndpoint(w, req)
 
 	assert.Equal(t, http.StatusUnprocessableEntity, w.Code, "It should return status 422")
 	assert.Equal(t, "What is it?\n", w.Body.String())
@@ -50,7 +50,7 @@ func TestUnsucessfulPlaceholderMapping(t *testing.T) {
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
 	w := httptest.NewRecorder()
-	h.ServeHTTP(w, req)
+	h.ServeMapEndpoint(w, req)
 
 	assert.Equal(t, http.StatusUnprocessableEntity, w.Code, "It should return status 422")
 	assert.Equal(t, "All map and no play makes MCPM a dull boy\n", w.Body.String())

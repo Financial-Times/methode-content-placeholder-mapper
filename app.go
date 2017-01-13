@@ -126,6 +126,7 @@ func serve(port int, hc *resources.MapperHealthcheck, cth *resources.ContentTran
 		hc.ProducerQueueCheck(),
 	)
 	r.Handle("/content-transform/{uuid}", cth).Methods("POST")
+	r.HandleFunc("/content-transform", cth.ServeMapEndpoint).Methods("POST")
 	r.HandleFunc("/__health", hcHandler)
 	r.HandleFunc(httphandlers.GTGPath, hc.GTG).Methods("GET")
 	r.HandleFunc(httphandlers.BuildInfoPath, httphandlers.BuildInfoHandler).Methods("GET")

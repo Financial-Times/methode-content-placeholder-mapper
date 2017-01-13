@@ -21,12 +21,23 @@ func NewContentTransformHandler(m mapper.Mapper) *ContentTransformHandler {
 	return &ContentTransformHandler{m}
 }
 
+func (h *ContentTransformHandler) ServeMapEndpoint(w http.ResponseWriter, r *http.Request) {
+	transactionID := tid.GetTransactionIDFromRequest(r)
+	log.WithField("transaction_id", transactionID).WithField("request_uri", r.RequestURI).Info("Received transformation request")
+	h.mapContent(w, r, transactionID)
+}
+
 func (h *ContentTransformHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uuid := vars["uuid"]
 	transactionID := tid.GetTransactionIDFromRequest(r)
 	log.WithField("transaction_id", transactionID).WithField("uuid", uuid).WithField("request_uri", r.RequestURI).Info("Received transformation request")
+	h.mapContent(w, r, transactionID)
+}
+
+func (h *ContentTransformHandler) mapContent(w http.ResponseWriter, r *http.Request, transactionID string) {
 	methodePlaceholder, err := h.mapper.NewMethodeContentPlaceholderFromHTTPRequest(r)
+	uuid := methodePlaceholder.UUID
 	if err != nil {
 		writeError(w, err, transactionID, uuid, r.RequestURI)
 		return
