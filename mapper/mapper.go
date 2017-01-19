@@ -30,7 +30,6 @@ const eomCompoundStory = "EOM::CompoundStory"
 const upDateFormat = "2006-01-02T03:04:05.000Z0700"
 const ftBrand = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
 const methodeAuthority = "http://api.ft.com/system/FTCOM-METHODE"
-const ftAPIContentURIPrefix = "http://api.ft.com/content/"
 const mapperURIBase = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/content/"
 
 // Mapper is a generic interface for content paceholder mapper
@@ -167,7 +166,7 @@ func buildAlternativeImages(fileRef string) *AlternativeImages {
 		return nil
 	}
 	imageUUID := extractImageUUID(fileRef)
-	return &AlternativeImages{PromotionalImage: ftAPIContentURIPrefix + imageUUID}
+	return &AlternativeImages{PromotionalImage: imageUUID}
 }
 
 func extractImageUUID(fileRef string) string {
