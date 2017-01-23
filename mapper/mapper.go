@@ -109,6 +109,7 @@ func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContent
 
 	upPlaceholder := UpContentPlaceholder{
 		UUID:                   mpc.UUID,
+		Title:                  mpc.body.LeadHeadline.Text,
 		Identifiers:            buildIdentifiers(mpc.UUID),
 		Brands:                 buildBrands(),
 		WebURL:                 mpc.body.LeadHeadline.URL,
@@ -318,8 +319,10 @@ func buildMethodeBody(methodeBodyXMLBase64 string) (MethodeBody, error) {
 }
 
 // UpContentPlaceholder reppresents the content placeholder representation according to UP model
+//note Title holds the text of alternativeTitle as a cph does not have a title and some clients expect one.
 type UpContentPlaceholder struct {
 	UUID                   string                  `json:"uuid"`
+	Title                  string                  `json:"title"`
 	Identifiers            []Identifier            `json:"identifiers"`
 	Brands                 []Brand                 `json:"brands"`
 	AlternativeTitles      *AlternativeTitles      `json:"alternativeTitles"`
