@@ -12,22 +12,22 @@ import (
 )
 
 // ContentTransformHandler is a HTTP handler to map methode contetn placeholders
-type ContentTransformHandler struct {
+type MapEndpointHandler struct {
 	mapper mapper.Mapper
 }
 
-// NewContentTransformHandler returns a new instance of a ContentTransformHandler
-func NewContentTransformHandler(m mapper.Mapper) *ContentTransformHandler {
-	return &ContentTransformHandler{m}
+// NewContentTransformHandler returns a new instance of a MapEndpointHandler
+func NewMapEndpointHandler(m mapper.Mapper) *MapEndpointHandler {
+	return &MapEndpointHandler{m}
 }
 
-func (h *ContentTransformHandler) ServeMapEndpoint(w http.ResponseWriter, r *http.Request) {
+func (h *MapEndpointHandler) ServeMapEndpoint(w http.ResponseWriter, r *http.Request) {
 	transactionID := tid.GetTransactionIDFromRequest(r)
 	log.WithField("transaction_id", transactionID).WithField("request_uri", r.RequestURI).Info("Received transformation request")
 	h.mapContent(w, r, transactionID)
 }
 
-func (h *ContentTransformHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (h *MapEndpointHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uuid := vars["uuid"]
 	transactionID := tid.GetTransactionIDFromRequest(r)
@@ -35,7 +35,7 @@ func (h *ContentTransformHandler) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	h.mapContent(w, r, transactionID)
 }
 
-func (h *ContentTransformHandler) mapContent(w http.ResponseWriter, r *http.Request, transactionID string) {
+func (h *MapEndpointHandler) mapContent(w http.ResponseWriter, r *http.Request, transactionID string) {
 	methodePlaceholder, err := h.mapper.NewMethodeContentPlaceholderFromHTTPRequest(r)
 	uuid := methodePlaceholder.UUID
 	if err != nil {

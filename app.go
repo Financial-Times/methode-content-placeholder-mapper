@@ -106,7 +106,7 @@ func main() {
 		messageConsumer := consumer.NewConsumer(consumerConfig, m.HandlePlaceholderMessages, http.Client{})
 		messageProducer := producer.NewMessageProducer(producerConfig)
 
-		go serve(*port, resources.NewMapperHealthcheck(consumerConfig, producerConfig), resources.NewContentTransformHandler(m))
+		go serve(*port, resources.NewMapperHealthcheck(consumerConfig, producerConfig), resources.NewMapEndpointHandler(m))
 
 		m.StartMappingMessages(messageConsumer, messageProducer)
 	}
@@ -115,7 +115,7 @@ func main() {
 	}
 }
 
-func serve(port int, hc *resources.MapperHealthcheck, cth *resources.ContentTransformHandler) {
+func serve(port int, hc *resources.MapperHealthcheck, cth *resources.MapEndpointHandler) {
 
 	r := mux.NewRouter()
 
