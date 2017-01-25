@@ -115,7 +115,7 @@ func main() {
 	}
 }
 
-func serve(port int, hc *resources.MapperHealthcheck, cth *resources.MapEndpointHandler) {
+func serve(port int, hc *resources.MapperHealthcheck, meh *resources.MapEndpointHandler) {
 
 	r := mux.NewRouter()
 
@@ -125,8 +125,8 @@ func serve(port int, hc *resources.MapperHealthcheck, cth *resources.MapEndpoint
 		hc.ConsumerQueueCheck(),
 		hc.ProducerQueueCheck(),
 	)
-	r.Handle("/content-transform/{uuid}", cth).Methods("POST")
-	r.HandleFunc("/content-transform", cth.ServeMapEndpoint).Methods("POST")
+	r.Handle("/content-transform/{uuid}", meh).Methods("POST")
+	r.HandleFunc("/map", meh.ServeMapEndpoint).Methods("POST")
 	r.HandleFunc("/__health", hcHandler)
 	r.HandleFunc(httphandlers.GTGPath, hc.GTG).Methods("GET")
 	r.HandleFunc(httphandlers.BuildInfoPath, httphandlers.BuildInfoHandler).Methods("GET")
