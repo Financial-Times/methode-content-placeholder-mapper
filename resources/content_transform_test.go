@@ -16,27 +16,27 @@ import (
 const placeholderMsg = `{"foo":"bar"}`
 const mapperURL = "http://example.com/content-transform/2eb712b6-70bf-4f18-a958-cd99bcc20ad2"
 
-func TestSucessfulContentTransformation(t *testing.T) {
+func TestSucessfulMapEndpoint(t *testing.T) {
 	m := new(MapperMock)
 	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, (*mapper.MappingError)(nil))
 	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(mapper.UpContentPlaceholder{}, (*mapper.MappingError)(nil))
-	h := NewContentTransformHandler(m)
+	h := NewMapEndpointHandler(m)
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
 	w := httptest.NewRecorder()
-	h.ServeHTTP(w, req)
+	h.ServeMapEndpoint(w, req)
 
 	assert.Equal(t, w.Code, http.StatusOK, "It should return status 200")
-}
+}  
 
 func TestUnsucessfulMethodePlaceholderBuild(t *testing.T) {
 	m := new(MapperMock)
 	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, mapper.NewMappingError().WithMessage("What is it?"))
-	h := NewContentTransformHandler(m)
+	h := NewMapEndpointHandler(m)
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
 	w := httptest.NewRecorder()
-	h.ServeHTTP(w, req)
+	h.ServeMapEndpoint(w, req)
 
 	assert.Equal(t, http.StatusUnprocessableEntity, w.Code, "It should return status 422")
 	assert.Equal(t, "What is it?\n", w.Body.String())
@@ -46,11 +46,11 @@ func TestUnsucessfulPlaceholderMapping(t *testing.T) {
 	m := new(MapperMock)
 	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, (*mapper.MappingError)(nil))
 	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(mapper.UpContentPlaceholder{}, mapper.NewMappingError().WithMessage("All map and no play makes MCPM a dull boy"))
-	h := NewContentTransformHandler(m)
+	h := NewMapEndpointHandler(m)
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
 	w := httptest.NewRecorder()
-	h.ServeHTTP(w, req)
+	h.ServeMapEndpoint(w, req)
 
 	assert.Equal(t, http.StatusUnprocessableEntity, w.Code, "It should return status 422")
 	assert.Equal(t, "All map and no play makes MCPM a dull boy\n", w.Body.String())
