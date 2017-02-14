@@ -27,7 +27,7 @@ func TestSucessfulMapEndpoint(t *testing.T) {
 	h.ServeMapEndpoint(w, req)
 
 	assert.Equal(t, w.Code, http.StatusOK, "It should return status 200")
-}  
+}
 
 func TestUnsucessfulMethodePlaceholderBuild(t *testing.T) {
 	m := new(MapperMock)

@@ -18,13 +18,11 @@ const mockedTopics = `["methode-articles","up-placholders"]`
 var consumerConfigMock = consumer.QueueConfig{
 	Group:            "mcpm-group",
 	Topic:            "methode-articles",
-	Queue:            "host",
 	AuthorizationKey: "my-first-auth-key",
 }
 
 var producerConfigMock = producer.MessageProducerConfig{
 	Topic:         "up-placholders",
-	Queue:         "host",
 	Authorization: "my-first-auth-key",
 }
 

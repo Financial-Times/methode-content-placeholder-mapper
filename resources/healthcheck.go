@@ -17,7 +17,7 @@ import (
 type MapperHealthcheck struct {
 	Client         *http.Client
 	ConsumerConfig consumer.QueueConfig
-	ProducerConfig producer.MessageProducerConfig  
+	ProducerConfig producer.MessageProducerConfig
 }
 
 // NewMapperHealthcheck returns a new instance of the MapperHealthcheck
@@ -66,7 +66,7 @@ func (hc *MapperHealthcheck) ProducerQueueCheck() fthealth.Check {
 func (hc *MapperHealthcheck) checkAggregateConsumerProxiesReachable() (string, error) {
 	errMsg := ""
 	for _, address := range hc.ConsumerConfig.Addrs {
-		err := hc.checkMessageQueueProxyReachable(address, hc.ConsumerConfig.AuthorizationKey, hc.ConsumerConfig.Queue)
+		err := hc.checkMessageQueueProxyReachable(address, hc.ConsumerConfig.AuthorizationKey)
 		if err != nil {
 			errMsg = errMsg + fmt.Sprintf("For %s there is an error %v \n", address, err.Error())
 		}
@@ -79,7 +79,7 @@ func (hc *MapperHealthcheck) checkAggregateConsumerProxiesReachable() (string, e
 
 func (hc *MapperHealthcheck) checkProducerProxyReachable() (string, error) {
 
-	err := hc.checkMessageQueueProxyReachable(hc.ProducerConfig.Addr, hc.ProducerConfig.Authorization, hc.ProducerConfig.Queue)
+	err := hc.checkMessageQueueProxyReachable(hc.ProducerConfig.Addr, hc.ProducerConfig.Authorization)
 	if err == nil {
 		return "Connectivity to produce proxy is OK.", nil
 	}
@@ -87,7 +87,7 @@ func (hc *MapperHealthcheck) checkProducerProxyReachable() (string, error) {
 	return "Error connecting to proxies", errors.New(errMsg)
 }
 
-func (hc *MapperHealthcheck) checkMessageQueueProxyReachable(address string, authorizationKey string, queue string) error {
+func (hc *MapperHealthcheck) checkMessageQueueProxyReachable(address string, authorizationKey string) error {
 	req, err := http.NewRequest("GET", address+"/topics", nil)
 	if err != nil {
 		log.Warnf("Could not connect to proxy: %v", err.Error())
@@ -96,10 +96,6 @@ func (hc *MapperHealthcheck) checkMessageQueueProxyReachable(address string, aut
 
 	if len(authorizationKey) > 0 {
 		req.Header.Add("Authorization", authorizationKey)
-	}
-
-	if len(queue) > 0 {
-		req.Host = queue
 	}
 
 	resp, err := hc.Client.Do(req)
