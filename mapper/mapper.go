@@ -32,6 +32,8 @@ const ftBrand = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
 const methodeAuthority = "http://api.ft.com/system/FTCOM-METHODE"
 const mapperURIBase = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/content/"
 
+const canBeDistributedVerify = "verify"
+
 // Mapper is a generic interface for content paceholder mapper
 type Mapper interface {
 	HandlePlaceholderMessages(msg consumer.Message)
@@ -120,6 +122,7 @@ func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContent
 		PublishReference:       mpc.transactionID,
 		LastModified:           mpc.lastModified,
 		CanBeSyndicated:        "verify",
+		CanBeDistributed:       canBeDistributedVerify,
 	}
 	return upPlaceholder, nil
 }
@@ -333,6 +336,7 @@ type UpContentPlaceholder struct {
 	LastModified           string                  `json:"lastModified"`
 	WebURL                 string                  `json:"webUrl"`
 	CanBeSyndicated        string                  `json:"canBeSyndicated"`
+	CanBeDistributed       string                  `json:"canBeDistributed"`
 }
 
 // Identifier represents content identifiers according to UP data model
