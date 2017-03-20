@@ -120,6 +120,7 @@ func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContent
 		PublishReference:       mpc.transactionID,
 		LastModified:           mpc.lastModified,
 		CanBeSyndicated:        "verify",
+		Type:                   "Content",
 	}
 	return upPlaceholder, nil
 }
@@ -331,6 +332,7 @@ type UpContentPlaceholder struct {
 	LastModified           string                  `json:"lastModified"`
 	WebURL                 string                  `json:"webUrl"`
 	CanBeSyndicated        string                  `json:"canBeSyndicated"`
+	Type                   string                  `json:"type"`
 }
 
 // Identifier represents content identifiers according to UP data model
