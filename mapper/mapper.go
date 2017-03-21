@@ -37,13 +37,13 @@ const canBeDistributedVerify = "verify"
 // Mapper is a generic interface for content paceholder mapper
 type Mapper interface {
 	HandlePlaceholderMessages(msg consumer.Message)
-	StartMappingMessages(c consumer.Consumer, p producer.MessageProducer)
+	StartMappingMessages(c consumer.MessageConsumer, p producer.MessageProducer)
 	NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (MethodeContentPlaceholder, *MappingError)
 	MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContentPlaceholder, *MappingError)
 }
 
 type mapper struct {
-	messageConsumer consumer.Consumer
+	messageConsumer consumer.MessageConsumer
 	messageProducer producer.MessageProducer
 }
 
@@ -194,7 +194,7 @@ func buildPublishedDate(lastPublicationDate string) (string, error) {
 	return date.Format(upDateFormat), nil
 }
 
-func (m *mapper) StartMappingMessages(c consumer.Consumer, p producer.MessageProducer) {
+func (m *mapper) StartMappingMessages(c consumer.MessageConsumer, p producer.MessageProducer) {
 	m.messageConsumer = c
 	m.messageProducer = p
 

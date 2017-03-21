@@ -11,13 +11,17 @@ machine:
 dependencies:
   pre:
     - go get github.com/axw/gocov/gocov; go get github.com/matm/gocov-html; go get -u github.com/jstemmer/go-junit-report
+    - go get -u github.com/kardianos/govendor
+    - govendor sync:
+        pwd:
+          ../.go_project/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
 test:
   pre:
     - go get github.com/mattn/goveralls
   override:
     - mkdir -p $CIRCLE_TEST_REPORTS/golang
     - go test -race -v ./... | go-junit-report > $CIRCLE_TEST_REPORTS/golang/junit.xml
-    - go list ./... | awk -F/ '{print $4}' | xargs -I {} go test -v -cover -race -coverprofile=$CIRCLE_ARTIFACTS/{}.out ./{}
+    - go list ./... | grep -v vendor | awk -F/ '{print $4}' | xargs -I {} go test -v -cover -race -coverprofile=$CIRCLE_ARTIFACTS/{}.out ./{}
     - cd $CIRCLE_ARTIFACTS && sed -i '1d' *.out
     - |
       echo "mode: atomic" > $CIRCLE_ARTIFACTS/overall-coverage.result
