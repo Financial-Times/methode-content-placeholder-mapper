@@ -1,0 +1,15 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "/kMYtkcxWV4dZNvJaEGkDUwt3TA=",
+			"path": "github.com/Financial-Times/message-queue-gonsumer/consumer",
+			"revision": "4e173298922ba4c10721b1b5b3e0d35be7f162e9",
+			"revisionTime": "2017-03-20T10:34:32Z",
+			"version": "0.3.0",
+			"versionExact": "0.3.0"
+		}
+	],
+	"rootPath": "github.com/Financial-Times/methode-content-placeholder-mapper"
+}
