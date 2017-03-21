@@ -94,7 +94,8 @@ The following listing shows an example of successfully mapped Methode placeholde
   "publishReference": "tid_MKEFgEWbVW",
   "lastModified": "2016-12-28 17:18:13.468759906 +0000 GMT",
   "webUrl": "http://www.ft.com/ig/sites/2014/virgingroup-timeline/",
-  "canBeSyndicated": "verify"
+  "canBeSyndicated": "verify",
+  "canBeDistributed": "verify"
 }
 ```
 

@@ -30,8 +30,9 @@ const eomCompoundStory = "EOM::CompoundStory"
 const upDateFormat = "2006-01-02T03:04:05.000Z0700"
 const ftBrand = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
 const methodeAuthority = "http://api.ft.com/system/FTCOM-METHODE"
-const ftAPIContentURIPrefix = "http://api.ft.com/content/"
 const mapperURIBase = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/content/"
+
+const canBeDistributedVerify = "verify"
 
 // Mapper is a generic interface for content paceholder mapper
 type Mapper interface {
@@ -110,6 +111,7 @@ func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContent
 
 	upPlaceholder := UpContentPlaceholder{
 		UUID:                   mpc.UUID,
+		Title:                  mpc.body.LeadHeadline.Text,
 		Identifiers:            buildIdentifiers(mpc.UUID),
 		Brands:                 buildBrands(),
 		WebURL:                 mpc.body.LeadHeadline.URL,
@@ -121,6 +123,7 @@ func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContent
 		LastModified:           mpc.lastModified,
 		Type:                   "Content",
 		CanBeSyndicated:        "verify",
+		CanBeDistributed:       canBeDistributedVerify,
 	}
 	return upPlaceholder, nil
 }
@@ -168,7 +171,7 @@ func buildAlternativeImages(fileRef string) *AlternativeImages {
 		return nil
 	}
 	imageUUID := extractImageUUID(fileRef)
-	return &AlternativeImages{PromotionalImage: ftAPIContentURIPrefix + imageUUID}
+	return &AlternativeImages{PromotionalImage: imageUUID}
 }
 
 func extractImageUUID(fileRef string) string {
@@ -320,8 +323,10 @@ func buildMethodeBody(methodeBodyXMLBase64 string) (MethodeBody, error) {
 }
 
 // UpContentPlaceholder reppresents the content placeholder representation according to UP model
+//note Title holds the text of alternativeTitle as a cph does not have a title and some clients expect one.
 type UpContentPlaceholder struct {
 	UUID                   string                  `json:"uuid"`
+	Title                  string                  `json:"title"`
 	Identifiers            []Identifier            `json:"identifiers"`
 	Brands                 []Brand                 `json:"brands"`
 	AlternativeTitles      *AlternativeTitles      `json:"alternativeTitles"`
@@ -333,6 +338,7 @@ type UpContentPlaceholder struct {
 	WebURL                 string                  `json:"webUrl"`
 	Type                   string                  `json:"type"`
 	CanBeSyndicated        string                  `json:"canBeSyndicated"`
+	CanBeDistributed       string                  `json:"canBeDistributed"`
 
 }
 

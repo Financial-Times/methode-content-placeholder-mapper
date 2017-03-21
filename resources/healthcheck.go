@@ -17,7 +17,7 @@ import (
 type MapperHealthcheck struct {
 	Client         *http.Client
 	ConsumerConfig consumer.QueueConfig
-	ProducerConfig producer.MessageProducerConfig
+	ProducerConfig producer.MessageProducerConfig  
 }
 
 // NewMapperHealthcheck returns a new instance of the MapperHealthcheck
