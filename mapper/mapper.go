@@ -37,13 +37,13 @@ const canBeDistributedVerify = "verify"
 // Mapper is a generic interface for content paceholder mapper
 type Mapper interface {
 	HandlePlaceholderMessages(msg consumer.Message)
-	StartMappingMessages(c consumer.Consumer, p producer.MessageProducer)
+	StartMappingMessages(c consumer.MessageConsumer, p producer.MessageProducer)
 	NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (MethodeContentPlaceholder, *MappingError)
 	MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContentPlaceholder, *MappingError)
 }
 
 type mapper struct {
-	messageConsumer consumer.Consumer
+	messageConsumer consumer.MessageConsumer
 	messageProducer producer.MessageProducer
 }
 
@@ -121,6 +121,7 @@ func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContent
 		PublishedDate:          publishDate,
 		PublishReference:       mpc.transactionID,
 		LastModified:           mpc.lastModified,
+		Type:                   "Content",
 		CanBeSyndicated:        "verify",
 		CanBeDistributed:       canBeDistributedVerify,
 	}
@@ -193,7 +194,7 @@ func buildPublishedDate(lastPublicationDate string) (string, error) {
 	return date.Format(upDateFormat), nil
 }
 
-func (m *mapper) StartMappingMessages(c consumer.Consumer, p producer.MessageProducer) {
+func (m *mapper) StartMappingMessages(c consumer.MessageConsumer, p producer.MessageProducer) {
 	m.messageConsumer = c
 	m.messageProducer = p
 
@@ -335,8 +336,10 @@ type UpContentPlaceholder struct {
 	PublishReference       string                  `json:"publishReference"`
 	LastModified           string                  `json:"lastModified"`
 	WebURL                 string                  `json:"webUrl"`
+	Type                   string                  `json:"type"`
 	CanBeSyndicated        string                  `json:"canBeSyndicated"`
 	CanBeDistributed       string                  `json:"canBeDistributed"`
+
 }
 
 // Identifier represents content identifiers according to UP data model
