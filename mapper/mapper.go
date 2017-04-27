@@ -115,7 +115,7 @@ func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContent
 		Identifiers:            buildIdentifiers(mpc.UUID),
 		Brands:                 buildBrands(),
 		WebURL:                 mpc.body.LeadHeadline.URL,
-		AlternativeTitles:      buildAlternativeTitles(mpc.body.LeadHeadline.Text),
+		AlternativeTitles:      buildAlternativeTitles(mpc.body.LeadHeadline.Text, mpc.body.ContentPackageHeadline),
 		AlternativeImages:      buildAlternativeImages(mpc.body.LeadImage.FileRef),
 		AlternativeStandfirsts: buildAlternativeStandfirsts(mpc.body.LongStandfirst),
 		PublishedDate:          publishDate,
@@ -158,12 +158,14 @@ func buildBrands() []Brand {
 	return []Brand{brand}
 }
 
-func buildAlternativeTitles(promoTitle string) *AlternativeTitles {
+func buildAlternativeTitles(promoTitle string, contentPackageTitle string) *AlternativeTitles {
 	promoTitle = strings.TrimSpace(promoTitle)
-	if promoTitle == "" {
+	contentPackageTitle = strings.TrimSpace(contentPackageTitle)
+
+	if promoTitle == "" && contentPackageTitle == "" {
 		return nil
 	}
-	return &AlternativeTitles{PromotionalTitle: promoTitle}
+	return &AlternativeTitles{PromotionalTitle: promoTitle, ContentPackageTitle: contentPackageTitle}
 }
 
 func buildAlternativeImages(fileRef string) *AlternativeImages {
@@ -237,10 +239,11 @@ type Attributes struct {
 
 // MethodeBody represents the body of a methode content placeholder
 type MethodeBody struct {
-	XMLName        xml.Name     `xml:"doc"`
-	LeadHeadline   LeadHeadline `xml:"lead>lead-headline>headline>ln>a"`
-	LeadImage      LeadImage    `xml:"lead>lead-images>web-master"`
-	LongStandfirst string       `xml:"lead>web-stand-first>p"`
+	XMLName                xml.Name     `xml:"doc"`
+	LeadHeadline           LeadHeadline `xml:"lead>lead-headline>headline>ln>a"`
+	LeadImage              LeadImage    `xml:"lead>lead-images>web-master"`
+	LongStandfirst         string       `xml:"lead>web-stand-first>p"`
+	ContentPackageHeadline string       `xml:"lead>package-navigation-headline>ln"`
 }
 
 // LeadHeadline reppresents the LeadHeadline of a content placeholder
@@ -339,7 +342,6 @@ type UpContentPlaceholder struct {
 	Type                   string                  `json:"type"`
 	CanBeSyndicated        string                  `json:"canBeSyndicated"`
 	CanBeDistributed       string                  `json:"canBeDistributed"`
-
 }
 
 // Identifier represents content identifiers according to UP data model
@@ -355,7 +357,8 @@ type Brand struct {
 
 // AlternativeTitles represents the alternative titles for content according to UP data model
 type AlternativeTitles struct {
-	PromotionalTitle string `json:"promotionalTitle"`
+	PromotionalTitle    string `json:"promotionalTitle"`
+	ContentPackageTitle string `json:"contentPackageTitle"`
 }
 
 // AlternativeImages represents the alternative images for content according to UP data model

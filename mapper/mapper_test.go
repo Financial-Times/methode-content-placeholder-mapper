@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"encoding/json"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/stretchr/testify/assert"
@@ -27,13 +28,16 @@ func TestCorrectMappingToUpdateEvent(t *testing.T) {
 
 	actualPubEventMsg, _, err := mapper.mapMessage(igMethodePlaceHolderMsg)
 	assert.Nil(t, err, "It should not return error in mapping placeholder")
-	assert.Equal(t, expectedPubEventMsg.Body, actualPubEventMsg.Body, "The placeholder should be mapped properly")
 	assert.Equal(t, expectedTransactionID, actualPubEventMsg.Headers["X-Request-Id"], "The Transaction ID should be consistent")
 	assert.Equal(t, "cms-content-published", actualPubEventMsg.Headers["Message-Type"], "The Message type should be cms-content-published")
 	assert.Equal(t, "application/json", actualPubEventMsg.Headers["Content-Type"], "The Content type should be application/json")
 	assert.Regexp(t, uuidRegexp, actualPubEventMsg.Headers["Message-Id"], "The Message ID should be a valid UUID")
 	_, parseErr := time.Parse(upDateFormat, actualPubEventMsg.Headers["Message-Timestamp"])
 	assert.Nil(t, parseErr, "The message timestamp should have a consistent format")
+
+	expectedBodyAsMap := jsonStringToMap(expectedPubEventMsg.Body, t)
+	actualBodyAsMap := jsonStringToMap(actualPubEventMsg.Body, t)
+	assert.Equal(t, expectedBodyAsMap, actualBodyAsMap, "The placeholder should be mapped properly")
 }
 
 func buildIgMethodePlaceholderUpdateMsg() consumer.Message {
@@ -79,13 +83,16 @@ func TestCorrectMappingToUpdateEventWithHeadlineOnly(t *testing.T) {
 	actualPubEventMsg, _, err := mapper.mapMessage(igMethodePlaceHolderMsg)
 
 	assert.Nil(t, err, "It should not return error in mapping placeholder")
-	assert.Equal(t, expectedPubEventMsg.Body, actualPubEventMsg.Body, "The placeholder should be mapped properly")
 	assert.Equal(t, expectedTransactionID, actualPubEventMsg.Headers["X-Request-Id"], "The Transaction ID should be consistent")
 	assert.Equal(t, "cms-content-published", actualPubEventMsg.Headers["Message-Type"], "The Message type should be cms-content-published")
 	assert.Equal(t, "application/json", actualPubEventMsg.Headers["Content-Type"], "The Content type should be application/json")
 	assert.Regexp(t, uuidRegexp, actualPubEventMsg.Headers["Message-Id"], "The Message ID should be a valid UUID")
 	_, parseErr := time.Parse(upDateFormat, actualPubEventMsg.Headers["Message-Timestamp"])
 	assert.Nil(t, parseErr, "The message timestamp should have a consistent format")
+
+	expectedBodyAsMap := jsonStringToMap(expectedPubEventMsg.Body, t)
+	actualBodyAsMap := jsonStringToMap(actualPubEventMsg.Body, t)
+	assert.Equal(t, expectedBodyAsMap, actualBodyAsMap, "The placeholder should be mapped properly")
 }
 
 func buildIgMethodePlaceholderOnlyHeadlineUpdateMsg() consumer.Message {
@@ -252,6 +259,10 @@ func (p *QueueProducerMock) SendMessage(s string, msg producer.Message) error {
 	return args.Error(0)
 }
 
+func (*QueueProducerMock) ConnectivityCheck() (string, error) {
+	return "OK", nil
+}
+
 func TestSuccesfulBuildOfPlaceholderFromHTTPRequest(t *testing.T) {
 	placeholderBody, err := ioutil.ReadFile("test_resources/ig_methode_placeholder_update.json")
 	if err != nil {
@@ -273,4 +284,11 @@ func TestUnSuccesfulBuildOfPlaceholderFromHTTPRequest(t *testing.T) {
 	mapper := New()
 	_, err = mapper.NewMethodeContentPlaceholderFromHTTPRequest(req)
 	assert.EqualError(t, err, "Methode content is not a content placeholder", "It should return an error")
+}
+
+func jsonStringToMap(marshalled string, t *testing.T) map[string]interface{} {
+	var unmarshalled map[string]interface{}
+	err := json.Unmarshal([]byte(marshalled), &unmarshalled)
+	assert.NoError(t, err, "Unmashalling the json content has encountered and error")
+	return unmarshalled
 }
