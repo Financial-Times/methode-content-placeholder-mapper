@@ -197,6 +197,34 @@ func TestDoNotHandleBrightcoveVideoEvent(t *testing.T) {
 	producerMock.AssertNotCalled(t, "SendMessage")
 }
 
+func TestDummyCpHeadlineIsIgnored(t *testing.T) {
+	methodeMsg := buildMethodeMsg("test_resources/ig_methode_placeholder_dummy_cp_title.json")
+	m := &mapper{}
+
+	message, _, err := m.mapMessage(methodeMsg)
+	assert.Nil(t, err)
+
+	bodyMap := jsonStringToMap(message.Body, t)
+
+	payload, ok := bodyMap["payload"]
+	assert.True(t, ok)
+
+	payloadMap, ok := payload.(map[string]interface{})
+	assert.True(t, ok)
+
+	alternativeTitles, ok := payloadMap["alternativeTitles"]
+	assert.True(t, ok)
+
+	alternativeTitlesMap, ok := alternativeTitles.(map[string]interface{})
+	assert.True(t, ok)
+
+	assert.Len(t, alternativeTitlesMap, 2)
+
+	contentPackageTitle, ok := alternativeTitlesMap["contentPackageTitle"]
+	assert.True(t, ok)
+	assert.Empty(t, contentPackageTitle)
+}
+
 func buildBrightcoveVideoMsg() consumer.Message {
 	return consumer.Message{
 		Body: "",
