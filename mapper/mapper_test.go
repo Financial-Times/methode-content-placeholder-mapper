@@ -218,11 +218,7 @@ func TestDummyCpHeadlineIsIgnored(t *testing.T) {
 	alternativeTitlesMap, ok := alternativeTitles.(map[string]interface{})
 	assert.True(t, ok)
 
-	assert.Len(t, alternativeTitlesMap, 2)
-
-	contentPackageTitle, ok := alternativeTitlesMap["contentPackageTitle"]
-	assert.True(t, ok)
-	assert.Empty(t, contentPackageTitle)
+	assert.Len(t, alternativeTitlesMap, 1)
 }
 
 func buildBrightcoveVideoMsg() consumer.Message {
