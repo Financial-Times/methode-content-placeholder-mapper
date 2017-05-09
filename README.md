@@ -70,6 +70,7 @@ The following listing shows an example of successfully mapped Methode placeholde
 ```
 {
   "uuid": "f9845f8a-c210-11e6-91a7-e73ace06f770",
+  "title": "Interactive: The Virgin empire",
   "identifiers": [
     {
       "authority": "http://api.ft.com/system/FTCOM-METHODE",
@@ -82,7 +83,8 @@ The following listing shows an example of successfully mapped Methode placeholde
     }
   ],
   "alternativeTitles": {
-    "promotionalTitle": "Interactive: The Virgin empire"
+    "promotionalTitle": "Interactive: The Virgin empire",
+    "contentPackageTitle": "The Virgin empire"
   },
   "alternativeImages": {
     "promotionalImage": "http://api.ft.com/content/8f7b3e6a-327b-11e3-91d2-00144feab7de"
