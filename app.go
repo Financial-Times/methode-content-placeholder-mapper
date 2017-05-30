@@ -10,12 +10,13 @@ import (
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
 	"github.com/Financial-Times/service-status-go/httphandlers"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
+
+	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
 )
 
 func init() {
@@ -50,7 +51,7 @@ func main() {
 	readTopic := app.String(cli.StringOpt{
 		Name:   "read-topic",
 		Value:  "",
-		Desc:   "The topic to read the meassages from.",
+		Desc:   "The topic to read the messages from.",
 		EnvVar: "Q_READ_TOPIC",
 	})
 	readQueueHostHeader := app.String(cli.StringOpt{
@@ -62,13 +63,13 @@ func main() {
 	writeTopic := app.String(cli.StringOpt{
 		Name:   "write-topic",
 		Value:  "",
-		Desc:   "The topic to write the meassages to.",
+		Desc:   "The topic to write the messages to.",
 		EnvVar: "Q_WRITE_TOPIC",
 	})
 	writeQueueHostHeader := app.String(cli.StringOpt{
 		Name:   "write-queue-host-header",
 		Value:  "kafka",
-		Desc:   "The host header for the queue to write the meassages to.",
+		Desc:   "The host header for the queue to write the messages to.",
 		EnvVar: "Q_WRITE_QUEUE_HOST_HEADER",
 	})
 	authorization := app.String(cli.StringOpt{
@@ -116,7 +117,6 @@ func main() {
 }
 
 func serve(port int, hc *resources.MapperHealthcheck, meh *resources.MapEndpointHandler) {
-
 	r := mux.NewRouter()
 
 	hcHandler := fthealth.Handler(
@@ -125,7 +125,6 @@ func serve(port int, hc *resources.MapperHealthcheck, meh *resources.MapEndpoint
 		hc.ConsumerQueueCheck(),
 		hc.ProducerQueueCheck(),
 	)
-	r.Handle("/content-transform/{uuid}", meh).Methods("POST")
 	r.HandleFunc("/map", meh.ServeMapEndpoint).Methods("POST")
 	r.HandleFunc("/__health", hcHandler)
 	r.HandleFunc(httphandlers.GTGPath, hc.GTG).Methods("GET")
