@@ -32,16 +32,18 @@ const ftBrand = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
 const methodeAuthority = "http://api.ft.com/system/FTCOM-METHODE"
 const mapperURIBase = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/content/"
 
+const canBeDistributedVerify = "verify"
+
 // Mapper is a generic interface for content paceholder mapper
 type Mapper interface {
 	HandlePlaceholderMessages(msg consumer.Message)
-	StartMappingMessages(c consumer.Consumer, p producer.MessageProducer)
+	StartMappingMessages(c consumer.MessageConsumer, p producer.MessageProducer)
 	NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (MethodeContentPlaceholder, *MappingError)
 	MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContentPlaceholder, *MappingError)
 }
 
 type mapper struct {
-	messageConsumer consumer.Consumer
+	messageConsumer consumer.MessageConsumer
 	messageProducer producer.MessageProducer
 }
 
@@ -113,13 +115,15 @@ func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContent
 		Identifiers:            buildIdentifiers(mpc.UUID),
 		Brands:                 buildBrands(),
 		WebURL:                 mpc.body.LeadHeadline.URL,
-		AlternativeTitles:      buildAlternativeTitles(mpc.body.LeadHeadline.Text),
+		AlternativeTitles:      buildAlternativeTitles(mpc.body.LeadHeadline.Text, mpc.body.ContentPackageHeadline),
 		AlternativeImages:      buildAlternativeImages(mpc.body.LeadImage.FileRef),
 		AlternativeStandfirsts: buildAlternativeStandfirsts(mpc.body.LongStandfirst),
 		PublishedDate:          publishDate,
 		PublishReference:       mpc.transactionID,
 		LastModified:           mpc.lastModified,
+		Type:                   "Content",
 		CanBeSyndicated:        "verify",
+		CanBeDistributed:       canBeDistributedVerify,
 	}
 	return upPlaceholder, nil
 }
@@ -154,12 +158,14 @@ func buildBrands() []Brand {
 	return []Brand{brand}
 }
 
-func buildAlternativeTitles(promoTitle string) *AlternativeTitles {
+func buildAlternativeTitles(promoTitle string, contentPackageTitle string) *AlternativeTitles {
 	promoTitle = strings.TrimSpace(promoTitle)
-	if promoTitle == "" {
+	contentPackageTitle = strings.TrimSpace(contentPackageTitle)
+
+	if promoTitle == "" && contentPackageTitle == "" {
 		return nil
 	}
-	return &AlternativeTitles{PromotionalTitle: promoTitle}
+	return &AlternativeTitles{PromotionalTitle: promoTitle, ContentPackageTitle: contentPackageTitle}
 }
 
 func buildAlternativeImages(fileRef string) *AlternativeImages {
@@ -190,7 +196,7 @@ func buildPublishedDate(lastPublicationDate string) (string, error) {
 	return date.Format(upDateFormat), nil
 }
 
-func (m *mapper) StartMappingMessages(c consumer.Consumer, p producer.MessageProducer) {
+func (m *mapper) StartMappingMessages(c consumer.MessageConsumer, p producer.MessageProducer) {
 	m.messageConsumer = c
 	m.messageProducer = p
 
@@ -233,10 +239,11 @@ type Attributes struct {
 
 // MethodeBody represents the body of a methode content placeholder
 type MethodeBody struct {
-	XMLName        xml.Name     `xml:"doc"`
-	LeadHeadline   LeadHeadline `xml:"lead>lead-headline>headline>ln>a"`
-	LeadImage      LeadImage    `xml:"lead>lead-images>web-master"`
-	LongStandfirst string       `xml:"lead>web-stand-first>p"`
+	XMLName                xml.Name     `xml:"doc"`
+	LeadHeadline           LeadHeadline `xml:"lead>lead-headline>headline>ln>a"`
+	LeadImage              LeadImage    `xml:"lead>lead-images>web-master"`
+	LongStandfirst         string       `xml:"lead>web-stand-first>p"`
+	ContentPackageHeadline string       `xml:"lead>package-navigation-headline>ln"`
 }
 
 // LeadHeadline reppresents the LeadHeadline of a content placeholder
@@ -332,7 +339,9 @@ type UpContentPlaceholder struct {
 	PublishReference       string                  `json:"publishReference"`
 	LastModified           string                  `json:"lastModified"`
 	WebURL                 string                  `json:"webUrl"`
+	Type                   string                  `json:"type"`
 	CanBeSyndicated        string                  `json:"canBeSyndicated"`
+	CanBeDistributed       string                  `json:"canBeDistributed"`
 }
 
 // Identifier represents content identifiers according to UP data model
@@ -348,7 +357,8 @@ type Brand struct {
 
 // AlternativeTitles represents the alternative titles for content according to UP data model
 type AlternativeTitles struct {
-	PromotionalTitle string `json:"promotionalTitle"`
+	PromotionalTitle    string `json:"promotionalTitle,omitempty"`
+	ContentPackageTitle string `json:"contentPackageTitle,omitempty"`
 }
 
 // AlternativeImages represents the alternative images for content according to UP data model

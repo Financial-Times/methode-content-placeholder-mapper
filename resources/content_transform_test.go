@@ -64,7 +64,7 @@ func (m *MapperMock) HandlePlaceholderMessages(msg consumer.Message) {
 	m.Called(msg)
 }
 
-func (m *MapperMock) StartMappingMessages(c consumer.Consumer, p producer.MessageProducer) {
+func (m *MapperMock) StartMappingMessages(c consumer.MessageConsumer, p producer.MessageProducer) {
 	m.Called(c, p)
 }
 

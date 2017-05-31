@@ -89,7 +89,7 @@ func main() {
 		}
 
 		m := mapper.New()
-		messageConsumer := consumer.NewConsumer(consumerConfig, m.HandlePlaceholderMessages, http.Client{})
+		messageConsumer := consumer.NewConsumer(consumerConfig, m.HandlePlaceholderMessages, &http.Client{})
 		messageProducer := producer.NewMessageProducer(producerConfig)
 
 		go serve(*port, resources.NewMapperHealthcheck(consumerConfig, producerConfig), resources.NewMapEndpointHandler(m))
