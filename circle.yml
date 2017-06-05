@@ -4,13 +4,14 @@ machine:
     PROJECT_PARENT_PATH: "${PROJECT_GOPATH}/src/github.com/${CIRCLE_PROJECT_USERNAME}"
     PROJECT_PATH: "${PROJECT_PARENT_PATH}/${CIRCLE_PROJECT_REPONAME}"
     GOPATH: "${HOME}/.go_workspace:${PROJECT_GOPATH}"
+  services:
+    - docker
 
 checkout:
   post:
     - mkdir -p "${PROJECT_PARENT_PATH}"
     - ln -sf "${HOME}/${CIRCLE_PROJECT_REPONAME}/" "${PROJECT_PATH}"
-  services:
-    - docker
+
 
 dependencies:
   pre:
