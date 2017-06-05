@@ -91,12 +91,13 @@ func (m *mapper) mapMessage(msg consumer.Message) (producer.Message, string, *Ma
 }
 
 func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContentPlaceholder, *MappingError) {
-	// When a methode placeholder has been delete, we map the message with an empty body
+	// When a methode placeholder has been deleted, we map the message with an empty body
 	if mpc.attributes.IsDeleted {
 		return UpContentPlaceholder{
 			UUID:             mpc.UUID,
 			LastModified:     mpc.lastModified,
 			PublishReference: mpc.transactionID,
+			IsMarkedDeleted:  true,
 		}, nil
 	}
 	err := validateHeadline(mpc.body.LeadHeadline)
@@ -342,6 +343,7 @@ type UpContentPlaceholder struct {
 	Type                   string                  `json:"type"`
 	CanBeSyndicated        string                  `json:"canBeSyndicated"`
 	CanBeDistributed       string                  `json:"canBeDistributed"`
+	IsMarkedDeleted        bool                    `json:"-"` // exclude IsMarkedDeleted field
 }
 
 // Identifier represents content identifiers according to UP data model

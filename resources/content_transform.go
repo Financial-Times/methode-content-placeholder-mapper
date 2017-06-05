@@ -16,6 +16,10 @@ type MapEndpointHandler struct {
 	mapper mapper.Mapper
 }
 
+type msg struct {
+	Message string `json:"message"`
+}
+
 // NewContentTransformHandler returns a new instance of a MapEndpointHandler
 func NewMapEndpointHandler(m mapper.Mapper) *MapEndpointHandler {
 	return &MapEndpointHandler{m}
@@ -39,7 +43,8 @@ func (h *MapEndpointHandler) mapContent(w http.ResponseWriter, r *http.Request, 
 		writeError(w, err, transactionID, uuid, r.RequestURI)
 		return
 	}
-	if contentHasBeenDeleted(upPlaceholder) {
+
+	if upPlaceholder.IsMarkedDeleted {
 		writeMessageForDeletedContent(w, transactionID, uuid, r.RequestURI)
 		return
 	}
@@ -56,13 +61,12 @@ func writeError(w http.ResponseWriter, err error, transactionID, uuid, requestUR
 }
 
 func writeMessageForDeletedContent(w http.ResponseWriter, transactionID, uuid, requestURI string) {
-	msg := fmt.Sprintf("Content has been deleted. transaction_id=\"%v\" uuid=\"%v\" request_uri=\"%v\"", transactionID, uuid, requestURI)
-	log.Info(msg)
-	w.Header().Add("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte(msg))
-}
+	log.WithField("transaction_id", transactionID).WithField("uuid", uuid).WithField("request_uri", requestURI).Info("Content has been deleted.")
+	w.Header().Add("Content-Type", "application/json")
+	w.Header().Add("X-Request-ID", transactionID)
 
-func contentHasBeenDeleted(placeholder mapper.UpContentPlaceholder) bool {
-	return placeholder.WebURL == ""
+	w.WriteHeader(http.StatusNotFound)
+
+	data, _ := json.Marshal(&msg{Message: "Delete event"})
+	w.Write(data)
 }

@@ -32,9 +32,11 @@ func TestSuccessfulMapEndpoint(t *testing.T) {
 }
 
 func TestDeletedContentPlaceholderMapEndpoint(t *testing.T) {
+	placeholder := mapper.UpContentPlaceholder{IsMarkedDeleted: true}
+
 	m := new(MapperMock)
 	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, (*mapper.MappingError)(nil))
-	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(mapper.UpContentPlaceholder{}, (*mapper.MappingError)(nil))
+	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(placeholder, (*mapper.MappingError)(nil))
 	h := NewMapEndpointHandler(m)
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
@@ -42,7 +44,7 @@ func TestDeletedContentPlaceholderMapEndpoint(t *testing.T) {
 	h.ServeMapEndpoint(w, req)
 
 	assert.Equal(t, http.StatusNotFound, w.Code, "It should return status 404")
-	assert.Equal(t, "text/plain" , w.Header().Get("Content-Type"), "The Content-Type header should be text/plain")
+	assert.Equal(t, "application/json", w.Header().Get("Content-Type"), "The Content-Type header should be text/plain")
 	assert.NotEmpty(t, w.Body.Bytes(), "The response body should not be empty")
 }
 
