@@ -44,7 +44,7 @@ func TestDeletedContentPlaceholderMapEndpoint(t *testing.T) {
 	h.ServeMapEndpoint(w, req)
 
 	assert.Equal(t, http.StatusNotFound, w.Code, "It should return status 404")
-	assert.Equal(t, "application/json", w.Header().Get("Content-Type"), "The Content-Type header should be text/plain")
+	assert.Equal(t, "application/json", w.Header().Get("Content-Type"), "The Content-Type header should be application/json")
 	assert.NotEmpty(t, w.Body.Bytes(), "The response body should not be empty")
 }
 
