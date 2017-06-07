@@ -8,28 +8,47 @@ import (
 
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
 )
 
 const placeholderMsg = `{"foo":"bar"}`
-const mapperURL = "http://example.com/content-transform/2eb712b6-70bf-4f18-a958-cd99bcc20ad2"
+const mapperURL = "http://methode-content-placeholder-mapper/map"
 
-func TestSucessfulMapEndpoint(t *testing.T) {
+func TestSuccessfulMapEndpoint(t *testing.T) {
+	placeholder := mapper.UpContentPlaceholder{WebURL: "http://www.ft.com/ig/sites/2014/virgingroup-timeline/"}
 	m := new(MapperMock)
 	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, (*mapper.MappingError)(nil))
-	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(mapper.UpContentPlaceholder{}, (*mapper.MappingError)(nil))
+	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(placeholder, (*mapper.MappingError)(nil))
 	h := NewMapEndpointHandler(m)
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
 	w := httptest.NewRecorder()
 	h.ServeMapEndpoint(w, req)
 
-	assert.Equal(t, w.Code, http.StatusOK, "It should return status 200")
+	assert.Equal(t, http.StatusOK, w.Code, "It should return status 200")
 }
 
-func TestUnsucessfulMethodePlaceholderBuild(t *testing.T) {
+func TestDeletedContentPlaceholderMapEndpoint(t *testing.T) {
+	placeholder := mapper.UpContentPlaceholder{IsMarkedDeleted: true}
+
+	m := new(MapperMock)
+	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, (*mapper.MappingError)(nil))
+	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(placeholder, (*mapper.MappingError)(nil))
+	h := NewMapEndpointHandler(m)
+
+	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
+	w := httptest.NewRecorder()
+	h.ServeMapEndpoint(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code, "It should return status 404")
+	assert.Equal(t, "application/json", w.Header().Get("Content-Type"), "The Content-Type header should be application/json")
+	assert.NotEmpty(t, w.Body.Bytes(), "The response body should not be empty")
+}
+
+func TestUnsuccessfulMethodePlaceholderBuild(t *testing.T) {
 	m := new(MapperMock)
 	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, mapper.NewMappingError().WithMessage("What is it?"))
 	h := NewMapEndpointHandler(m)
@@ -42,7 +61,7 @@ func TestUnsucessfulMethodePlaceholderBuild(t *testing.T) {
 	assert.Equal(t, "What is it?\n", w.Body.String())
 }
 
-func TestUnsucessfulPlaceholderMapping(t *testing.T) {
+func TestUnsuccessfulPlaceholderMapping(t *testing.T) {
 	m := new(MapperMock)
 	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, (*mapper.MappingError)(nil))
 	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(mapper.UpContentPlaceholder{}, mapper.NewMappingError().WithMessage("All map and no play makes MCPM a dull boy"))

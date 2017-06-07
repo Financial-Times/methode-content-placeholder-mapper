@@ -1,18 +1,26 @@
 # methode-content-placeholder-mapper
-[![CircleCI](https://circleci.com/gh/Financial-Times/methode-content-placeholder-mapper.svg?style=svg)](https://circleci.com/gh/Financial-Times/methode-content-placeholder-mapper) [![Go Report Card](https://goreportcard.com/badge/github.com/Financial-Times/methode-content-placeholder-mapper)](https://goreportcard.com/report/github.com/Financial-Times/methode-content-placeholder-mapper) [![Coverage Status](https://coveralls.io/repos/github/Financial-Times/methode-content-placeholder-mapper/badge.svg?branch=master)](https://coveralls.io/github/Financial-Times/methode-content-placeholder-mapper?branch=master) [![codecov](https://codecov.io/gh/Financial-Times/methode-content-placeholder-mapper/branch/master/graph/badge.svg)](https://codecov.io/gh/Financial-Times/methode-content-placeholder-mapper)
+[![CircleCI](https://circleci.com/gh/Financial-Times/methode-content-placeholder-mapper.svg?style=svg)](https://circleci.com/gh/Financial-Times/methode-content-placeholder-mapper) [![Go Report Card](https://goreportcard.com/badge/github.com/Financial-Times/methode-content-placeholder-mapper)](https://goreportcard.com/report/github.com/Financial-Times/methode-content-placeholder-mapper) [![Coverage Status](https://coveralls.io/repos/github/Financial-Times/methode-content-placeholder-mapper/badge.svg)](https://coveralls.io/github/Financial-Times/methode-content-placeholder-mapper)
 
 The Methode-content-placeholder-mapper (MCPM) is a microservice that maps a content placeholder from Methode to a UP piece of content.
 The microservice consumes a specific Apache Kafka topic group.
 All the consumed messages that contain a Methode placeholder are mapped, then MCPM put the result of the mapping on another Kafka queue topic.
 
-How to Build & Run the binary
------------------------------
+## Installation
+
+Download the source code, dependencies and test dependencies:
+
+        go get -u github.com/kardianos/govendor
+        go get -u github.com/Financial-Times/methode-content-placeholder-mapper
+        cd $GOPATH/src/github.com/Financial-Times/methode-content-placeholder-mapper
+        govendor sync
+
+## How to Build & Run the binary
 
 * Build and test:
 
 ```
 go build
-go test ./...
+govendor test +local
 ```
 
 * Run by environment variables:
@@ -58,13 +66,13 @@ HTTP endpoints
 
 ### Direct Transformation
 
-By sending a Methode placeholder payload though a HTTP POST to the `/content-transform/{uuid}` endpoint,
-MCPM will return a it mapping/transformation according to the UP model.
+By sending a Methode placeholder payload though a HTTP POST to the `/map` endpoint,
+MCPM will return a mapping/transformation according to the UP model.
 This endpoint is used by the  [Publish Availability Monitor (PAM)](https://github.com/Financial-Times/publish-availability-monitor)
 to validate Methode placeholders.
 
-The endpoint will return HTTP status 200 (OK) for successful transformation and
-422 (Unprocessable Entity) in case of failure.
+The endpoint will return HTTP status 200 (OK) for successful transformation,
+422 (Unprocessable Entity) in case of failure and 404 if the content was deleted.
 
 The following listing shows an example of successfully mapped Methode placeholder:
 ```
