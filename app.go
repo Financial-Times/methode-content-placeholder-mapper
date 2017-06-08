@@ -107,7 +107,7 @@ func main() {
 		messageConsumer := consumer.NewConsumer(consumerConfig, m.HandlePlaceholderMessages, &http.Client{})
 		messageProducer := producer.NewMessageProducer(producerConfig)
 
-		go serve(*port, resources.NewMapperHealthcheck(consumerConfig, producerConfig), resources.NewMapEndpointHandler(m))
+		go serve(*port, resources.NewMapperHealthcheck(&consumerConfig, &producerConfig), resources.NewMapEndpointHandler(m))
 
 		m.StartMappingMessages(messageConsumer, messageProducer)
 	}
@@ -119,15 +119,15 @@ func main() {
 func serve(port int, hc *resources.MapperHealthcheck, meh *resources.MapEndpointHandler) {
 	r := mux.NewRouter()
 
-	hcHandler := fthealth.Handler(
+	hcHandler := fthealth.HandlerParallel(
 		"Dependent services healthcheck",
 		"Checks if all the dependent services are reachable and healthy.",
-		hc.ConsumerQueueCheck(),
-		hc.ProducerQueueCheck(),
+		hc.ConsumerConnectivityCheck(),
+		hc.ProducerConnectivityCheck(),
 	)
 	r.HandleFunc("/map", meh.ServeMapEndpoint).Methods("POST")
 	r.HandleFunc("/__health", hcHandler)
-	r.HandleFunc(httphandlers.GTGPath, hc.GTG).Methods("GET")
+	r.HandleFunc(httphandlers.GTGPath, httphandlers.NewGoodToGoHandler(hc.GTG)).Methods("GET")
 	r.HandleFunc(httphandlers.BuildInfoPath, httphandlers.BuildInfoHandler).Methods("GET")
 	r.HandleFunc(httphandlers.PingPath, httphandlers.PingHandler).Methods("GET")
 
