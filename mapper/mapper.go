@@ -34,7 +34,7 @@ const mapperURIBase = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.
 
 const canBeDistributedVerify = "verify"
 
-// Mapper is a generic interface for content paceholder mapper
+// Mapper is a generic interface for content placeholder mapper
 type Mapper interface {
 	HandlePlaceholderMessages(msg consumer.Message)
 	StartMappingMessages(c consumer.MessageConsumer, p producer.MessageProducer)
@@ -91,12 +91,13 @@ func (m *mapper) mapMessage(msg consumer.Message) (producer.Message, string, *Ma
 }
 
 func (m *mapper) MapContentPlaceholder(mpc MethodeContentPlaceholder) (UpContentPlaceholder, *MappingError) {
-	// When a methode placeholder has been delete, we map the message with an empty body
+	// When a methode placeholder has been deleted, we map the message with an empty body
 	if mpc.attributes.IsDeleted {
 		return UpContentPlaceholder{
 			UUID:             mpc.UUID,
 			LastModified:     mpc.lastModified,
 			PublishReference: mpc.transactionID,
+			IsMarkedDeleted:  true,
 		}, nil
 	}
 	err := validateHeadline(mpc.body.LeadHeadline)
@@ -246,7 +247,7 @@ type MethodeBody struct {
 	ContentPackageHeadline string       `xml:"lead>package-navigation-headline>ln"`
 }
 
-// LeadHeadline reppresents the LeadHeadline of a content placeholder
+// LeadHeadline represents the LeadHeadline of a content placeholder
 type LeadHeadline struct {
 	Text string `xml:",chardata"`
 	URL  string `xml:"href,attr"`
@@ -325,7 +326,7 @@ func buildMethodeBody(methodeBodyXMLBase64 string) (MethodeBody, error) {
 	return body, nil
 }
 
-// UpContentPlaceholder reppresents the content placeholder representation according to UP model
+// UpContentPlaceholder represents the content placeholder representation according to UP model
 //note Title holds the text of alternativeTitle as a cph does not have a title and some clients expect one.
 type UpContentPlaceholder struct {
 	UUID                   string                  `json:"uuid"`
@@ -342,6 +343,7 @@ type UpContentPlaceholder struct {
 	Type                   string                  `json:"type"`
 	CanBeSyndicated        string                  `json:"canBeSyndicated"`
 	CanBeDistributed       string                  `json:"canBeDistributed"`
+	IsMarkedDeleted        bool                    `json:"-"` // exclude IsMarkedDeleted field
 }
 
 // Identifier represents content identifiers according to UP data model
@@ -429,7 +431,7 @@ func (e MappingError) Error() string {
 	return e.ErrorMessage
 }
 
-// NewMappingError returs a new instance of a MappingError
+// NewMappingError returns a new instance of a MappingError
 func NewMappingError() *MappingError {
 	return &MappingError{}
 }

@@ -10,12 +10,13 @@ import (
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
 	"github.com/Financial-Times/service-status-go/httphandlers"
 	log "github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
+
+	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
 )
 
 func init() {
@@ -50,13 +51,13 @@ func main() {
 	readTopic := app.String(cli.StringOpt{
 		Name:   "read-topic",
 		Value:  "",
-		Desc:   "The topic to read the meassages from.",
+		Desc:   "The topic to read the messages from.",
 		EnvVar: "Q_READ_TOPIC",
 	})
 	writeTopic := app.String(cli.StringOpt{
 		Name:   "write-topic",
 		Value:  "",
-		Desc:   "The topic to write the meassages to.",
+		Desc:   "The topic to write the messages to.",
 		EnvVar: "Q_WRITE_TOPIC",
 	})
 	authorization := app.String(cli.StringOpt{
@@ -92,7 +93,7 @@ func main() {
 		messageConsumer := consumer.NewConsumer(consumerConfig, m.HandlePlaceholderMessages, &http.Client{})
 		messageProducer := producer.NewMessageProducer(producerConfig)
 
-		go serve(*port, resources.NewMapperHealthcheck(consumerConfig, producerConfig), resources.NewMapEndpointHandler(m))
+		go serve(*port, resources.NewMapperHealthcheck(&consumerConfig, &producerConfig), resources.NewMapEndpointHandler(m))
 
 		m.StartMappingMessages(messageConsumer, messageProducer)
 	}
@@ -102,19 +103,17 @@ func main() {
 }
 
 func serve(port int, hc *resources.MapperHealthcheck, meh *resources.MapEndpointHandler) {
-
 	r := mux.NewRouter()
 
-	hcHandler := fthealth.Handler(
+	hcHandler := fthealth.HandlerParallel(
 		"Dependent services healthcheck",
 		"Checks if all the dependent services are reachable and healthy.",
-		hc.ConsumerQueueCheck(),
-		hc.ProducerQueueCheck(),
+		hc.ConsumerConnectivityCheck(),
+		hc.ProducerConnectivityCheck(),
 	)
-	r.Handle("/content-transform/{uuid}", meh).Methods("POST")
 	r.HandleFunc("/map", meh.ServeMapEndpoint).Methods("POST")
 	r.HandleFunc("/__health", hcHandler)
-	r.HandleFunc(httphandlers.GTGPath, hc.GTG).Methods("GET")
+	r.HandleFunc(httphandlers.GTGPath, httphandlers.NewGoodToGoHandler(hc.GTG)).Methods("GET")
 	r.HandleFunc(httphandlers.BuildInfoPath, httphandlers.BuildInfoHandler).Methods("GET")
 	r.HandleFunc(httphandlers.PingPath, httphandlers.PingHandler).Methods("GET")
 
