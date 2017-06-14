@@ -27,7 +27,7 @@ const methodeDateFormat = "20060102150405"
 const contentPlaceholderSourceCode = "ContentPlaceholder"
 const eomCompoundStory = "EOM::CompoundStory"
 
-const upDateFormat = "2006-01-02T03:04:05.000Z0700"
+const upDateFormat = "2006-01-02T15:04:05.000Z0700"
 const ftBrand = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
 const methodeAuthority = "http://api.ft.com/system/FTCOM-METHODE"
 const mapperURIBase = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/content/"
