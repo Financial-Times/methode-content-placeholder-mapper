@@ -14,9 +14,9 @@ const requestTimeout = 4500
 
 // MapperHealthcheck represents the health check for the methode content placeholder mapper
 type MapperHealthcheck struct {
-	Client           *http.Client
-	consumerInstance consumer.MessageConsumer
-	producerInstance producer.MessageProducer
+	Client   *http.Client
+	consumer consumer.MessageConsumer
+	producer producer.MessageProducer
 }
 
 // NewMapperHealthcheck returns a new instance of the MapperHealthcheck
@@ -25,21 +25,32 @@ func NewMapperHealthcheck(consumerConfig *consumer.QueueConfig, producerConfig *
 	consumerInstance := consumer.NewConsumer(*consumerConfig, func(m consumer.Message) {}, httpClient)
 	producerInstance := producer.NewMessageProducerWithHTTPClient(*producerConfig, httpClient)
 	return &MapperHealthcheck{
-		Client:           httpClient,
-		consumerInstance: consumerInstance,
-		producerInstance: producerInstance,
+		Client:   httpClient,
+		consumer: consumerInstance,
+		producer: producerInstance,
 	}
 }
 
 // GTG is the HTTP handler function for the Good-To-Go of the methode content placeholder mapper
 func (hc *MapperHealthcheck) GTG() gtg.Status {
-	if _, err := hc.consumerInstance.ConnectivityCheck(); err != nil {
-		return gtg.Status{GoodToGo: false, Message: err.Error()}
-	}
-	if _, err := hc.producerInstance.ConnectivityCheck(); err != nil {
-		return gtg.Status{GoodToGo: false, Message: err.Error()}
+	consumerCheck := func() gtg.Status {
+		return gtgCheck(hc.consumer.ConnectivityCheck)
 	}
 
+	producerCheck := func() gtg.Status {
+		return gtgCheck(hc.producer.ConnectivityCheck)
+	}
+
+	return gtg.FailFastParallelCheck([]gtg.StatusChecker{
+		consumerCheck,
+		producerCheck,
+	})()
+}
+
+func gtgCheck(handler func() (string, error)) gtg.Status {
+	if _, err := handler(); err != nil {
+		return gtg.Status{GoodToGo: false, Message: err.Error()}
+	}
 	return gtg.Status{GoodToGo: true}
 }
 
@@ -51,7 +62,7 @@ func (hc *MapperHealthcheck) ConsumerConnectivityCheck() fthealth.Check {
 		PanicGuide:       "https://dewey.ft.com/up-mcpm.html",
 		Severity:         1,
 		TechnicalSummary: "Consumer message queue proxy is not reachable/healthy",
-		Checker:          hc.consumerInstance.ConnectivityCheck,
+		Checker:          hc.consumer.ConnectivityCheck,
 	}
 }
 
@@ -63,6 +74,6 @@ func (hc *MapperHealthcheck) ProducerConnectivityCheck() fthealth.Check {
 		PanicGuide:       "https://dewey.ft.com/up-mcpm.html",
 		Severity:         1,
 		TechnicalSummary: "Producer message queue proxy is not reachable/healthy",
-		Checker:          hc.producerInstance.ConnectivityCheck,
+		Checker:          hc.producer.ConnectivityCheck,
 	}
 }
