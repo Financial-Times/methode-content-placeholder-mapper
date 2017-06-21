@@ -2,15 +2,12 @@ package resources
 
 import (
 	"net/http"
-	"time"
 
 	fthealth "github.com/Financial-Times/go-fthealth/v1a"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/service-status-go/gtg"
 )
-
-const requestTimeout = 4500
 
 // MapperHealthcheck represents the health check for the methode content placeholder mapper
 type MapperHealthcheck struct {
@@ -20,14 +17,10 @@ type MapperHealthcheck struct {
 }
 
 // NewMapperHealthcheck returns a new instance of the MapperHealthcheck
-func NewMapperHealthcheck(consumerConfig *consumer.QueueConfig, producerConfig *producer.MessageProducerConfig) *MapperHealthcheck {
-	httpClient := &http.Client{Timeout: requestTimeout * time.Millisecond}
-	consumerInstance := consumer.NewConsumer(*consumerConfig, func(m consumer.Message) {}, httpClient)
-	producerInstance := producer.NewMessageProducerWithHTTPClient(*producerConfig, httpClient)
+func NewMapperHealthcheck(c consumer.MessageConsumer, p producer.MessageProducer) *MapperHealthcheck {
 	return &MapperHealthcheck{
-		Client:   httpClient,
-		consumer: consumerInstance,
-		producer: producerInstance,
+		consumer: c,
+		producer: p,
 	}
 }
 

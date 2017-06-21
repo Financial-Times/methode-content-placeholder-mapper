@@ -12,14 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var consumerConfigMock = consumer.QueueConfig{
-	AuthorizationKey: "my-first-auth-key",
-}
-
-var producerConfigMock = producer.MessageProducerConfig{
-	Authorization: "my-first-auth-key",
-}
-
 func setupMockKafka(t *testing.T, status int) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(status)
@@ -37,9 +29,7 @@ func TestHealthchecks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	consumerConfigMock.Addrs = []string{kafka.URL}
-	producerConfigMock.Addr = kafka.URL
-	hc := NewMapperHealthcheck(&consumerConfigMock, &producerConfigMock)
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL))
 	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck())(w, req)
 
 	assert.Equal(t, 200, w.Code)
@@ -77,9 +67,7 @@ func TestFailingKafka(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	consumerConfigMock.Addrs = []string{kafka.URL}
-	producerConfigMock.Addr = kafka.URL
-	hc := NewMapperHealthcheck(&consumerConfigMock, &producerConfigMock)
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL))
 	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck())(w, req)
 	assert.Equal(t, 200, w.Code)
 
@@ -102,9 +90,7 @@ func TestNoKafkaAtAll(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	consumerConfigMock.Addrs = []string{"a-fake-url"}
-	producerConfigMock.Addr = "a-fake-url"
-	hc := NewMapperHealthcheck(&consumerConfigMock, &producerConfigMock)
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{"a-fake-url"}), getMockedProducer("a-fake-url"))
 	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck())(w, req)
 
 	assert.Equal(t, 200, w.Code)
@@ -131,9 +117,7 @@ func TestNoKafkaConsumer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	consumerConfigMock.Addrs = []string{"a-fake-url"}
-	producerConfigMock.Addr = kafka.URL
-	hc := NewMapperHealthcheck(&consumerConfigMock, &producerConfigMock)
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{"a-fake-url"}), getMockedProducer(kafka.URL))
 	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck())(w, req)
 
 	assert.Equal(t, 200, w.Code)
@@ -160,9 +144,7 @@ func TestNoKafkaProducer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	consumerConfigMock.Addrs = []string{kafka.URL}
-	producerConfigMock.Addr = "a-fake-url"
-	hc := NewMapperHealthcheck(&consumerConfigMock, &producerConfigMock)
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer("a-fake-url"))
 	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck())(w, req)
 
 	assert.Equal(t, 200, w.Code)
@@ -189,9 +171,7 @@ func TestMultipleKafkaConsumersFail(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	consumerConfigMock.Addrs = []string{kafka.URL, "a-fake-url"}
-	producerConfigMock.Addr = kafka.URL
-	hc := NewMapperHealthcheck(&consumerConfigMock, &producerConfigMock)
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL, "a-fake-url"}), getMockedProducer(kafka.URL))
 	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck())(w, req)
 
 	assert.Equal(t, 200, w.Code)
@@ -220,9 +200,7 @@ func TestMultipleKafkaConsumersOK(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	consumerConfigMock.Addrs = []string{kafka1.URL, kafka2.URL}
-	producerConfigMock.Addr = kafka1.URL
-	hc := NewMapperHealthcheck(&consumerConfigMock, &producerConfigMock)
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL, kafka2.URL}), getMockedProducer(kafka1.URL))
 	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck())(w, req)
 
 	assert.Equal(t, 200, w.Code)
@@ -243,9 +221,8 @@ func TestGTG(t *testing.T) {
 	kafka := setupMockKafka(t, 200)
 	defer kafka.Close()
 
-	consumerConfigMock.Addrs = []string{kafka.URL}
-	producerConfigMock.Addr = kafka.URL
-	hc := NewMapperHealthcheck(&consumerConfigMock, &producerConfigMock)
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL))
+
 	status := hc.GTG()
 
 	assert.True(t, status.GoodToGo)
@@ -257,10 +234,8 @@ func TestGTGConsumerFailing(t *testing.T) {
 	kafka2 := setupMockKafka(t, 200)
 	defer kafka2.Close()
 
-	consumerConfigMock.Addrs = []string{kafka1.URL}
-	producerConfigMock.Addr = kafka2.URL
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL}), getMockedProducer(kafka2.URL))
 
-	hc := NewMapperHealthcheck(&consumerConfigMock, &producerConfigMock)
 	status := hc.GTG()
 
 	assert.False(t, status.GoodToGo)
@@ -272,11 +247,28 @@ func TestGTGProducerFailing(t *testing.T) {
 	kafka2 := setupMockKafka(t, 503)
 	defer kafka2.Close()
 
-	consumerConfigMock.Addrs = []string{kafka1.URL}
-	producerConfigMock.Addr = kafka2.URL
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL}), getMockedProducer(kafka2.URL))
 
-	hc := NewMapperHealthcheck(&consumerConfigMock, &producerConfigMock)
 	status := hc.GTG()
 
 	assert.False(t, status.GoodToGo)
+}
+
+func getMockedConsumer(addr []string) consumer.MessageConsumer {
+	return consumer.NewConsumer(
+		consumer.QueueConfig{
+			Addrs:            addr,
+			AuthorizationKey: "my-first-auth-key",
+		},
+		func(m consumer.Message) {},
+		http.DefaultClient,
+	)
+}
+
+func getMockedProducer(addr string) producer.MessageProducer {
+	return producer.NewMessageProducer(
+		producer.MessageProducerConfig{
+			Addr:          addr,
+			Authorization: "my-first-auth-key"},
+	)
 }
