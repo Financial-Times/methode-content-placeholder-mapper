@@ -25,5 +25,4 @@ _testmain.go
 *.iml
 *.idea
 
-/vendor/*
-!/vendor/vendor.json
+vendor/*/
