@@ -9,6 +9,10 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
+	"time"
+	"io/ioutil"
 )
 
 // ContentTransformHandler is a HTTP handler to map methode content placeholders
@@ -18,6 +22,9 @@ type MapEndpointHandler struct {
 
 type msg struct {
 	Message string `json:"message"`
+}
+
+type mapResponse struct {
 }
 
 // NewContentTransformHandler returns a new instance of a MapEndpointHandler
@@ -32,27 +39,45 @@ func (h *MapEndpointHandler) ServeMapEndpoint(w http.ResponseWriter, r *http.Req
 }
 
 func (h *MapEndpointHandler) mapContent(w http.ResponseWriter, r *http.Request, transactionID string) {
-	methodePlaceholder, err := h.mapper.NewMethodeContentPlaceholderFromHTTPRequest(r)
-	uuid := methodePlaceholder.UUID
+	methodePlaceholder, err := h.NewMethodeContentPlaceholderFromHTTPRequest(r)
+
 	if err != nil {
-		writeError(w, err, transactionID, uuid, r.RequestURI)
+		writeError(w, err, transactionID, "", r.RequestURI)
 		return
 	}
-	upPlaceholder, err := h.mapper.MapContentPlaceholder(methodePlaceholder)
+	uuid := methodePlaceholder.UUID
+
+	uppPlaceholder, uppComplementaryContent, err := h.mapper.MapContentPlaceholder(methodePlaceholder)
 	if err != nil {
 		writeError(w, err, transactionID, uuid, r.RequestURI)
 		return
 	}
 
-	if upPlaceholder.IsMarkedDeleted {
+	if uppPlaceholder.IsMarkedDeleted {
 		writeMessageForDeletedContent(w, transactionID, uuid, r.RequestURI)
 		return
 	}
 
 	w.Header().Add("Content-Type", "application/json")
 	encoder := json.NewEncoder(w)
-	encoder.Encode(upPlaceholder)
+	encoder.Encode(h.createPublicationEventsMessages(uppPlaceholder, uppComplementaryContent))
 	log.WithField("transaction_id", transactionID).WithField("uuid", uuid).WithField("request_uri", r.RequestURI).Info("Transformation successful")
+}
+
+func (h *MapEndpointHandler) NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (*model.MethodeContentPlaceholder, *utility.MappingError) {
+	transactionID := tid.GetTransactionIDFromRequest(r)
+	lastModified := time.Now().Format(model.UPPDateFormat)
+	messageBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, utility.NewMappingError().WithMessage(err.Error())
+	}
+	return model.NewMethodeContentPlaceholder(messageBody, transactionID, lastModified)
+}
+
+func (h *MapEndpointHandler) createPublicationEventsMessages(uppPlaceholder *model.UppContentPlaceholder, uppComplementaryContent *model.UppComplementaryContent) [2]model.PublicationEvent {
+	return [2]model.PublicationEvent{
+		{ContentURI: uppPlaceholder.ContentURI, Payload: uppPlaceholder, LastModified: uppPlaceholder.LastModified},
+		{ContentURI: uppComplementaryContent.ContentURI, Payload: uppComplementaryContent, LastModified: uppComplementaryContent.LastModified}}
 }
 
 func writeError(w http.ResponseWriter, err error, transactionID, uuid, requestURI string) {

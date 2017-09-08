@@ -117,7 +117,7 @@ func main() {
 			Authorization: *authorization,
 		}
 
-		m := mapper.New()
+		m := mapper.NewDefaultMapper()
 		messageConsumer := consumer.NewConsumer(consumerConfig, m.HandlePlaceholderMessages, httpClient)
 		messageProducer := producer.NewMessageProducerWithHTTPClient(producerConfig, httpClient)
 

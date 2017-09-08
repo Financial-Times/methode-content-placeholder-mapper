@@ -12,19 +12,22 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
+	"io/ioutil"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
 )
 
-const placeholderMsg = `{"foo":"bar"}`
+const placeholderMsg = `{"uuid":"f9845f8a-c210-11e6-91a7-e73ace06f770", "type": "EOM::CompoundStory"}`
 const mapperURL = "http://methode-content-placeholder-mapper/map"
+const expectedTransactionID = "tid_bh7VTFj9Il"
 
 func TestSuccessfulMapEndpoint(t *testing.T) {
-	placeholder := mapper.UpContentPlaceholder{WebURL: "http://www.ft.com/ig/sites/2014/virgingroup-timeline/"}
-	m := new(MapperMock)
-	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, (*mapper.MappingError)(nil))
-	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(placeholder, (*mapper.MappingError)(nil))
+	methodeContentMsg := buildIgMethodePlaceholderUpdateMsg()
+
+	m := mapper.NewDefaultMapper()
 	h := NewMapEndpointHandler(m)
 
-	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
+	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(methodeContentMsg.Body)))
 	w := httptest.NewRecorder()
 	h.ServeMapEndpoint(w, req)
 
@@ -32,14 +35,12 @@ func TestSuccessfulMapEndpoint(t *testing.T) {
 }
 
 func TestDeletedContentPlaceholderMapEndpoint(t *testing.T) {
-	placeholder := mapper.UpContentPlaceholder{IsMarkedDeleted: true}
+	methodeContentDeleteMsg := buildIgMethodePlaceholderDeleteMsg()
 
-	m := new(MapperMock)
-	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, (*mapper.MappingError)(nil))
-	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(placeholder, (*mapper.MappingError)(nil))
+	m := mapper.NewDefaultMapper()
 	h := NewMapEndpointHandler(m)
 
-	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
+	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(methodeContentDeleteMsg.Body)))
 	w := httptest.NewRecorder()
 	h.ServeMapEndpoint(w, req)
 
@@ -49,22 +50,19 @@ func TestDeletedContentPlaceholderMapEndpoint(t *testing.T) {
 }
 
 func TestUnsuccessfulMethodePlaceholderBuild(t *testing.T) {
-	m := new(MapperMock)
-	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, mapper.NewMappingError().WithMessage("What is it?"))
+	m := mapper.NewDefaultMapper()
 	h := NewMapEndpointHandler(m)
 
-	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
+	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(nil)))
 	w := httptest.NewRecorder()
 	h.ServeMapEndpoint(w, req)
 
 	assert.Equal(t, http.StatusUnprocessableEntity, w.Code, "It should return status 422")
-	assert.Equal(t, "What is it?\n", w.Body.String())
 }
 
 func TestUnsuccessfulPlaceholderMapping(t *testing.T) {
 	m := new(MapperMock)
-	m.On("NewMethodeContentPlaceholderFromHTTPRequest", mock.AnythingOfType("*http.Request")).Return(mapper.MethodeContentPlaceholder{}, (*mapper.MappingError)(nil))
-	m.On("MapContentPlaceholder", mock.AnythingOfType("mapper.MethodeContentPlaceholder")).Return(mapper.UpContentPlaceholder{}, mapper.NewMappingError().WithMessage("All map and no play makes MCPM a dull boy"))
+	m.On("MapContentPlaceholder", mock.Anything).Return(model.UppContentPlaceholder{}, model.UppComplementaryContent{}, utility.NewMappingError().WithMessage("All map and no play makes MCPM a dull boy"))
 	h := NewMapEndpointHandler(m)
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
@@ -72,7 +70,19 @@ func TestUnsuccessfulPlaceholderMapping(t *testing.T) {
 	h.ServeMapEndpoint(w, req)
 
 	assert.Equal(t, http.StatusUnprocessableEntity, w.Code, "It should return status 422")
-	assert.Equal(t, "All map and no play makes MCPM a dull boy\n", w.Body.String())
+}
+
+func TestSuccesfulBuildOfPlaceholderFromHTTPRequest(t *testing.T) {
+	placeholderBody, err := ioutil.ReadFile("../mapper/test_resources/ig_methode_placeholder_update.json")
+	if err != nil {
+		panic(err)
+	}
+	req := httptest.NewRequest("POST", "http://example.com/foo", bytes.NewReader(placeholderBody))
+	mapHandler := NewMapEndpointHandler(mapper.NewDefaultMapper())
+
+	methodePlacheholder, err := mapHandler.NewMethodeContentPlaceholderFromHTTPRequest(req)
+	assert.Nil(t, err, "It should not return an error")
+	assert.NotZero(t, methodePlacheholder, "pippo")
 }
 
 type MapperMock struct {
@@ -87,12 +97,30 @@ func (m *MapperMock) StartMappingMessages(c consumer.MessageConsumer, p producer
 	m.Called(c, p)
 }
 
-func (m *MapperMock) NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (mapper.MethodeContentPlaceholder, *mapper.MappingError) {
-	args := m.Called(r)
-	return args.Get(0).(mapper.MethodeContentPlaceholder), args.Get(1).(*mapper.MappingError)
+func (m *MapperMock) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder) (*model.UppContentPlaceholder, *model.UppComplementaryContent, *utility.MappingError) {
+	args := m.Called(mcp)
+	return args.Get(0).(*model.UppContentPlaceholder), args.Get(1).(*model.UppComplementaryContent), args.Get(2).(*utility.MappingError)
 }
 
-func (m *MapperMock) MapContentPlaceholder(mpc mapper.MethodeContentPlaceholder) (mapper.UpContentPlaceholder, *mapper.MappingError) {
-	args := m.Called(mpc)
-	return args.Get(0).(mapper.UpContentPlaceholder), args.Get(1).(*mapper.MappingError)
+func buildIgMethodePlaceholderUpdateMsg() consumer.Message {
+	return buildMethodeMsg("../mapper/test_resources/ig_methode_placeholder_update.json")
+}
+
+func buildIgMethodePlaceholderDeleteMsg() consumer.Message {
+	return buildMethodeMsg("../mapper/test_resources/ig_methode_placeholder_delete.json")
+}
+
+func buildMethodeMsg(examplePath string) consumer.Message {
+	placeholderBody, err := ioutil.ReadFile(examplePath)
+	if err != nil {
+		panic(err)
+	}
+	return consumer.Message{
+		Body: string(placeholderBody),
+		Headers: map[string]string{
+			"Origin-System-Id":  model.MethodeSystemID,
+			"X-Request-Id":      expectedTransactionID,
+			"Message-Timestamp": "2016-12-16T13:13:51.154Z",
+		},
+	}
 }

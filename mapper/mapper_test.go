@@ -1,10 +1,8 @@
 package mapper
 
 import (
-	"bytes"
 	"errors"
 	"io/ioutil"
-	"net/http/httptest"
 	"regexp"
 	"testing"
 	"time"
@@ -14,25 +12,33 @@ import (
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 )
 
-const expectedTransactionID = "tid_i1ktygkniy"
+const expectedTransactionID = "tid_bh7VTFj9Il"
 
 var uuidRegexp = regexp.MustCompile("[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}")
 
 func TestCorrectMappingToUpdateEvent(t *testing.T) {
 	igMethodePlaceHolderMsg := buildIgMethodePlaceholderUpdateMsg()
-	expectedPubEventMsg := buildIgPlaceholderPubEvent()
+	expectedCPHPubEventMsg := buildIgPlaceholderPubEvent()
+	expectedCCPubEventMsg := buildIgComplementaryContentPubEvent()
 
-	mapper := &mapper{}
+	mapper := NewDefaultMapper()
 
-	actualPubEventMsg, _, err := mapper.mapMessage(igMethodePlaceHolderMsg)
+	actualCPHPubEventMsg, _, actualCCPubEventMsg, _, err := mapper.mapMessage(igMethodePlaceHolderMsg)
 	assert.Nil(t, err, "It should not return error in mapping placeholder")
+
+	verifyMappingIsCorrect(t, actualCPHPubEventMsg, &expectedCPHPubEventMsg)
+	verifyMappingIsCorrect(t, actualCCPubEventMsg, &expectedCCPubEventMsg)
+}
+
+func verifyMappingIsCorrect(t *testing.T, actualPubEventMsg *producer.Message, expectedPubEventMsg *producer.Message) {
 	assert.Equal(t, expectedTransactionID, actualPubEventMsg.Headers["X-Request-Id"], "The Transaction ID should be consistent")
 	assert.Equal(t, "cms-content-published", actualPubEventMsg.Headers["Message-Type"], "The Message type should be cms-content-published")
 	assert.Equal(t, "application/json", actualPubEventMsg.Headers["Content-Type"], "The Content type should be application/json")
 	assert.Regexp(t, uuidRegexp, actualPubEventMsg.Headers["Message-Id"], "The Message ID should be a valid UUID")
-	_, parseErr := time.Parse(upDateFormat, actualPubEventMsg.Headers["Message-Timestamp"])
+	_, parseErr := time.Parse(model.UPPDateFormat, actualPubEventMsg.Headers["Message-Timestamp"])
 	assert.Nil(t, parseErr, "The message timestamp should have a consistent format")
 
 	expectedBodyAsMap := jsonStringToMap(expectedPubEventMsg.Body, t)
@@ -48,21 +54,22 @@ func buildIgPlaceholderPubEvent() producer.Message {
 	return buildProducerMessage("test_resources/ig_placeholder_pub_event.json")
 }
 
+func buildIgComplementaryContentPubEvent() producer.Message {
+	return buildProducerMessage("test_resources/ig_complementarycontent_pub_event.json")
+}
+
 func TestCorrectMappingToDeleteEvent(t *testing.T) {
 	igMethodePlaceHolderMsg := buildIgMethodePlaceholderDeleteMsg()
-	expectedPubEventMsg := buildIgPlaceholderDeleteEvent()
+	expectedCPHPubEventMsg := buildIgPlaceholderDeleteEvent()
+	expectedCCPubEventMsg := buildIgComplementaryContentDeleteEvent()
 
-	mapper := &mapper{}
+	mapper := NewDefaultMapper()
 
-	actualPubEventMsg, _, err := mapper.mapMessage(igMethodePlaceHolderMsg)
+	actualCPHPubEventMsg, _, actualCCPubEventMsg, _, err := mapper.mapMessage(igMethodePlaceHolderMsg)
 	assert.Nil(t, err, "It should not return error in mapping placeholder")
-	assert.Equal(t, expectedPubEventMsg.Body, actualPubEventMsg.Body, "The placeholder should be mapped properly")
-	assert.Equal(t, expectedTransactionID, actualPubEventMsg.Headers["X-Request-Id"], "The Transaction ID should be consistent")
-	assert.Equal(t, "cms-content-published", actualPubEventMsg.Headers["Message-Type"], "The Message type should be cms-content-published")
-	assert.Equal(t, "application/json", actualPubEventMsg.Headers["Content-Type"], "The Content type should be application/json")
-	assert.Regexp(t, uuidRegexp, actualPubEventMsg.Headers["Message-Id"], "The Message ID should be a valid UUID")
-	_, parseErr := time.Parse(upDateFormat, actualPubEventMsg.Headers["Message-Timestamp"])
-	assert.Nil(t, parseErr, "The message timestamp should have a consistent format")
+
+	verifyMappingIsCorrect(t, actualCPHPubEventMsg, &expectedCPHPubEventMsg)
+	verifyMappingIsCorrect(t, actualCCPubEventMsg, &expectedCCPubEventMsg)
 }
 
 func buildIgMethodePlaceholderDeleteMsg() consumer.Message {
@@ -73,26 +80,20 @@ func buildIgPlaceholderDeleteEvent() producer.Message {
 	return buildProducerMessage("test_resources/ig_placeholder_delete_event.json")
 }
 
+func buildIgComplementaryContentDeleteEvent() producer.Message {
+	return buildProducerMessage("test_resources/ig_complementarycontent_delete_event.json")
+}
+
 func TestCorrectMappingToUpdateEventWithHeadlineOnly(t *testing.T) {
 	igMethodePlaceHolderMsg := buildIgMethodePlaceholderOnlyHeadlineUpdateMsg()
+	expectedCPHPubEventMsg := buildIgPlaceholderOnlyHeadlinePubEvent()
 
-	expectedPubEventMsg := buildIgPlaceholderOnlyHeadlinePubEvent()
+	mapper := NewDefaultMapper()
 
-	mapper := &mapper{}
-
-	actualPubEventMsg, _, err := mapper.mapMessage(igMethodePlaceHolderMsg)
-
+	actualCPHPubEventMsg, _, _, _, err := mapper.mapMessage(igMethodePlaceHolderMsg)
 	assert.Nil(t, err, "It should not return error in mapping placeholder")
-	assert.Equal(t, expectedTransactionID, actualPubEventMsg.Headers["X-Request-Id"], "The Transaction ID should be consistent")
-	assert.Equal(t, "cms-content-published", actualPubEventMsg.Headers["Message-Type"], "The Message type should be cms-content-published")
-	assert.Equal(t, "application/json", actualPubEventMsg.Headers["Content-Type"], "The Content type should be application/json")
-	assert.Regexp(t, uuidRegexp, actualPubEventMsg.Headers["Message-Id"], "The Message ID should be a valid UUID")
-	_, parseErr := time.Parse(upDateFormat, actualPubEventMsg.Headers["Message-Timestamp"])
-	assert.Nil(t, parseErr, "The message timestamp should have a consistent format")
 
-	expectedBodyAsMap := jsonStringToMap(expectedPubEventMsg.Body, t)
-	actualBodyAsMap := jsonStringToMap(actualPubEventMsg.Body, t)
-	assert.Equal(t, expectedBodyAsMap, actualBodyAsMap, "The placeholder should be mapped properly")
+	verifyMappingIsCorrect(t, actualCPHPubEventMsg, &expectedCPHPubEventMsg)
 }
 
 func buildIgMethodePlaceholderOnlyHeadlineUpdateMsg() consumer.Message {
@@ -107,7 +108,8 @@ func TestHandleMethodePlaceholderEvent(t *testing.T) {
 	producerMock := new(QueueProducerMock)
 	producerMock.On("SendMessage", mock.AnythingOfType("string"), mock.AnythingOfType("producer.Message")).Return(nil)
 
-	mapper := &mapper{messageProducer: producerMock}
+	mapper := NewDefaultMapper()
+	mapper.messageProducer = producerMock
 
 	methodeMsg := buildIgMethodePlaceholderUpdateMsg()
 	mapper.HandlePlaceholderMessages(methodeMsg)
@@ -117,16 +119,17 @@ func TestHandleMethodePlaceholderEvent(t *testing.T) {
 
 func TestDoNotMapMethodeArticleDeleteEvent(t *testing.T) {
 	methodeArticleMsg := buildMethodeArticleDeleteMsg()
-	mapper := &mapper{}
+	mapper := NewDefaultMapper()
 
-	_, _, err := mapper.mapMessage(methodeArticleMsg)
+	_, _, _, _, err := mapper.mapMessage(methodeArticleMsg)
 	assert.EqualError(t, err, "Methode content is not a content placeholder", "The mapping of the article should be unsuccessful")
 }
 
 func TestDoNotHandleMethodeArticleDeleteEvent(t *testing.T) {
 	producerMock := new(QueueProducerMock)
 
-	mapper := &mapper{messageProducer: producerMock}
+	mapper := NewDefaultMapper()
+	mapper.messageProducer = producerMock
 
 	methodeArticleMsg := buildMethodeArticleDeleteMsg()
 	mapper.HandlePlaceholderMessages(methodeArticleMsg)
@@ -138,7 +141,8 @@ func TestNotHandleMethodePlaceholderEventWhenProducerReturnsError(t *testing.T) 
 	producerMock := new(QueueProducerMock)
 	producerMock.On("SendMessage", mock.AnythingOfType("string"), mock.AnythingOfType("producer.Message")).Return(errors.New("I do not want to send the message! I'm on strike!"))
 
-	mapper := &mapper{messageProducer: producerMock}
+	mapper := NewDefaultMapper()
+	mapper.messageProducer = producerMock
 
 	methodeMsg := buildIgMethodePlaceholderUpdateMsg()
 	mapper.HandlePlaceholderMessages(methodeMsg)
@@ -152,9 +156,9 @@ func buildMethodeArticleDeleteMsg() consumer.Message {
 
 func TestDoNotMapPlaceholderWithNoURLInHeadline(t *testing.T) {
 	placeholderMsg := buildIgMethodePlaceholderNoURLUpdateMsg()
-	mapper := &mapper{}
+	mapper := NewDefaultMapper()
 
-	_, _, err := mapper.mapMessage(placeholderMsg)
+	_, _, _, _, err := mapper.mapMessage(placeholderMsg)
 	assert.EqualError(t, err, "Methode Content headline does not contain a link", "The mapping of the placeholder should be unsuccessful")
 }
 
@@ -164,9 +168,9 @@ func buildIgMethodePlaceholderNoURLUpdateMsg() consumer.Message {
 
 func TestDoNotMapPlaceholderWithWrongURLInHeadline(t *testing.T) {
 	placeholderMsg := buildIgMethodePlaceholderWithWrongURLUpdateMsg()
-	mapper := &mapper{}
+	mapper := NewDefaultMapper()
 
-	_, _, err := mapper.mapMessage(placeholderMsg)
+	_, _, _, _, err := mapper.mapMessage(placeholderMsg)
 	assert.EqualError(t, err, "Methode Content headline does not contain a valid URL - parse %gh&%ij: invalid URL escape \"%gh\"", "The mapping of the placeholder should be unsuccessful")
 }
 
@@ -176,9 +180,9 @@ func buildIgMethodePlaceholderWithWrongURLUpdateMsg() consumer.Message {
 
 func TestDoNotMapPlaceholderWithRelativeURLInHeadline(t *testing.T) {
 	placeholderMsg := buildIgMethodePlaceholderWithRelativeURLUpdateMsg()
-	mapper := &mapper{}
+	mapper := NewDefaultMapper()
 
-	_, _, err := mapper.mapMessage(placeholderMsg)
+	_, _, _, _, err := mapper.mapMessage(placeholderMsg)
 	assert.EqualError(t, err, "Methode Content headline does not contain an absolute URL", "The mapping of the placeholder should be unsuccessful")
 }
 
@@ -189,7 +193,8 @@ func buildIgMethodePlaceholderWithRelativeURLUpdateMsg() consumer.Message {
 func TestDoNotHandleBrightcoveVideoEvent(t *testing.T) {
 	producerMock := new(QueueProducerMock)
 
-	mapper := &mapper{messageProducer: producerMock}
+	mapper := NewDefaultMapper()
+	mapper.messageProducer = producerMock
 
 	videoMsg := buildBrightcoveVideoMsg()
 	mapper.HandlePlaceholderMessages(videoMsg)
@@ -199,26 +204,31 @@ func TestDoNotHandleBrightcoveVideoEvent(t *testing.T) {
 
 func TestDummyCpHeadlineIsIgnored(t *testing.T) {
 	methodeMsg := buildMethodeMsg("test_resources/ig_methode_placeholder_dummy_cp_title.json")
-	m := &mapper{}
+	m := NewDefaultMapper()
 
-	message, _, err := m.mapMessage(methodeMsg)
+	cphMessage, _, ccMessage, _, err := m.mapMessage(methodeMsg)
 	assert.Nil(t, err)
 
-	bodyMap := jsonStringToMap(message.Body, t)
+	cphBodyMap := jsonStringToMap(cphMessage.Body, t)
+	ccBodyMap := jsonStringToMap(ccMessage.Body, t)
 
-	payload, ok := bodyMap["payload"]
+	cphPayload, ok := cphBodyMap["payload"]
+	assert.True(t, ok)
+	ccPayload, ok := ccBodyMap["payload"]
 	assert.True(t, ok)
 
-	payloadMap, ok := payload.(map[string]interface{})
+	cphPayloadMap, ok := cphPayload.(map[string]interface{})
+	assert.True(t, ok)
+	ccPayloadMap, ok := ccPayload.(map[string]interface{})
 	assert.True(t, ok)
 
-	alternativeTitles, ok := payloadMap["alternativeTitles"]
+	alternativeTitles, ok := cphPayloadMap["alternativeTitles"]
 	assert.True(t, ok)
+	assert.Nil(t, alternativeTitles)
 
-	alternativeTitlesMap, ok := alternativeTitles.(map[string]interface{})
+	promotionalTitle, ok := ccPayloadMap["promotionalTitle"]
 	assert.True(t, ok)
-
-	assert.Len(t, alternativeTitlesMap, 1)
+	assert.NotNil(t, promotionalTitle)
 }
 
 func buildBrightcoveVideoMsg() consumer.Message {
@@ -234,9 +244,9 @@ func buildBrightcoveVideoMsg() consumer.Message {
 
 func TestNotMappingWithWrongHeadline(t *testing.T) {
 	badPlaceholderMsg := buildMethodePlaceholderBadHeadlineMsg()
-	mapper := &mapper{}
+	mapper := NewDefaultMapper()
 
-	_, _, err := mapper.mapMessage(badPlaceholderMsg)
+	_, _, _, _, err := mapper.mapMessage(badPlaceholderMsg)
 
 	assert.EqualError(t, err, "Methode Content headline does not contain text", "The mapping of the placeholder should be unsuccessful")
 }
@@ -253,7 +263,7 @@ func buildMethodeMsg(examplePath string) consumer.Message {
 	return consumer.Message{
 		Body: string(placeholderBody),
 		Headers: map[string]string{
-			"Origin-System-Id":  methodeSystemID,
+			"Origin-System-Id":  model.MethodeSystemID,
 			"X-Request-Id":      expectedTransactionID,
 			"Message-Timestamp": "2016-12-16T13:13:51.154Z",
 		},
@@ -285,29 +295,6 @@ func (p *QueueProducerMock) SendMessage(s string, msg producer.Message) error {
 
 func (*QueueProducerMock) ConnectivityCheck() (string, error) {
 	return "OK", nil
-}
-
-func TestSuccesfulBuildOfPlaceholderFromHTTPRequest(t *testing.T) {
-	placeholderBody, err := ioutil.ReadFile("test_resources/ig_methode_placeholder_update.json")
-	if err != nil {
-		panic(err)
-	}
-	req := httptest.NewRequest("POST", "http://example.com/foo", bytes.NewReader(placeholderBody))
-	mapper := New()
-	methodePlacheholder, err := mapper.NewMethodeContentPlaceholderFromHTTPRequest(req)
-	assert.Nil(t, err, "It should not return an error")
-	assert.NotZero(t, methodePlacheholder, "pippo")
-}
-
-func TestUnSuccesfulBuildOfPlaceholderFromHTTPRequest(t *testing.T) {
-	methodeArticleBody, err := ioutil.ReadFile("test_resources/methode_article_delete.json")
-	if err != nil {
-		panic(err)
-	}
-	req := httptest.NewRequest("GET", "http://example.com/foo", bytes.NewReader(methodeArticleBody))
-	mapper := New()
-	_, err = mapper.NewMethodeContentPlaceholderFromHTTPRequest(req)
-	assert.EqualError(t, err, "Methode content is not a content placeholder", "It should return an error")
 }
 
 func jsonStringToMap(marshalled string, t *testing.T) map[string]interface{} {
