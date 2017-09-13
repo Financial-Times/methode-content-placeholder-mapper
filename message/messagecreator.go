@@ -1,12 +1,12 @@
 package message
 
 import (
-	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"encoding/json"
-	"time"
+	"github.com/Financial-Times/message-queue-go-producer/producer"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
 	"github.com/satori/go.uuid"
+	"time"
 )
 
 type MessageCreator interface {

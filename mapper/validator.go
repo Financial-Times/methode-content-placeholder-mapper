@@ -1,8 +1,8 @@
 package mapper
 
 import (
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"errors"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"net/url"
 )
 

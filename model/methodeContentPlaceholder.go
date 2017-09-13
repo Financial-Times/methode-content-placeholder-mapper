@@ -2,8 +2,8 @@ package model
 
 import (
 	"encoding/base64"
-	"encoding/xml"
 	"encoding/json"
+	"encoding/xml"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
 )
 
@@ -12,17 +12,17 @@ const eomCompoundStory = "EOM::CompoundStory"
 
 // MethodeContentPlaceholder is a data structure that models native methode content placeholders
 type MethodeContentPlaceholder struct {
-	AttributesXML    string `json:"attributes"`
-	SystemAttributes string `json:"systemAttributes"`
-	Type             string `json:"type"`
-	UsageTickets     string `json:"usageTickets"`
-	UUID             string `json:"uuid"`
-	Value            string `json:"value"`
-	WorkflowStatus   string `json:"workflowStatus"`
-	Attributes       Attributes `json:"-"`
+	AttributesXML    string      `json:"attributes"`
+	SystemAttributes string      `json:"systemAttributes"`
+	Type             string      `json:"type"`
+	UsageTickets     string      `json:"usageTickets"`
+	UUID             string      `json:"uuid"`
+	Value            string      `json:"value"`
+	WorkflowStatus   string      `json:"workflowStatus"`
+	Attributes       Attributes  `json:"-"`
 	Body             MethodeBody `json:"-"`
-	TransactionID    string `json:"-"`
-	LastModified     string `json:"-"`
+	TransactionID    string      `json:"-"`
+	LastModified     string      `json:"-"`
 }
 
 // Attributes is the data structure that models methode content placeholders attributes

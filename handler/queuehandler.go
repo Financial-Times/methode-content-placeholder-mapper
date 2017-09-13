@@ -10,9 +10,9 @@ import (
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 )
 
 type MessageHandler interface {

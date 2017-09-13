@@ -9,11 +9,11 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
-	"time"
 	"io/ioutil"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
+	"time"
 )
 
 type MapEndpointHandler struct {

@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"io/ioutil"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
+	"io/ioutil"
 )
 
 const placeholderMsg = `{"uuid":"f9845f8a-c210-11e6-91a7-e73ace06f770", "type": "EOM::CompoundStory"}`

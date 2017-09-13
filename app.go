@@ -16,8 +16,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
 
-	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/handler"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
 )
 
 func init() {

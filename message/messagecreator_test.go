@@ -9,9 +9,9 @@ import (
 	"encoding/json"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/stretchr/testify/assert"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/stretchr/testify/assert"
 )
 
 const expectedTransactionID = "tid_bh7VTFj9Il"

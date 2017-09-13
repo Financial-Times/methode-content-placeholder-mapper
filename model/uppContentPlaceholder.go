@@ -1,9 +1,9 @@
 package model
 
 import (
+	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
 	"strings"
 	"time"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
 )
 
 const placeholderContentURI = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/content/"
