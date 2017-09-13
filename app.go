@@ -16,8 +16,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
 
-	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/handler"
 )
 
 func init() {
@@ -117,13 +117,13 @@ func main() {
 			Authorization: *authorization,
 		}
 
-		m := mapper.NewDefaultMapper()
-		messageConsumer := consumer.NewConsumer(consumerConfig, m.HandlePlaceholderMessages, httpClient)
+		h := handler.NewCPHMessageHandler()
+		messageConsumer := consumer.NewConsumer(consumerConfig, h.HandleMessage, httpClient)
 		messageProducer := producer.NewMessageProducerWithHTTPClient(producerConfig, httpClient)
 
-		go serve(*port, resources.NewMapperHealthcheck(messageConsumer, messageProducer), resources.NewMapEndpointHandler(m))
+		go serve(*port, resources.NewMapperHealthcheck(messageConsumer, messageProducer), resources.NewMapEndpointHandler())
 
-		m.StartMappingMessages(messageConsumer, messageProducer)
+		h.StartHandlingMessages(messageConsumer, messageProducer)
 	}
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)

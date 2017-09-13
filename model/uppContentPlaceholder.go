@@ -45,6 +45,7 @@ type Brand struct {
 
 // AlternativeTitles represents the alternative titles for content according to UP data model
 type AlternativeTitles struct {
+	PromotionalTitle    string `json:"promotionalTitle,omitempty"`
 	ContentPackageTitle string `json:"contentPackageTitle,omitempty"`
 }
 
