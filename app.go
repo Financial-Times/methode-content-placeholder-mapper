@@ -18,6 +18,8 @@ import (
 
 	"github.com/Financial-Times/methode-content-placeholder-mapper/handler"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
 )
 
 func init() {
@@ -117,13 +119,20 @@ func main() {
 			Authorization: *authorization,
 		}
 
-		h := handler.NewCPHMessageHandler()
-		messageConsumer := consumer.NewConsumer(consumerConfig, h.HandleMessage, httpClient)
+		aggregateMapper := mapper.NewAggregateCPHMapper()
+
+		nativeMapper := mapper.DefaultMessageMapper{}
+
+		messageCreator := message.NewDefaultCPHMessageCreator()
+
 		messageProducer := producer.NewMessageProducerWithHTTPClient(producerConfig, httpClient)
+		h := handler.NewCPHMessageHandler(nil, messageProducer, aggregateMapper, nativeMapper, messageCreator)
+		messageConsumer := consumer.NewConsumer(consumerConfig, h.HandleMessage, httpClient)
+		h.MessageConsumer = messageConsumer
 
 		go serve(*port, resources.NewMapperHealthcheck(messageConsumer, messageProducer), resources.NewMapEndpointHandler())
 
-		h.StartHandlingMessages(messageConsumer, messageProducer)
+		h.StartHandlingMessages()
 	}
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)

@@ -1,14 +1,8 @@
 package model
 
 import (
-	"encoding/base64"
-	"encoding/json"
 	"encoding/xml"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
 )
-
-const contentPlaceholderSourceCode = "ContentPlaceholder"
-const eomCompoundStory = "EOM::CompoundStory"
 
 // MethodeContentPlaceholder is a data structure that models native methode content placeholders
 type MethodeContentPlaceholder struct {
@@ -54,57 +48,6 @@ type LeadImage struct {
 	FileRef string `xml:"fileref,attr"`
 }
 
-func (mcp MethodeContentPlaceholder) BuildAttributes(attributesXML string) (Attributes, error) {
-	var attrs Attributes
-	if err := xml.Unmarshal([]byte(attributesXML), &attrs); err != nil {
-		return Attributes{}, err
-	}
-	return attrs, nil
-}
-
-func (mcp MethodeContentPlaceholder) BuildMethodeBody(methodeBodyXMLBase64 string) (MethodeBody, error) {
-	methodeBodyXML, err := base64.StdEncoding.DecodeString(methodeBodyXMLBase64)
-	if err != nil {
-		return MethodeBody{}, err
-	}
-	var body MethodeBody
-	if err := xml.Unmarshal([]byte(methodeBodyXML), &body); err != nil {
-		return MethodeBody{}, err
-	}
-	return body, nil
-}
-
 func (mcp MethodeContentPlaceholder) IsInternalCPH() bool {
 	return mcp.Attributes.LinkedArticleUUID != ""
-}
-
-func NewMethodeContentPlaceholder(messageBody []byte, transactionID string, lastModified string) (*MethodeContentPlaceholder, *utility.MappingError) {
-	var p MethodeContentPlaceholder
-	if err := json.Unmarshal(messageBody, &p); err != nil {
-		return nil, utility.NewMappingError().WithMessage(err.Error())
-	}
-	if p.Type != eomCompoundStory {
-		return nil, utility.NewMappingError().WithMessage("Methode content has not type " + eomCompoundStory).ForContent(p.UUID)
-	}
-
-	p.TransactionID = transactionID
-	p.LastModified = lastModified
-
-	attrs, err := p.BuildAttributes(p.AttributesXML)
-	if err != nil {
-		return nil, utility.NewMappingError().WithMessage(err.Error()).ForContent(p.UUID)
-	}
-	p.Attributes = attrs
-
-	if p.Attributes.SourceCode != contentPlaceholderSourceCode {
-		return nil, utility.NewMappingError().WithMessage("Methode content is not a content placeholder").ForContent(p.UUID)
-	}
-
-	body, err := p.BuildMethodeBody(p.Value)
-	if err != nil {
-		return nil, utility.NewMappingError().WithMessage(err.Error()).ForContent(p.UUID)
-	}
-	p.Body = body
-
-	return &p, nil
 }

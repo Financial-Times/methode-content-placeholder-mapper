@@ -17,18 +17,30 @@ import (
 
 type MessageHandler interface {
 	HandleMessage(msg consumer.Message)
-	StartHandlingMessages(c consumer.MessageConsumer, p producer.MessageProducer)
+	StartHandlingMessages()
 }
 
 type CPHMessageHandler struct {
-	messageConsumer   consumer.MessageConsumer
-	messageProducer   producer.MessageProducer
-	aggregateMapper   *mapper.AggregateCPHMapper
-	cphMessageCreator *message.CPHMessageCreator
+	MessageConsumer consumer.MessageConsumer
+	messageProducer producer.MessageProducer
+	nativeMapper    mapper.MessageToContentPlaceholderMapper
+	cphMapper       mapper.CPHMapper
+	messageCreator  message.MessageCreator
 }
 
-func NewCPHMessageHandler() *CPHMessageHandler {
-	return &CPHMessageHandler{aggregateMapper: mapper.NewAggregateCPHMapper(), cphMessageCreator: message.NewDefaultCPHMessageCreator()}
+func NewCPHMessageHandler(c consumer.MessageConsumer,
+	p producer.MessageProducer,
+	mapper mapper.CPHMapper,
+	nativeMapper mapper.MessageToContentPlaceholderMapper,
+	messageCreator message.MessageCreator) *CPHMessageHandler {
+
+	return &CPHMessageHandler{
+		MessageConsumer : c,
+		messageProducer : p,
+		nativeMapper: nativeMapper,
+		cphMapper:  mapper,
+		messageCreator:   messageCreator,
+	}
 }
 
 func (kqh *CPHMessageHandler) HandleMessage(msg consumer.Message) {
@@ -38,20 +50,20 @@ func (kqh *CPHMessageHandler) HandleMessage(msg consumer.Message) {
 		return
 	}
 
-	methodePlaceholder, err := model.NewMethodeContentPlaceholder([]byte(msg.Body), msg.Headers["X-Request-Id"], msg.Headers["Message-Timestamp"])
+	methodePlaceholder, err := kqh.nativeMapper.Map([]byte(msg.Body), msg.Headers["X-Request-Id"], msg.Headers["Message-Timestamp"])
 	if err != nil {
 		log.WithField("transaction_id", tid).WithError(err).Error("Error creating methode model from queue message")
 		return
 	}
 
-	transformedContents, err := kqh.aggregateMapper.MapContentPlaceholder(methodePlaceholder)
+	transformedContents, err := kqh.cphMapper.MapContentPlaceholder(methodePlaceholder)
 	if err != nil {
 		log.WithField("transaction_id", tid).WithError(err).Error("Error transforming content")
 		return
 	}
 
 	for _, transformedContent := range transformedContents {
-		eventMessage, err := kqh.cphMessageCreator.ToPublicationEventMessage(transformedContent.GetUppCoreContent(), transformedContent)
+		eventMessage, err := kqh.messageCreator.ToPublicationEventMessage(transformedContent.GetUppCoreContent(), transformedContent)
 		if err != nil {
 			log.WithField("transaction_id", tid).WithField("uuid", transformedContent.GetUUID()).WithError(err).Warn("Error creating transformed content message to queue")
 			return
@@ -67,20 +79,17 @@ func (kqh *CPHMessageHandler) HandleMessage(msg consumer.Message) {
 	}
 }
 
-func (kqh *CPHMessageHandler) StartHandlingMessages(c consumer.MessageConsumer, p producer.MessageProducer) {
-	kqh.messageConsumer = c
-	kqh.messageProducer = p
-
+func (kqh *CPHMessageHandler) StartHandlingMessages() {
 	log.Infof("Starting queue consumer...")
 	var consumerWaitGroup sync.WaitGroup
 	consumerWaitGroup.Add(1)
 	go func() {
-		kqh.messageConsumer.Start()
+		kqh.MessageConsumer.Start()
 		consumerWaitGroup.Done()
 	}()
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	<-ch
-	kqh.messageConsumer.Stop()
+	kqh.MessageConsumer.Stop()
 	consumerWaitGroup.Wait()
 }
