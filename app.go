@@ -130,7 +130,9 @@ func main() {
 		messageConsumer := consumer.NewConsumer(consumerConfig, h.HandleMessage, httpClient)
 		h.MessageConsumer = messageConsumer
 
-		go serve(*port, resources.NewMapperHealthcheck(messageConsumer, messageProducer), resources.NewMapEndpointHandler())
+		endpointHandler := resources.NewMapEndpointHandler(aggregateMapper, messageCreator, nativeMapper)
+
+		go serve(*port, resources.NewMapperHealthcheck(messageConsumer, messageProducer), endpointHandler)
 
 		h.StartHandlingMessages()
 	}

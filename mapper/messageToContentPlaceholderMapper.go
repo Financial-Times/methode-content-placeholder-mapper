@@ -18,7 +18,7 @@ type MessageToContentPlaceholderMapper interface {
 type DefaultMessageMapper struct {
 }
 
-func (DefaultMessageMapper) Map(messageBody []byte, transactionID string, lastModified string) (*model.MethodeContentPlaceholder, *utility.MappingError) {
+func (m DefaultMessageMapper) Map(messageBody []byte, transactionID string, lastModified string) (*model.MethodeContentPlaceholder, *utility.MappingError) {
 	var p model.MethodeContentPlaceholder
 	if err := json.Unmarshal(messageBody, &p); err != nil {
 		return nil, utility.NewMappingError().WithMessage(err.Error())

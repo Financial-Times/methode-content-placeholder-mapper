@@ -13,6 +13,7 @@ import (
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"fmt"
 )
 
 type MessageHandler interface {
@@ -63,6 +64,7 @@ func (kqh *CPHMessageHandler) HandleMessage(msg consumer.Message) {
 	}
 
 	for _, transformedContent := range transformedContents {
+		fmt.Printf("hello %v", transformedContent)
 		eventMessage, err := kqh.messageCreator.ToPublicationEventMessage(transformedContent.GetUppCoreContent(), transformedContent)
 		if err != nil {
 			log.WithField("transaction_id", tid).WithField("uuid", transformedContent.GetUUID()).WithError(err).Warn("Error creating transformed content message to queue")

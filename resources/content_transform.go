@@ -17,16 +17,21 @@ import (
 )
 
 type MapEndpointHandler struct {
-	aggregateMapper   *mapper.AggregateCPHMapper
-	cphMessageCreator *message.CPHMessageCreator
+	aggregateMapper   mapper.CPHMapper
+	nativeMapper      mapper.MessageToContentPlaceholderMapper
+	cphMessageCreator message.MessageCreator
 }
 
 type msg struct {
 	Message string `json:"message"`
 }
 
-func NewMapEndpointHandler() *MapEndpointHandler {
-	return &MapEndpointHandler{aggregateMapper: mapper.NewAggregateCPHMapper(), cphMessageCreator: message.NewDefaultCPHMessageCreator()}
+func NewMapEndpointHandler(aggregateMapper mapper.CPHMapper, messageCreator message.MessageCreator, nativeMapper mapper.MessageToContentPlaceholderMapper) *MapEndpointHandler {
+	return &MapEndpointHandler{
+		aggregateMapper: aggregateMapper,
+		cphMessageCreator: messageCreator,
+		nativeMapper: nativeMapper,
+	}
 }
 
 func (h *MapEndpointHandler) ServeMapEndpoint(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +79,7 @@ func (h *MapEndpointHandler) NewMethodeContentPlaceholderFromHTTPRequest(r *http
 	if err != nil {
 		return nil, utility.NewMappingError().WithMessage(err.Error())
 	}
-	return model.NewMethodeContentPlaceholder(messageBody, transactionID, lastModified)
+	return h.nativeMapper.Map(messageBody, transactionID, lastModified)
 }
 
 func writeError(w http.ResponseWriter, err error, transactionID, uuid, requestURI string) {

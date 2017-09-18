@@ -14,6 +14,8 @@ import (
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
 	"io/ioutil"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
 )
 
 const placeholderMsg = `{"uuid":"f9845f8a-c210-11e6-91a7-e73ace06f770", "type": "EOM::CompoundStory"}`
@@ -23,7 +25,11 @@ const expectedTransactionID = "tid_bh7VTFj9Il"
 func TestSuccessfulMapEndpoint(t *testing.T) {
 	methodeContentMsg := buildIgMethodePlaceholderUpdateMsg()
 
-	h := NewMapEndpointHandler()
+	aggregateMapper := mapper.NewAggregateCPHMapper()
+	messageCreator := message.NewDefaultCPHMessageCreator()
+	nativeMapper := mapper.DefaultMessageMapper{}
+
+	h := NewMapEndpointHandler(aggregateMapper, messageCreator, nativeMapper)
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(methodeContentMsg.Body)))
 	w := httptest.NewRecorder()
@@ -35,7 +41,11 @@ func TestSuccessfulMapEndpoint(t *testing.T) {
 func TestDeletedContentPlaceholderMapEndpoint(t *testing.T) {
 	methodeContentDeleteMsg := buildIgMethodePlaceholderDeleteMsg()
 
-	h := NewMapEndpointHandler()
+	aggregateMapper := mapper.NewAggregateCPHMapper()
+	messageCreator := message.NewDefaultCPHMessageCreator()
+	nativeMapper := mapper.DefaultMessageMapper{}
+
+	h := NewMapEndpointHandler(aggregateMapper, messageCreator, nativeMapper)
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(methodeContentDeleteMsg.Body)))
 	w := httptest.NewRecorder()
@@ -47,7 +57,11 @@ func TestDeletedContentPlaceholderMapEndpoint(t *testing.T) {
 }
 
 func TestUnsuccessfulMethodePlaceholderBuild(t *testing.T) {
-	h := NewMapEndpointHandler()
+	aggregateMapper := mapper.NewAggregateCPHMapper()
+	messageCreator := message.NewDefaultCPHMessageCreator()
+	nativeMapper := mapper.DefaultMessageMapper{}
+
+	h := NewMapEndpointHandler(aggregateMapper, messageCreator, nativeMapper)
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(nil)))
 	w := httptest.NewRecorder()
@@ -59,7 +73,12 @@ func TestUnsuccessfulMethodePlaceholderBuild(t *testing.T) {
 func TestUnsuccessfulPlaceholderMapping(t *testing.T) {
 	m := new(MapperMock)
 	m.On("MapContentPlaceholder", mock.Anything).Return(model.UppContentPlaceholder{}, model.UppComplementaryContent{}, utility.NewMappingError().WithMessage("All map and no play makes MCPM a dull boy"))
-	h := NewMapEndpointHandler()
+
+	aggregateMapper := mapper.NewAggregateCPHMapper()
+	messageCreator := message.NewDefaultCPHMessageCreator()
+	nativeMapper := mapper.DefaultMessageMapper{}
+
+	h := NewMapEndpointHandler(aggregateMapper, messageCreator, nativeMapper)
 
 	req := httptest.NewRequest("POST", mapperURL, bytes.NewReader([]byte(placeholderMsg)))
 	w := httptest.NewRecorder()
@@ -73,8 +92,13 @@ func TestSuccesfulBuildOfPlaceholderFromHTTPRequest(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
+
+	aggregateMapper := mapper.NewAggregateCPHMapper()
+	messageCreator := message.NewDefaultCPHMessageCreator()
+	nativeMapper := mapper.DefaultMessageMapper{}
+
 	req := httptest.NewRequest("POST", "http://example.com/foo", bytes.NewReader(placeholderBody))
-	mapHandler := NewMapEndpointHandler()
+	mapHandler := NewMapEndpointHandler(aggregateMapper, messageCreator, nativeMapper)
 
 	methodePlacheholder, err := mapHandler.NewMethodeContentPlaceholderFromHTTPRequest(req)
 	assert.Nil(t, err, "It should not return an error")
