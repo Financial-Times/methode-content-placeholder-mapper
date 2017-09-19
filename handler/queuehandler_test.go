@@ -3,7 +3,6 @@ package handler
 import (
 	"testing"
 	"github.com/stretchr/testify/mock"
-	//"strings"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
