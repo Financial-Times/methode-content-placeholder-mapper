@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	fthealth "github.com/Financial-Times/go-fthealth/v1a"
+	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/service-status-go/httphandlers"
@@ -144,14 +144,14 @@ func main() {
 func serve(port int, hc *resources.MapperHealthcheck, meh *resources.MapEndpointHandler) {
 	r := mux.NewRouter()
 
-	hcHandler := fthealth.HandlerParallel(
-		"Dependent services healthcheck",
-		"Checks if all the dependent services are reachable and healthy.",
-		hc.ConsumerConnectivityCheck(),
-		hc.ProducerConnectivityCheck(),
-	)
+	hec := fthealth.HealthCheck{
+		SystemCode:  "up-mcpm",
+		Name:        "Dependent services healthcheck",
+		Description: "Checks if all the dependent services are reachable and healthy.",
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+	}
 	r.HandleFunc("/map", meh.ServeMapEndpoint).Methods("POST")
-	r.HandleFunc("/__health", hcHandler)
+	r.HandleFunc("/__health", fthealth.Handler(hec))
 	r.HandleFunc(httphandlers.GTGPath, httphandlers.NewGoodToGoHandler(hc.GTG)).Methods("GET")
 	r.HandleFunc(httphandlers.BuildInfoPath, httphandlers.BuildInfoHandler).Methods("GET")
 	r.HandleFunc(httphandlers.PingPath, httphandlers.PingHandler).Methods("GET")
