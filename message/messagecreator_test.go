@@ -26,7 +26,9 @@ func TestCorrectMessageToUpdateEvent(t *testing.T) {
 	aggregateMapper := mapper.NewAggregateCPHMapper()
 	messageCreator := NewDefaultCPHMessageCreator()
 
-	methodePlaceholder, _ := model.NewMethodeContentPlaceholder([]byte(igMethodePlaceHolderMsg.Body), igMethodePlaceHolderMsg.Headers["X-Request-Id"], igMethodePlaceHolderMsg.Headers["Message-Timestamp"])
+	nativeMapper := mapper.DefaultMessageMapper{}
+
+	methodePlaceholder, _ := nativeMapper.Map([]byte(igMethodePlaceHolderMsg.Body), igMethodePlaceHolderMsg.Headers["X-Request-Id"], igMethodePlaceHolderMsg.Headers["Message-Timestamp"])
 	transformedContents, err := aggregateMapper.MapContentPlaceholder(methodePlaceholder)
 
 	actualCPHPubEventMsg, err := messageCreator.ToPublicationEventMessage(transformedContents[0].GetUppCoreContent(), transformedContents[0])
@@ -72,7 +74,9 @@ func TestCorrectMessageToDeleteEvent(t *testing.T) {
 	aggregateMapper := mapper.NewAggregateCPHMapper()
 	messageCreator := NewDefaultCPHMessageCreator()
 
-	methodePlaceholder, _ := model.NewMethodeContentPlaceholder([]byte(igMethodePlaceHolderMsg.Body), igMethodePlaceHolderMsg.Headers["X-Request-Id"], igMethodePlaceHolderMsg.Headers["Message-Timestamp"])
+	nativeMapper := mapper.DefaultMessageMapper{}
+
+	methodePlaceholder, _ := nativeMapper.Map([]byte(igMethodePlaceHolderMsg.Body), igMethodePlaceHolderMsg.Headers["X-Request-Id"], igMethodePlaceHolderMsg.Headers["Message-Timestamp"])
 	transformedContents, err := aggregateMapper.MapContentPlaceholder(methodePlaceholder)
 
 	actualCPHPubEventMsg, err := messageCreator.ToPublicationEventMessage(transformedContents[0].GetUppCoreContent(), transformedContents[0])
