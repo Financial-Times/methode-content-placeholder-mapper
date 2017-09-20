@@ -15,7 +15,7 @@ func TestInternalPlaceholder_Ok(t *testing.T) {
 			IsDeleted: false,
 		},
 	}
-	contentMapper := &contentCPHMapper{}
+	contentMapper := &ContentCPHMapper{}
 
 	uppContents, err := contentMapper.MapContentPlaceholder(placeholder)
 
@@ -33,7 +33,7 @@ func TestInternalPlaceholderDeleted_Ok(t *testing.T) {
 			IsDeleted: true,
 		},
 	}
-	contentMapper := contentCPHMapper{}
+	contentMapper := ContentCPHMapper{}
 
 	uppContents, err := contentMapper.MapContentPlaceholder(placeholder)
 

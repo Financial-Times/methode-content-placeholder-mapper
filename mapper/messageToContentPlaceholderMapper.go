@@ -6,6 +6,7 @@ import (
 	"encoding/xml"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
+	"fmt"
 )
 
 const contentPlaceholderSourceCode = "ContentPlaceholder"
@@ -31,6 +32,7 @@ func (m DefaultMessageMapper) Map(messageBody []byte, transactionID string, last
 	p.LastModified = lastModified
 
 	attrs, err := buildAttributes(p.AttributesXML)
+	fmt.Printf("attrs=%v", attrs)
 	if err != nil {
 		return nil, utility.NewMappingError().WithMessage(err.Error()).ForContent(p.UUID)
 	}

@@ -8,10 +8,10 @@ import (
 
 const complementaryContentURI = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/complementarycontent/"
 
-type complementaryContentCPHMapper struct {
+type ComplementaryContentCPHMapper struct {
 }
 
-func (ccm *complementaryContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder) ([]model.UppContent, *utility.MappingError) {
+func (ccm *ComplementaryContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder) ([]model.UppContent, *utility.MappingError) {
 	uuidToSet := mcp.UUID
 	if mcp.IsInternalCPH() {
 		uuidToSet = mcp.Attributes.LinkedArticleUUID
@@ -24,7 +24,7 @@ func (ccm *complementaryContentCPHMapper) MapContentPlaceholder(mcp *model.Metho
 	return []model.UppContent{ccm.NewUppComplementaryContent(mcp, uuidToSet)}, nil
 }
 
-func (ccm *complementaryContentCPHMapper) NewUppComplementaryContent(mpc *model.MethodeContentPlaceholder, linkedArticleUUID string) *model.UppComplementaryContent {
+func (ccm *ComplementaryContentCPHMapper) NewUppComplementaryContent(mpc *model.MethodeContentPlaceholder, linkedArticleUUID string) *model.UppComplementaryContent {
 	return &model.UppComplementaryContent{
 		UppCoreContent: model.UppCoreContent{
 			UUID:             linkedArticleUUID,
@@ -38,7 +38,7 @@ func (ccm *complementaryContentCPHMapper) NewUppComplementaryContent(mpc *model.
 	}
 }
 
-func (ccm *complementaryContentCPHMapper) NewUppComplementaryContentDelete(mpc *model.MethodeContentPlaceholder, linkedArticleUUID string) *model.UppComplementaryContent {
+func (ccm *ComplementaryContentCPHMapper) NewUppComplementaryContentDelete(mpc *model.MethodeContentPlaceholder, linkedArticleUUID string) *model.UppComplementaryContent {
 	return &model.UppComplementaryContent{
 		UppCoreContent: model.UppCoreContent{
 			UUID:             linkedArticleUUID,

@@ -119,7 +119,11 @@ func main() {
 			Authorization: *authorization,
 		}
 
-		aggregateMapper := mapper.NewAggregateCPHMapper()
+	    cphValidator := mapper.NewDefaultCPHValidator()
+		contentCphMapper := &mapper.ContentCPHMapper{}
+		complementaryContentCPHMapper := &mapper.ComplementaryContentCPHMapper{}
+
+		aggregateMapper := mapper.NewAggregateCPHMapper(cphValidator, []mapper.CPHMapper{contentCphMapper, complementaryContentCPHMapper})
 
 		nativeMapper := mapper.DefaultMessageMapper{}
 

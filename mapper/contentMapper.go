@@ -15,11 +15,11 @@ const (
 	ftBrand = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
 )
 
-type contentCPHMapper struct {
+type ContentCPHMapper struct {
 }
 
-func (cm *contentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder) ([]model.UppContent, *utility.MappingError) {
-	if mcp.IsInternalCPH() {
+func (cm *ContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder) ([]model.UppContent, *utility.MappingError) {
+	if !mcp.IsInternalCPH() {
 		return []model.UppContent{}, nil
 	} else {
 		if mcp.Attributes.IsDeleted {
@@ -35,7 +35,7 @@ func (cm *contentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlace
 	}
 }
 
-func (cm *contentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContentPlaceholder) (*model.UppContentPlaceholder, *utility.MappingError) {
+func (cm *ContentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContentPlaceholder) (*model.UppContentPlaceholder, *utility.MappingError) {
 	publishDate, err := buildPublishedDate(mpc.Attributes.LastPublicationDate)
 	if err != nil {
 		return nil, utility.NewMappingError().WithMessage(err.Error()).ForContent(mpc.UUID)
@@ -60,7 +60,7 @@ func (cm *contentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContent
 	}, nil
 }
 
-func (cm *contentCPHMapper) mapToUppContentPlaceholderDelete(mpc *model.MethodeContentPlaceholder) *model.UppContentPlaceholder {
+func (cm *ContentCPHMapper) mapToUppContentPlaceholderDelete(mpc *model.MethodeContentPlaceholder) *model.UppContentPlaceholder {
 	return &model.UppContentPlaceholder{
 		UppCoreContent: model.UppCoreContent{
 			UUID:             mpc.UUID,

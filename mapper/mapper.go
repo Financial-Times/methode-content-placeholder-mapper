@@ -14,8 +14,8 @@ type AggregateCPHMapper struct {
 	cphValidator CPHValidator
 }
 
-func NewAggregateCPHMapper() *AggregateCPHMapper {
-	return &AggregateCPHMapper{cphValidator: NewDefaultCPHValidator(), cphMappers: []CPHMapper{&contentCPHMapper{}, &complementaryContentCPHMapper{}}}
+func NewAggregateCPHMapper(validator CPHValidator, cphMappers []CPHMapper) *AggregateCPHMapper {
+	return &AggregateCPHMapper{cphValidator: validator, cphMappers: cphMappers}
 }
 
 func (m *AggregateCPHMapper) MapContentPlaceholder(mpc *model.MethodeContentPlaceholder) ([]model.UppContent, *utility.MappingError) {
