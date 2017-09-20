@@ -20,6 +20,8 @@ import (
 	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
+	"encoding/json"
+	"io/ioutil"
 )
 
 func init() {
@@ -87,6 +89,12 @@ func main() {
 		Desc:   "application port",
 		EnvVar: "PORT",
 	})
+	docStoreAddress := app.String(cli.StringOpt{
+		Name:   "document-store-api-addresses",
+		Value:  "",
+		Desc:   "Addresses to connect to the consumer queue (URLs).",
+		EnvVar: "DOCUMENT_STORE_API_ADDRESS",
+	})
 
 	app.Action = func() {
 		httpClient := &http.Client{
@@ -120,20 +128,17 @@ func main() {
 		}
 
 	    cphValidator := mapper.NewDefaultCPHValidator()
+		docStoreClient := mapper.NewHttpDocStoreClient(httpClient, *docStoreAddress)
+		iResolver := mapper.NewHttpIResolver(docStoreClient, readBrandMappings())
 		contentCphMapper := &mapper.ContentCPHMapper{}
 		complementaryContentCPHMapper := &mapper.ComplementaryContentCPHMapper{}
-
-		aggregateMapper := mapper.NewAggregateCPHMapper(cphValidator, []mapper.CPHMapper{contentCphMapper, complementaryContentCPHMapper})
-
+		aggregateMapper := mapper.NewAggregateCPHMapper(iResolver, cphValidator, []mapper.CPHMapper{contentCphMapper, complementaryContentCPHMapper})
 		nativeMapper := mapper.DefaultMessageMapper{}
-
 		messageCreator := message.NewDefaultCPHMessageCreator()
-
 		messageProducer := producer.NewMessageProducerWithHTTPClient(producerConfig, httpClient)
 		h := handler.NewCPHMessageHandler(nil, messageProducer, aggregateMapper, nativeMapper, messageCreator)
 		messageConsumer := consumer.NewConsumer(consumerConfig, h.HandleMessage, httpClient)
 		h.MessageConsumer = messageConsumer
-
 		endpointHandler := resources.NewMapEndpointHandler(aggregateMapper, messageCreator, nativeMapper)
 
 		go serve(*port, resources.NewMapperHealthcheck(messageConsumer, messageProducer), endpointHandler)
@@ -164,4 +169,19 @@ func serve(port int, hc *resources.MapperHealthcheck, meh *resources.MapEndpoint
 
 	err := http.ListenAndServe(":"+strconv.Itoa(port), nil)
 	log.Fatal(err)
+}
+
+func readBrandMappings() map[string]string {
+	brandMappingsFile, err := ioutil.ReadFile("./brandMappings.json")
+	if err != nil {
+		log.Errorf("Couldn't read brand mapping configuration: %v\n", err)
+		os.Exit(1)
+	}
+	var brandMappings map[string]string
+	err = json.Unmarshal(brandMappingsFile, &brandMappings)
+	if err != nil {
+		log.Errorf("Couldn't unmarshal brand mapping configuration: %v\n", err)
+		os.Exit(1)
+	}
+	return brandMappings
 }

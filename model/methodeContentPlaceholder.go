@@ -24,7 +24,9 @@ type Attributes struct {
 	XMLName             xml.Name `xml:"ObjectMetadata"`
 	SourceCode          string   `xml:"EditorialNotes>Sources>Source>SourceCode"`
 	LastPublicationDate string   `xml:"OutputChannels>DIFTcom>DIFTcomLastPublication"`
-	LinkedArticleUUID   string   `xml:"WiresIndexing>ref_field"`
+	RefField            string   `xml:"WiresIndexing>ref_field"`
+	ServiceId           string   `xml:"WiresIndexing>serviceid"`
+	Category            string   `xml:"WiresIndexing>category"`
 	IsDeleted           bool     `xml:"OutputChannels>DIFTcom>DIFTcomMarkDeleted"`
 }
 
@@ -46,8 +48,4 @@ type LeadHeadline struct {
 // LeadImage represents the image attribute of a methode content placeholder
 type LeadImage struct {
 	FileRef string `xml:"fileref,attr"`
-}
-
-func (mcp MethodeContentPlaceholder) IsInternalCPH() bool {
-	return mcp.Attributes.LinkedArticleUUID != ""
 }

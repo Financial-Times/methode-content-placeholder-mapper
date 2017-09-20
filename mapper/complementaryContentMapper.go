@@ -11,41 +11,43 @@ const complementaryContentURI = "http://methode-content-placeholder-mapper-iw-uk
 type ComplementaryContentCPHMapper struct {
 }
 
-func (ccm *ComplementaryContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder) ([]model.UppContent, *utility.MappingError) {
-	uuidToSet := mcp.UUID
-	if mcp.IsInternalCPH() {
-		uuidToSet = mcp.Attributes.LinkedArticleUUID
-	}
-
+func (ccm *ComplementaryContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid string) ([]model.UppContent, *utility.MappingError) {
+	var cc *model.UppComplementaryContent
 	if mcp.Attributes.IsDeleted {
-		return []model.UppContent{ccm.NewUppComplementaryContentDelete(mcp, uuidToSet)}, nil
+		cc = ccm.mapToUppComplementaryContentDelete(mcp)
+	} else{
+		cc = ccm.mapToUppComplementaryContent(mcp)
 	}
-
-	return []model.UppContent{ccm.NewUppComplementaryContent(mcp, uuidToSet)}, nil
+	if uuid != "" {
+		cc.UUID = uuid
+	}
+	return []model.UppContent{cc}, nil
 }
 
-func (ccm *ComplementaryContentCPHMapper) NewUppComplementaryContent(mpc *model.MethodeContentPlaceholder, linkedArticleUUID string) *model.UppComplementaryContent {
+func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContent(mpc *model.MethodeContentPlaceholder) *model.UppComplementaryContent {
 	return &model.UppComplementaryContent{
 		UppCoreContent: model.UppCoreContent{
-			UUID:             linkedArticleUUID,
+			UUID:             mpc.UUID,
 			PublishReference: mpc.TransactionID,
 			LastModified:     mpc.LastModified,
 			ContentURI:       complementaryContentURI,
-			IsMarkedDeleted:  mpc.Attributes.IsDeleted},
+			IsMarkedDeleted:  mpc.Attributes.IsDeleted,
+		},
 		AlternativeTitles:      buildCCAlternativeTitles(mpc.Body.LeadHeadline.Text),
 		AlternativeImages:      buildCCAlternativeImages(mpc.Body.LeadImage.FileRef),
 		AlternativeStandfirsts: buildCCAlternativeStandfirsts(mpc.Body.LongStandfirst),
 	}
 }
 
-func (ccm *ComplementaryContentCPHMapper) NewUppComplementaryContentDelete(mpc *model.MethodeContentPlaceholder, linkedArticleUUID string) *model.UppComplementaryContent {
+func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContentDelete(mpc *model.MethodeContentPlaceholder) *model.UppComplementaryContent {
 	return &model.UppComplementaryContent{
 		UppCoreContent: model.UppCoreContent{
-			UUID:             linkedArticleUUID,
+			UUID:             mpc.UUID,
 			PublishReference: mpc.TransactionID,
 			LastModified:     mpc.LastModified,
 			ContentURI:       complementaryContentURI,
-			IsMarkedDeleted:  true},
+			IsMarkedDeleted:  true,
+		},
 	}
 }
 

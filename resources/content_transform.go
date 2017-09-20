@@ -54,7 +54,7 @@ func (h *MapEndpointHandler) mapContent(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	transformedContents, err := h.aggregateMapper.MapContentPlaceholder(methodePlaceholder)
+	transformedContents, err := h.aggregateMapper.MapContentPlaceholder(methodePlaceholder, "")
 	if err != nil {
 		log.WithField("transaction_id", transactionID).WithError(err).Error("Error mapping model from queue message")
 		return

@@ -18,21 +18,20 @@ const (
 type ContentCPHMapper struct {
 }
 
-func (cm *ContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder) ([]model.UppContent, *utility.MappingError) {
-	if !mcp.IsInternalCPH() {
+func (cm *ContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid string) ([]model.UppContent, *utility.MappingError) {
+	if uuid != "" {
 		return []model.UppContent{}, nil
-	} else {
-		if mcp.Attributes.IsDeleted {
-			return []model.UppContent{cm.mapToUppContentPlaceholderDelete(mcp)}, nil
-		}
-
-		uppContent, err := cm.mapToUppContentPlaceholder(mcp)
-		if err != nil {
-			return nil, err
-		}
-
-		return []model.UppContent{uppContent}, nil
 	}
+
+	if mcp.Attributes.IsDeleted {
+		return []model.UppContent{cm.mapToUppContentPlaceholderDelete(mcp)}, nil
+	}
+
+	uppContent, err := cm.mapToUppContentPlaceholder(mcp)
+	if err != nil {
+		return nil, err
+	}
+	return []model.UppContent{uppContent}, nil
 }
 
 func (cm *ContentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContentPlaceholder) (*model.UppContentPlaceholder, *utility.MappingError) {
