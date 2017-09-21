@@ -35,28 +35,28 @@ func NewMapEndpointHandler(aggregateMapper mapper.CPHMapper, messageCreator mess
 }
 
 func (h *MapEndpointHandler) ServeMapEndpoint(w http.ResponseWriter, r *http.Request) {
-	transactionID := tid.GetTransactionIDFromRequest(r)
-	log.WithField("transaction_id", transactionID).WithField("request_uri", r.RequestURI).Info("Received transformation request")
-	h.mapContent(w, r, transactionID)
+	tid := tid.GetTransactionIDFromRequest(r)
+	log.WithField("transaction_id", tid).WithField("request_uri", r.RequestURI).Info("Received transformation request")
+	h.mapContent(w, r, tid)
 }
 
-func (h *MapEndpointHandler) mapContent(w http.ResponseWriter, r *http.Request, transactionID string) {
+func (h *MapEndpointHandler) mapContent(w http.ResponseWriter, r *http.Request, tid string) {
 	methodePlaceholder, err := h.NewMethodeContentPlaceholderFromHTTPRequest(r)
 
 	if err != nil {
-		writeError(w, err, transactionID, "could not get uuid from model", r.RequestURI)
+		writeError(w, err, tid, "could not get uuid from model", r.RequestURI)
 		return
 	}
 	uuid := methodePlaceholder.UUID
 
 	if methodePlaceholder.Attributes.IsDeleted {
-		writeMessageForDeletedContent(w, transactionID, uuid, r.RequestURI)
+		writeMessageForDeletedContent(w, tid, uuid, r.RequestURI)
 		return
 	}
 
-	transformedContents, err := h.aggregateMapper.MapContentPlaceholder(methodePlaceholder, "")
+	transformedContents, err := h.aggregateMapper.MapContentPlaceholder(methodePlaceholder, "", tid)
 	if err != nil {
-		log.WithField("transaction_id", transactionID).WithError(err).Error("Error mapping model from queue message")
+		log.WithField("transaction_id", tid).WithError(err).Error("Error mapping model from queue message")
 		return
 	}
 
@@ -69,7 +69,7 @@ func (h *MapEndpointHandler) mapContent(w http.ResponseWriter, r *http.Request, 
 	w.Header().Add("Content-Type", "application/json")
 	encoder := json.NewEncoder(w)
 	encoder.Encode(pubEvents)
-	log.WithField("transaction_id", transactionID).WithField("uuid", uuid).WithField("request_uri", r.RequestURI).Info("Transformation successful")
+	log.WithField("transaction_id", tid).WithField("uuid", uuid).WithField("request_uri", r.RequestURI).Info("Transformation successful")
 }
 
 func (h *MapEndpointHandler) NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (*model.MethodeContentPlaceholder, *utility.MappingError) {

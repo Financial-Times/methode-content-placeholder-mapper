@@ -15,7 +15,7 @@ const (
 var uuidRegex = regexp.MustCompile(uuidPattern)
 
 type IResolver interface {
-	ResolveIdentifier(serviceId, refField string) (string, error)
+	ResolveIdentifier(serviceId, refField string, tid string) (string, error)
 }
 
 type httpIResolver struct {
@@ -27,21 +27,21 @@ func NewHttpIResolver(client docStoreClient, brandMappings map[string]string) *h
 	return &httpIResolver{client: client, brandMappings: brandMappings}
 }
 
-func (r *httpIResolver) ResolveIdentifier(serviceId, refField string) (string, error) {
+func (r *httpIResolver) ResolveIdentifier(serviceId, refField string, tid string) (string, error) {
 	mappingKey := strings.Split(serviceId, "?")[0]
 	mappingKey = strings.Split(mappingKey, "#")[0]
 	for key, value := range r.brandMappings {
 		if strings.Contains(mappingKey, key) {
 			authority := authorityPrefix + value
 			identifierValue := strings.Split(serviceId, "://")[0] + "://" + key + "/?p=" + refField
-			return r.resolveIdentifier(authority, identifierValue)
+			return r.resolveIdentifier(authority, identifierValue, tid)
 		}
 	}
 	return "", fmt.Errorf("Couldn't find authority in mapping table serviceId=%v refField=%v", serviceId, refField)
 }
 
-func (r *httpIResolver) resolveIdentifier(authority string, identifier string) (string, error) {
-	status, location, err := r.client.contentQuery(authority, identifier)
+func (r *httpIResolver) resolveIdentifier(authority string, identifier string, tid string) (string, error) {
+	status, location, err := r.client.contentQuery(authority, identifier, tid)
 	if err != nil {
 		return "", err
 	}

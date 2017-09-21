@@ -56,7 +56,7 @@ func (kqh *CPHMessageHandler) HandleMessage(msg consumer.Message) {
 		return
 	}
 
-	transformedContents, err := kqh.cphMapper.MapContentPlaceholder(methodePlaceholder, "")
+	transformedContents, err := kqh.cphMapper.MapContentPlaceholder(methodePlaceholder, "", tid)
 	if err != nil {
 		log.WithField("transaction_id", tid).WithError(err).Error("Error transforming content")
 		return

@@ -11,7 +11,7 @@ const complementaryContentURI = "http://methode-content-placeholder-mapper-iw-uk
 type ComplementaryContentCPHMapper struct {
 }
 
-func (ccm *ComplementaryContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid string) ([]model.UppContent, *utility.MappingError) {
+func (ccm *ComplementaryContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid string, tid string) ([]model.UppContent, *utility.MappingError) {
 	var cc *model.UppComplementaryContent
 	if mcp.Attributes.IsDeleted {
 		cc = ccm.mapToUppComplementaryContentDelete(mcp)

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"net/url"
-	"net/http/httputil"
+	"github.com/Financial-Times/transactionid-utils-go"
 )
 
 type docStoreClient interface {
-	contentQuery(authority string, identifier string) (status int, location string, err error)
+	contentQuery(authority string, identifier string, tid string) (status int, location string, err error)
 }
 
 type httpDocStoreClient struct {
@@ -21,36 +21,27 @@ func NewHttpDocStoreClient(client *http.Client, docStoreAddress string) *httpDoc
 	return &httpDocStoreClient{docStoreAddress: docStoreAddress, client: client}
 }
 
-func (c *httpDocStoreClient) contentQuery(authority string, identifier string) (status int, location string, err error) {
-	docStoreUrl, err := url.Parse(c.docStoreAddress)
+func (c *httpDocStoreClient) contentQuery(authority string, identifier string, tid string) (status int, location string, err error) {
+	docStoreUrl, err := url.Parse(c.docStoreAddress + "/content-query")
 	if err != nil {
 		return -1, "", fmt.Errorf("Invalid address docStoreAddress=%v", c.docStoreAddress)
 	}
-	docStoreUrl.Path += "content-query"
-	parameters := url.Values{}
-	parameters.Add("identifierValue", identifier)
-	parameters.Add("identifierAuthority", authority)
-	docStoreUrl.RawQuery = parameters.Encode()
-	logrus.Infof("docStoreUrl.String()=%v", docStoreUrl.String())
-
-	req, err := http.NewRequest("GET", docStoreUrl.String(), nil)
-	logrus.Infof("req.URL.String()=%v", req.URL.String())
+	query := url.Values{}
+	query.Add("identifierValue", identifier)
+	query.Add("identifierAuthority", authority)
+	docStoreUrl.RawQuery = query.Encode()
+	req, err := http.NewRequest(http.MethodGet, docStoreUrl.String(), nil)
 	if err != nil {
 		return -1, "", fmt.Errorf("Couldn't create request to fetch canonical identifier for authority=%v identifier=%v", authority, identifier)
 	}
 	// TODO: Remove when host based routing doesn't exist any more.
 	req.Host = "document-store-api"
+	req.Header.Add(transactionidutils.TransactionIDHeader, tid)
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return -1, "", fmt.Errorf("Unsucessful request for fetching canonical identifier for authority=%v identifier=%v", authority, identifier)
 	}
 	niceClose(resp)
-	dump, err := httputil.DumpResponse(resp, true)
-	if err != nil {
-		logrus.Infof("dumping doesn't work")
-	} else {
-		logrus.Infof(string(dump))
-	}
 
 	return resp.StatusCode, resp.Header.Get("Location"), nil
 }

@@ -24,8 +24,10 @@ const expectedTransactionID = "tid_bh7VTFj9Il"
 
 func TestSuccessfulMapEndpoint(t *testing.T) {
 	methodeContentMsg := buildIgMethodePlaceholderUpdateMsg()
+	mockedResolver := new(mockResolver)
+	cphValidator := mapper.NewDefaultCPHValidator()
 
-	aggregateMapper := mapper.NewAggregateCPHMapper()
+	aggregateMapper := mapper.NewAggregateCPHMapper(mockedResolver, cphValidator, )
 	messageCreator := message.NewDefaultCPHMessageCreator()
 	nativeMapper := mapper.DefaultMessageMapper{}
 

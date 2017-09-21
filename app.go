@@ -108,6 +108,9 @@ func main() {
 				TLSHandshakeTimeout:   3 * time.Second,
 				ExpectContinueTimeout: 1 * time.Second,
 			},
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
 		}
 
 		consumerConfig := consumer.QueueConfig{

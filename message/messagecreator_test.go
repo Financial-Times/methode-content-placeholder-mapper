@@ -29,7 +29,7 @@ func TestCorrectMessageToUpdateEvent(t *testing.T) {
 	nativeMapper := mapper.DefaultMessageMapper{}
 
 	methodePlaceholder, _ := nativeMapper.Map([]byte(igMethodePlaceHolderMsg.Body), igMethodePlaceHolderMsg.Headers["X-Request-Id"], igMethodePlaceHolderMsg.Headers["Message-Timestamp"])
-	transformedContents, err := aggregateMapper.MapContentPlaceholder(methodePlaceholder)
+	transformedContents, err := aggregateMapper.MapContentPlaceholder(methodePlaceholder, "", igMethodePlaceHolderMsg.Headers["X-Request-Id"])
 
 	actualCPHPubEventMsg, err := messageCreator.ToPublicationEventMessage(transformedContents[0].GetUppCoreContent(), transformedContents[0])
 	assert.Nil(t, err, "It should not return error in creating cph content message")
@@ -77,7 +77,7 @@ func TestCorrectMessageToDeleteEvent(t *testing.T) {
 	nativeMapper := mapper.DefaultMessageMapper{}
 
 	methodePlaceholder, _ := nativeMapper.Map([]byte(igMethodePlaceHolderMsg.Body), igMethodePlaceHolderMsg.Headers["X-Request-Id"], igMethodePlaceHolderMsg.Headers["Message-Timestamp"])
-	transformedContents, err := aggregateMapper.MapContentPlaceholder(methodePlaceholder)
+	transformedContents, err := aggregateMapper.MapContentPlaceholder(methodePlaceholder, "", igMethodePlaceHolderMsg.Headers["X-Request-Id"])
 
 	actualCPHPubEventMsg, err := messageCreator.ToPublicationEventMessage(transformedContents[0].GetUppCoreContent(), transformedContents[0])
 	assert.Nil(t, err, "It should not return error in creating cph content message")

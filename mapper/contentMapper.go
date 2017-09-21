@@ -18,7 +18,7 @@ const (
 type ContentCPHMapper struct {
 }
 
-func (cm *ContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid string) ([]model.UppContent, *utility.MappingError) {
+func (cm *ContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid string, tid string) ([]model.UppContent, *utility.MappingError) {
 	if uuid != "" {
 		return []model.UppContent{}, nil
 	}
