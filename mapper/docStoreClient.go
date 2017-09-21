@@ -17,8 +17,8 @@ type httpDocStoreClient struct {
 	client          *http.Client
 }
 
-func NewHttpDocStoreClient(client *http.Client, docStoreHostAndPort string) *httpDocStoreClient {
-	return &httpDocStoreClient{docStoreAddress: docStoreHostAndPort, client: client}
+func NewHttpDocStoreClient(client *http.Client, docStoreAddress string) *httpDocStoreClient {
+	return &httpDocStoreClient{docStoreAddress: docStoreAddress, client: client}
 }
 
 func (c *httpDocStoreClient) contentQuery(authority string, identifier string) (status int, location string, err error) {
@@ -28,11 +28,13 @@ func (c *httpDocStoreClient) contentQuery(authority string, identifier string) (
 	}
 	docStoreUrl.Path += "content-query"
 	parameters := url.Values{}
-	parameters.Add("identifierAuthority", authority)
 	parameters.Add("identifierValue", identifier)
+	parameters.Add("identifierAuthority", authority)
 	docStoreUrl.RawQuery = parameters.Encode()
-	fmt.Println(docStoreUrl.String())
+	logrus.Infof("docStoreUrl.String()=%v", docStoreUrl.String())
+
 	req, err := http.NewRequest("GET", docStoreUrl.String(), nil)
+	logrus.Infof("req.URL.String()=%v", req.URL.String())
 	if err != nil {
 		return -1, "", fmt.Errorf("Couldn't create request to fetch canonical identifier for authority=%v identifier=%v", authority, identifier)
 	}
