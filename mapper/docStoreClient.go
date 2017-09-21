@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/Sirupsen/logrus"
 	"net/url"
-	"io/ioutil"
+	"net/http/httputil"
 )
 
 type docStoreClient interface {
@@ -45,9 +45,12 @@ func (c *httpDocStoreClient) contentQuery(authority string, identifier string) (
 		return -1, "", fmt.Errorf("Unsucessful request for fetching canonical identifier for authority=%v identifier=%v", authority, identifier)
 	}
 	niceClose(resp)
-
-	b, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(b))
+	dump, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		logrus.Infof("dumping doesn't work")
+	} else {
+		logrus.Infof(string(dump))
+	}
 
 	return resp.StatusCode, resp.Header.Get("Location"), nil
 }
