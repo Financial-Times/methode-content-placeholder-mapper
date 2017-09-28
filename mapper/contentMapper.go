@@ -10,7 +10,8 @@ import (
 const (
 	placeholderContentURI = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/content/"
     methodeAuthority = "http://api.ft.com/system/FTCOM-METHODE"
-    canBeDistributedVerify = "verify"
+    verify = "verify"
+    contentType = "Content"
 	methodeDateFormat = "20060102150405"
 	ftBrand = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
 )
@@ -53,9 +54,9 @@ func (cm *ContentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContent
 		Brands:            buildBrands(),
 		WebURL:            mpc.Body.LeadHeadline.URL,
 		AlternativeTitles: buildAlternativeTitles(mpc.Body.ContentPackageHeadline),
-		Type:              "Content",
-		CanBeSyndicated:   "verify",
-		CanBeDistributed:  canBeDistributedVerify,
+		Type:              contentType,
+		CanBeSyndicated:   verify,
+		CanBeDistributed:  verify,
 	}, nil
 }
 

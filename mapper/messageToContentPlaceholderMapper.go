@@ -12,13 +12,13 @@ const contentPlaceholderSourceCode = "ContentPlaceholder"
 const eomCompoundStory = "EOM::CompoundStory"
 
 type MessageToContentPlaceholderMapper interface {
-	Map(messageBody []byte, transactionID string, lastModified string) (*model.MethodeContentPlaceholder, *utility.MappingError)
+	Map(messageBody []byte) (*model.MethodeContentPlaceholder, *utility.MappingError)
 }
 
 type DefaultMessageMapper struct {
 }
 
-func (m DefaultMessageMapper) Map(messageBody []byte, transactionID string, lastModified string) (*model.MethodeContentPlaceholder, *utility.MappingError) {
+func (m DefaultMessageMapper) Map(messageBody []byte) (*model.MethodeContentPlaceholder, *utility.MappingError) {
 	var p model.MethodeContentPlaceholder
 	if err := json.Unmarshal(messageBody, &p); err != nil {
 		return nil, utility.NewMappingError().WithMessage(err.Error())
@@ -26,9 +26,6 @@ func (m DefaultMessageMapper) Map(messageBody []byte, transactionID string, last
 	if p.Type != eomCompoundStory {
 		return nil, utility.NewMappingError().WithMessage("Methode content has not type " + eomCompoundStory).ForContent(p.UUID)
 	}
-
-	p.TransactionID = transactionID
-	p.LastModified = lastModified
 
 	attrs, err := buildAttributes(p.AttributesXML)
 	if err != nil {

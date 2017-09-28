@@ -13,7 +13,6 @@ import (
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
 	"io/ioutil"
-	"time"
 )
 
 type MapEndpointHandler struct {
@@ -73,13 +72,11 @@ func (h *MapEndpointHandler) mapContent(w http.ResponseWriter, r *http.Request, 
 }
 
 func (h *MapEndpointHandler) NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (*model.MethodeContentPlaceholder, *utility.MappingError) {
-	transactionID := tid.GetTransactionIDFromRequest(r)
-	lastModified := time.Now().Format(model.UPPDateFormat)
 	messageBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		return nil, utility.NewMappingError().WithMessage(err.Error())
 	}
-	return h.nativeMapper.Map(messageBody, transactionID, lastModified)
+	return h.nativeMapper.Map(messageBody)
 }
 
 func writeError(w http.ResponseWriter, err error, transactionID, uuid, requestURI string) {

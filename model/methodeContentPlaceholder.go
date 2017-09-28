@@ -15,8 +15,6 @@ type MethodeContentPlaceholder struct {
 	WorkflowStatus   string      `json:"workflowStatus"`
 	Attributes       Attributes  `json:"-"`
 	Body             MethodeBody `json:"-"`
-	TransactionID    string      `json:"-"`
-	LastModified     string      `json:"-"`
 }
 
 // Attributes is the data structure that models methode content placeholders attributes
