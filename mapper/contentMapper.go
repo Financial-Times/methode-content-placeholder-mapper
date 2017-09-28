@@ -19,23 +19,23 @@ const (
 type ContentCPHMapper struct {
 }
 
-func (cm *ContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid string, tid string) ([]model.UppContent, *utility.MappingError) {
+func (cm *ContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid, tid, lmd string) ([]model.UppContent, *utility.MappingError) {
 	if uuid != "" {
 		return []model.UppContent{}, nil
 	}
 
 	if mcp.Attributes.IsDeleted {
-		return []model.UppContent{cm.mapToUppContentPlaceholderDelete(mcp)}, nil
+		return []model.UppContent{cm.mapToUppContentPlaceholderDelete(mcp, tid, lmd)}, nil
 	}
 
-	uppContent, err := cm.mapToUppContentPlaceholder(mcp)
+	uppContent, err := cm.mapToUppContentPlaceholder(mcp, tid, lmd)
 	if err != nil {
 		return nil, err
 	}
 	return []model.UppContent{uppContent}, nil
 }
 
-func (cm *ContentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContentPlaceholder) (*model.UppContentPlaceholder, *utility.MappingError) {
+func (cm *ContentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid, lmd string) (*model.UppContentPlaceholder, *utility.MappingError) {
 	publishDate, err := buildPublishedDate(mpc.Attributes.LastPublicationDate)
 	if err != nil {
 		return nil, utility.NewMappingError().WithMessage(err.Error()).ForContent(mpc.UUID)
@@ -44,8 +44,8 @@ func (cm *ContentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContent
 	return &model.UppContentPlaceholder{
 		UppCoreContent: model.UppCoreContent{
 			UUID:             mpc.UUID,
-			PublishReference: mpc.TransactionID,
-			LastModified:     mpc.LastModified,
+			PublishReference: tid,
+			LastModified:     lmd,
 			ContentURI:       placeholderContentURI,
 			IsMarkedDeleted:  mpc.Attributes.IsDeleted},
 		PublishedDate:     publishDate,
@@ -60,14 +60,15 @@ func (cm *ContentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContent
 	}, nil
 }
 
-func (cm *ContentCPHMapper) mapToUppContentPlaceholderDelete(mpc *model.MethodeContentPlaceholder) *model.UppContentPlaceholder {
+func (cm *ContentCPHMapper) mapToUppContentPlaceholderDelete(mpc *model.MethodeContentPlaceholder, tid, lmd string) *model.UppContentPlaceholder {
 	return &model.UppContentPlaceholder{
 		UppCoreContent: model.UppCoreContent{
 			UUID:             mpc.UUID,
-			PublishReference: mpc.TransactionID,
-			LastModified:     mpc.LastModified,
+			PublishReference: tid,
+			LastModified:     lmd,
 			ContentURI:       placeholderContentURI,
-			IsMarkedDeleted:  true},
+			IsMarkedDeleted:  true,
+		},
 	}
 }
 

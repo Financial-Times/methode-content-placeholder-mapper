@@ -9,11 +9,11 @@ import (
 var blogCategories = []string{"blog", "webchat-live-blogs", "webchat-live-qa", "webchat-markets-live", "fastft"}
 
 type CPHAggregateMapper interface {
-	MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid string) ([]model.UppContent, *utility.MappingError)
+	MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid, lmd string) ([]model.UppContent, *utility.MappingError)
 }
 
 type CPHMapper interface {
-	MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, uuid string, tid string) ([]model.UppContent, *utility.MappingError)
+	MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, uuid, tid, lmd string) ([]model.UppContent, *utility.MappingError)
 }
 
 type DefaultCPHAggregateMapper struct {
@@ -26,13 +26,14 @@ func NewAggregateCPHMapper(iResolver IResolver, validator CPHValidator, cphMappe
 	return &DefaultCPHAggregateMapper{iResolver: iResolver, cphValidator: validator, cphMappers: cphMappers}
 }
 
-func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid string) ([]model.UppContent, *utility.MappingError) {
+func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid, lmd string) ([]model.UppContent, *utility.MappingError) {
 	err := m.cphValidator.Validate(mpc)
 	if err != nil {
 		return nil, utility.NewMappingError().WithMessage(err.Error()).ForContent(mpc.UUID)
 	}
 
 	uuid := ""
+	//lmd := time.Now().Format(model.UPPDateFormat)
 	if m.isBlogCategory(mpc) {
 		resolvedUuid, err := m.iResolver.ResolveIdentifier(mpc.Attributes.ServiceId, mpc.Attributes.RefField, tid)
 		if err != nil {
@@ -44,7 +45,7 @@ func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeCont
 
 	var transformedResults []model.UppContent
 	for _, cphMapper := range m.cphMappers {
-		transformedContents, err := cphMapper.MapContentPlaceholder(mpc, uuid, tid)
+		transformedContents, err := cphMapper.MapContentPlaceholder(mpc, uuid, tid, lmd)
 		if err != nil {
 			return nil, err
 		}

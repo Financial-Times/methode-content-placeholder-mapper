@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"net/http"
 
-	tid "github.com/Financial-Times/transactionid-utils-go"
+	tidUtils "github.com/Financial-Times/transactionid-utils-go"
 	log "github.com/Sirupsen/logrus"
 
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
 	"io/ioutil"
+	"time"
 )
 
 type MapEndpointHandler struct {
@@ -34,26 +34,26 @@ func NewMapEndpointHandler(aggregateMapper mapper.CPHAggregateMapper, messageCre
 }
 
 func (h *MapEndpointHandler) ServeMapEndpoint(w http.ResponseWriter, r *http.Request) {
-	tid := tid.GetTransactionIDFromRequest(r)
+	tid := tidUtils.GetTransactionIDFromRequest(r)
 	log.WithField("transaction_id", tid).WithField("request_uri", r.RequestURI).Info("Received transformation request")
-	h.mapContent(w, r, tid)
-}
+	lmd := time.Now().Format(model.UPPDateFormat)
 
-func (h *MapEndpointHandler) mapContent(w http.ResponseWriter, r *http.Request, tid string) {
-	methodePlaceholder, err := h.NewMethodeContentPlaceholderFromHTTPRequest(r)
-
+	messageBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		writeError(w, err, tid, "could not get uuid from model", r.RequestURI)
 		return
 	}
-	uuid := methodePlaceholder.UUID
+	methodePlaceholder, err := h.nativeMapper.Map(messageBody)
+	if err != nil {
+		writeError(w, err, tid, "Could not map request body to intermediate model.", r.RequestURI)
+	}
 
 	if methodePlaceholder.Attributes.IsDeleted {
-		writeMessageForDeletedContent(w, tid, uuid, r.RequestURI)
+		writeMessageForDeletedContent(w, tid, methodePlaceholder.UUID, r.RequestURI)
 		return
 	}
 
-	transformedContents, err := h.aggregateMapper.MapContentPlaceholder(methodePlaceholder, tid)
+	transformedContents, err := h.aggregateMapper.MapContentPlaceholder(methodePlaceholder, tid, lmd)
 	if err != nil {
 		log.WithField("transaction_id", tid).WithError(err).Error("Error mapping model from queue message")
 		return
@@ -68,15 +68,7 @@ func (h *MapEndpointHandler) mapContent(w http.ResponseWriter, r *http.Request, 
 	w.Header().Add("Content-Type", "application/json")
 	encoder := json.NewEncoder(w)
 	encoder.Encode(pubEvents)
-	log.WithField("transaction_id", tid).WithField("uuid", uuid).WithField("request_uri", r.RequestURI).Info("Transformation successful")
-}
-
-func (h *MapEndpointHandler) NewMethodeContentPlaceholderFromHTTPRequest(r *http.Request) (*model.MethodeContentPlaceholder, *utility.MappingError) {
-	messageBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return nil, utility.NewMappingError().WithMessage(err.Error())
-	}
-	return h.nativeMapper.Map(messageBody)
+	log.WithField("transaction_id", tid).WithField("uuid", methodePlaceholder.UUID).WithField("request_uri", r.RequestURI).Info("Transformation successful")
 }
 
 func writeError(w http.ResponseWriter, err error, transactionID, uuid, requestURI string) {

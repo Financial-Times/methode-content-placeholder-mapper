@@ -24,7 +24,7 @@ func TestExternalPlaceholder_Ok(t *testing.T) {
 	}
 	contentMapper := ContentCPHMapper{}
 
-	uppContents, err := contentMapper.MapContentPlaceholder(placeholder, "", "tid_bh7VTFj9Il")
+	uppContents, err := contentMapper.MapContentPlaceholder(placeholder, "", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
 
 	assert.Nil(t, err, "Error wasn't expected during MapContentPlaceholder")
 	assert.Equal(t, 1, len(uppContents), "Should be one")
@@ -42,6 +42,7 @@ func TestExternalPlaceholder_Ok(t *testing.T) {
 	assert.Equal(t, false, uppContents[0].(*model.UppContentPlaceholder).UppCoreContent.IsMarkedDeleted)
 	assert.Equal(t, "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/content/", uppContents[0].(*model.UppContentPlaceholder).UppCoreContent.ContentURI)
 	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].(*model.UppContentPlaceholder).UppCoreContent.PublishReference)
+	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].(*model.UppContentPlaceholder).UppCoreContent.LastModified)
 }
 
 func TestExternalPlaceholderDeleted_Ok(t *testing.T) {
@@ -55,7 +56,7 @@ func TestExternalPlaceholderDeleted_Ok(t *testing.T) {
 	}
 	contentMapper := ContentCPHMapper{}
 
-	uppContents, err := contentMapper.MapContentPlaceholder(placeholder, "", "tid_bh7VTFj9Il")
+	uppContents, err := contentMapper.MapContentPlaceholder(placeholder, "", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
 
 	assert.Nil(t, err, "Error wasn't expected during MapContentPlaceholder")
 	assert.Equal(t, 1, len(uppContents))
@@ -74,7 +75,7 @@ func TestInternalPlaceholder_ReturnsEmpty(t *testing.T) {
 	}
 	contentMapper := &ContentCPHMapper{}
 
-	uppContents, err := contentMapper.MapContentPlaceholder(placeholder, "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il")
+	uppContents, err := contentMapper.MapContentPlaceholder(placeholder, "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
 
 	assert.Nil(t, err, "Error wasn't expected during MapContentPlaceholder")
 	assert.Equal(t, 0, len(uppContents), "Should be zero")
@@ -91,7 +92,7 @@ func TestInternalPlaceholderDeleted_Ok(t *testing.T) {
 	}
 	contentMapper := ContentCPHMapper{}
 
-	uppContents, err := contentMapper.MapContentPlaceholder(placeholder, "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il")
+	uppContents, err := contentMapper.MapContentPlaceholder(placeholder, "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
 
 	assert.Nil(t, err, "Error wasn't expected during MapContentPlaceholder")
 	assert.Equal(t, 0, len(uppContents))
@@ -108,7 +109,7 @@ func TestExternalPlaceholderWrongPublishDate_ThrowsError(t *testing.T) {
 	}
 	contentMapper := &ContentCPHMapper{}
 
-	_, err := contentMapper.MapContentPlaceholder(placeholder, "", "tid_bh7VTFj9Il")
+	_, err := contentMapper.MapContentPlaceholder(placeholder, "", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
 
 	assert.NotNil(t, err, "Error was expected during MapContentPlaceholder")
 }

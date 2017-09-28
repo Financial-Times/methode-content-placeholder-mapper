@@ -27,7 +27,7 @@ func TestExternalPlaceholderComplementary_Ok(t *testing.T) {
 		},
 	}
 
-	uppContents, err := ccMapper.MapContentPlaceholder(placeholder, "", "tid_bh7VTFj9Il")
+	uppContents, err := ccMapper.MapContentPlaceholder(placeholder, "", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
 
 	assert.Nil(t, err, "Error wasn't expected during MapContentPlaceholder")
 	assert.Equal(t, 1, len(uppContents), "Should be one")
@@ -49,7 +49,7 @@ func TestExternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
 		},
 	}
 
-	uppContents, err := ccMapper.MapContentPlaceholder(placeholder, "", "tid_bh7VTFj9Il")
+	uppContents, err := ccMapper.MapContentPlaceholder(placeholder, "", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
 
 	assert.Nil(t, err, "Error wasn't expected during MapContentPlaceholder")
 	assert.Equal(t, 1, len(uppContents))
@@ -78,7 +78,7 @@ func TestInternalPlaceholderComplementary_Ok(t *testing.T) {
 		},
 	}
 
-	uppContents, err := ccMapper.MapContentPlaceholder(placeholder, "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il")
+	uppContents, err := ccMapper.MapContentPlaceholder(placeholder, "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
 
 	assert.Nil(t, err, "Error wasn't expected during MapContentPlaceholder")
 	assert.Equal(t, 1, len(uppContents), "Should be one")
@@ -100,7 +100,7 @@ func TestInternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
 		},
 	}
 
-	uppContents, err := ccMapper.MapContentPlaceholder(placeholder, "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il")
+	uppContents, err := ccMapper.MapContentPlaceholder(placeholder, "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
 
 	assert.Nil(t, err, "Error wasn't expected during MapContentPlaceholder")
 	assert.Equal(t, 1, len(uppContents))

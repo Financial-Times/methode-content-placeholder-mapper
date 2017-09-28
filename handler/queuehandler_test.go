@@ -40,10 +40,10 @@ func TestOnMessage_Ok(t *testing.T) {
 
 	nativeMapper := new(mockNativeMapper)
 	var nilErr *utility.MappingError
-	nativeMapper.On("Map", mock.MatchedBy(func(messageBody []byte) bool { return true }), "tid_test123", "2017-05-15T15:54:32.166Z").Return(&model.MethodeContentPlaceholder{}, nilErr)
+	nativeMapper.On("Map", mock.MatchedBy(func(messageBody []byte) bool { return true })).Return(&model.MethodeContentPlaceholder{}, nilErr)
 
-	mockedAggregateCPHMapper := new(mockAggregateCPHMapper)
-	mockedAggregateCPHMapper.On("MapContentPlaceholder", mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true })).Return(uppContents, nilErr)
+	mockedAggregateCPHMapper := new(mockCPHAggregateMapper)
+	mockedAggregateCPHMapper.On("MapContentPlaceholder", mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true }), "tid_test123", "2017-05-15T15:54:32.166Z").Return(uppContents, nilErr)
 
 	mockedMessageCreator := new(mockMessageCreator)
 	mockedMessageCreator.On("ToPublicationEventMessage", mock.MatchedBy(func(c *model.UppCoreContent) bool { return c.UUID == "512c1f3d-e48c-4618-863c-94bc9d913b9b" }), mock.MatchedBy(func(p interface{}) bool { return true })).
@@ -79,12 +79,12 @@ func TestOnMessage_Ok(t *testing.T) {
 	mockedProducer.AssertNumberOfCalls(t, "SendMessage", 2)
 }
 
-type mockAggregateCPHMapper struct {
+type mockCPHAggregateMapper struct {
 	mock.Mock
 }
 
-func (m *mockAggregateCPHMapper) MapContentPlaceholder(mpc *model.MethodeContentPlaceholder) ([]model.UppContent, *utility.MappingError) {
-	args := m.Called(mpc)
+func (m *mockCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid, lmd string) ([]model.UppContent, *utility.MappingError) {
+	args := m.Called(mpc, tid, lmd)
 	return args.Get(0).([]model.UppContent), args.Get(1).(*utility.MappingError)
 }
 
@@ -120,7 +120,7 @@ type mockNativeMapper struct {
 	mock.Mock
 }
 
-func (m *mockNativeMapper) Map(messageBody []byte, transactionID string, lastModified string) (*model.MethodeContentPlaceholder, *utility.MappingError) {
-	args := m.Called(messageBody, transactionID, lastModified)
+func (m *mockNativeMapper) Map(messageBody []byte) (*model.MethodeContentPlaceholder, *utility.MappingError) {
+	args := m.Called(messageBody)
 	return args.Get(0).(*model.MethodeContentPlaceholder), args.Get(1).(*utility.MappingError)
 }

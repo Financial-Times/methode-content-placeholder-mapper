@@ -11,12 +11,12 @@ const complementaryContentURI = "http://methode-content-placeholder-mapper-iw-uk
 type ComplementaryContentCPHMapper struct {
 }
 
-func (ccm *ComplementaryContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid string, tid string) ([]model.UppContent, *utility.MappingError) {
+func (ccm *ComplementaryContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid, tid, lmd string) ([]model.UppContent, *utility.MappingError) {
 	var cc *model.UppComplementaryContent
 	if mcp.Attributes.IsDeleted {
-		cc = ccm.mapToUppComplementaryContentDelete(mcp)
+		cc = ccm.mapToUppComplementaryContentDelete(mcp, tid, lmd)
 	} else{
-		cc = ccm.mapToUppComplementaryContent(mcp)
+		cc = ccm.mapToUppComplementaryContent(mcp, tid, lmd)
 	}
 	if uuid != "" {
 		cc.UUID = uuid
@@ -24,14 +24,14 @@ func (ccm *ComplementaryContentCPHMapper) MapContentPlaceholder(mcp *model.Metho
 	return []model.UppContent{cc}, nil
 }
 
-func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContent(mpc *model.MethodeContentPlaceholder) *model.UppComplementaryContent {
+func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContent(mpc *model.MethodeContentPlaceholder, tid, lmd string) *model.UppComplementaryContent {
 	return &model.UppComplementaryContent{
 		UppCoreContent: model.UppCoreContent{
 			UUID:             mpc.UUID,
-			PublishReference: mpc.TransactionID,
-			LastModified:     mpc.LastModified,
 			ContentURI:       complementaryContentURI,
 			IsMarkedDeleted:  mpc.Attributes.IsDeleted,
+			PublishReference: tid,
+			LastModified:     lmd,
 		},
 		AlternativeTitles:      buildCCAlternativeTitles(mpc.Body.LeadHeadline.Text),
 		AlternativeImages:      buildCCAlternativeImages(mpc.Body.LeadImage.FileRef),
@@ -39,14 +39,14 @@ func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContent(mpc *mode
 	}
 }
 
-func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContentDelete(mpc *model.MethodeContentPlaceholder) *model.UppComplementaryContent {
+func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContentDelete(mpc *model.MethodeContentPlaceholder, tid, lmd string) *model.UppComplementaryContent {
 	return &model.UppComplementaryContent{
 		UppCoreContent: model.UppCoreContent{
 			UUID:             mpc.UUID,
-			PublishReference: mpc.TransactionID,
-			LastModified:     mpc.LastModified,
 			ContentURI:       complementaryContentURI,
 			IsMarkedDeleted:  true,
+			PublishReference: tid,
+			LastModified:     lmd,
 		},
 	}
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"time"
 )
 
 type MessageHandler interface {
@@ -50,13 +51,17 @@ func (kqh *CPHMessageHandler) HandleMessage(msg consumer.Message) {
 		return
 	}
 
-	methodePlaceholder, err := kqh.nativeMapper.Map([]byte(msg.Body), msg.Headers["X-Request-Id"], msg.Headers["Message-Timestamp"])
+	lmd, ok := msg.Headers["Message-Timestamp"]
+	if !ok {
+		lmd = time.Now().Format(model.UPPDateFormat)
+	}
+	methodePlaceholder, err := kqh.nativeMapper.Map([]byte(msg.Body))
 	if err != nil {
 		log.WithField("transaction_id", tid).WithError(err).Error("Error creating methode model from queue message")
 		return
 	}
 
-	transformedContents, err := kqh.cphMapper.MapContentPlaceholder(methodePlaceholder, tid)
+	transformedContents, err := kqh.cphMapper.MapContentPlaceholder(methodePlaceholder, tid, lmd)
 	if err != nil {
 		log.WithField("transaction_id", tid).WithError(err).Error("Error transforming content")
 		return
