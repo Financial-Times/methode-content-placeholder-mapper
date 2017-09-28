@@ -16,6 +16,15 @@ func TestExternalPlaceholderComplementary_Ok(t *testing.T) {
 			RefField:            "",
 			IsDeleted:           false,
 		},
+		Body: model.MethodeBody{
+			LeadHeadline: model.LeadHeadline{
+				Text: "lead headline",
+			},
+			LeadImage: model.LeadImage{
+				FileRef: "FT/images/img.jpg?uuid=abffff60-d41a-4a56-8eca-d0f8f0fac068",
+			},
+			LongStandfirst: "long standfirst",
+		},
 	}
 
 	uppContents, err := ccMapper.MapContentPlaceholder(placeholder, "", "tid_bh7VTFj9Il")
@@ -23,6 +32,9 @@ func TestExternalPlaceholderComplementary_Ok(t *testing.T) {
 	assert.Nil(t, err, "Error wasn't expected during MapContentPlaceholder")
 	assert.Equal(t, 1, len(uppContents), "Should be one")
 	assert.Equal(t, "e1f02660-d41a-4a56-8eca-d0f8f0fac068", uppContents[0].GetUUID())
+	assert.Equal(t, "lead headline", uppContents[0].(*model.UppComplementaryContent).AlternativeTitles.PromotionalTitle)
+	assert.Equal(t, "abffff60-d41a-4a56-8eca-d0f8f0fac068", uppContents[0].(*model.UppComplementaryContent).AlternativeImages.PromotionalImage)
+	assert.Equal(t, "long standfirst", uppContents[0].(*model.UppComplementaryContent).AlternativeStandfirsts.PromotionalStandfirst)
 }
 
 func TestExternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
@@ -55,6 +67,15 @@ func TestInternalPlaceholderComplementary_Ok(t *testing.T) {
 			RefField:            "",
 			IsDeleted:           false,
 		},
+		Body: model.MethodeBody{
+			LeadHeadline: model.LeadHeadline{
+				Text: "lead headline",
+			},
+			LeadImage: model.LeadImage{
+				FileRef: "FT/images/img.jpg?uuid=abffff60-d41a-4a56-8eca-d0f8f0fac068",
+			},
+			LongStandfirst: "long standfirst",
+		},
 	}
 
 	uppContents, err := ccMapper.MapContentPlaceholder(placeholder, "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il")
@@ -62,6 +83,9 @@ func TestInternalPlaceholderComplementary_Ok(t *testing.T) {
 	assert.Nil(t, err, "Error wasn't expected during MapContentPlaceholder")
 	assert.Equal(t, 1, len(uppContents), "Should be one")
 	assert.Equal(t, "abcf2660-bbad-4a56-8eca-d0f8f0fac068", uppContents[0].GetUUID())
+	assert.Equal(t, "lead headline", uppContents[0].(*model.UppComplementaryContent).AlternativeTitles.PromotionalTitle)
+	assert.Equal(t, "abffff60-d41a-4a56-8eca-d0f8f0fac068", uppContents[0].(*model.UppComplementaryContent).AlternativeImages.PromotionalImage)
+	assert.Equal(t, "long standfirst", uppContents[0].(*model.UppComplementaryContent).AlternativeStandfirsts.PromotionalStandfirst)
 }
 
 func TestInternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
