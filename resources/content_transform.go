@@ -17,7 +17,7 @@ import (
 )
 
 type MapEndpointHandler struct {
-	aggregateMapper   mapper.CPHMapper
+	aggregateMapper   mapper.CPHAggregateMapper
 	nativeMapper      mapper.MessageToContentPlaceholderMapper
 	cphMessageCreator message.MessageCreator
 }
@@ -26,7 +26,7 @@ type msg struct {
 	Message string `json:"message"`
 }
 
-func NewMapEndpointHandler(aggregateMapper mapper.CPHMapper, messageCreator message.MessageCreator, nativeMapper mapper.MessageToContentPlaceholderMapper) *MapEndpointHandler {
+func NewMapEndpointHandler(aggregateMapper mapper.CPHAggregateMapper, messageCreator message.MessageCreator, nativeMapper mapper.MessageToContentPlaceholderMapper) *MapEndpointHandler {
 	return &MapEndpointHandler{
 		aggregateMapper: aggregateMapper,
 		cphMessageCreator: messageCreator,
@@ -54,7 +54,7 @@ func (h *MapEndpointHandler) mapContent(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	transformedContents, err := h.aggregateMapper.MapContentPlaceholder(methodePlaceholder, "", tid)
+	transformedContents, err := h.aggregateMapper.MapContentPlaceholder(methodePlaceholder, tid)
 	if err != nil {
 		log.WithField("transaction_id", tid).WithError(err).Error("Error mapping model from queue message")
 		return

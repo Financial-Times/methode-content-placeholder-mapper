@@ -24,13 +24,13 @@ type CPHMessageHandler struct {
 	MessageConsumer consumer.MessageConsumer
 	messageProducer producer.MessageProducer
 	nativeMapper    mapper.MessageToContentPlaceholderMapper
-	cphMapper       mapper.CPHMapper
+	cphMapper       mapper.CPHAggregateMapper
 	messageCreator  message.MessageCreator
 }
 
 func NewCPHMessageHandler(c consumer.MessageConsumer,
 	p producer.MessageProducer,
-	mapper mapper.CPHMapper,
+	mapper mapper.CPHAggregateMapper,
 	nativeMapper mapper.MessageToContentPlaceholderMapper,
 	messageCreator message.MessageCreator) *CPHMessageHandler {
 
@@ -56,7 +56,7 @@ func (kqh *CPHMessageHandler) HandleMessage(msg consumer.Message) {
 		return
 	}
 
-	transformedContents, err := kqh.cphMapper.MapContentPlaceholder(methodePlaceholder, "", tid)
+	transformedContents, err := kqh.cphMapper.MapContentPlaceholder(methodePlaceholder, tid)
 	if err != nil {
 		log.WithField("transaction_id", tid).WithError(err).Error("Error transforming content")
 		return

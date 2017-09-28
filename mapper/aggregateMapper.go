@@ -8,26 +8,31 @@ import (
 
 var blogCategories = []string{"blog", "webchat-live-blogs", "webchat-live-qa", "webchat-markets-live", "fastft"}
 
+type CPHAggregateMapper interface {
+	MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid string) ([]model.UppContent, *utility.MappingError)
+}
+
 type CPHMapper interface {
 	MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, uuid string, tid string) ([]model.UppContent, *utility.MappingError)
 }
 
-type AggregateCPHMapper struct {
+type DefaultCPHAggregateMapper struct {
 	iResolver    IResolver
 	cphMappers   []CPHMapper
 	cphValidator CPHValidator
 }
 
-func NewAggregateCPHMapper(iResolver IResolver, validator CPHValidator, cphMappers []CPHMapper) *AggregateCPHMapper {
-	return &AggregateCPHMapper{iResolver: iResolver, cphValidator: validator, cphMappers: cphMappers}
+func NewAggregateCPHMapper(iResolver IResolver, validator CPHValidator, cphMappers []CPHMapper) *DefaultCPHAggregateMapper {
+	return &DefaultCPHAggregateMapper{iResolver: iResolver, cphValidator: validator, cphMappers: cphMappers}
 }
 
-func (m *AggregateCPHMapper) MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, uuid string, tid string) ([]model.UppContent, *utility.MappingError) {
+func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid string) ([]model.UppContent, *utility.MappingError) {
 	err := m.cphValidator.Validate(mpc)
 	if err != nil {
 		return nil, utility.NewMappingError().WithMessage(err.Error()).ForContent(mpc.UUID)
 	}
 
+	uuid := ""
 	if m.isBlogCategory(mpc) {
 		resolvedUuid, err := m.iResolver.ResolveIdentifier(mpc.Attributes.ServiceId, mpc.Attributes.RefField, tid)
 		if err != nil {
@@ -50,7 +55,7 @@ func (m *AggregateCPHMapper) MapContentPlaceholder(mpc *model.MethodeContentPlac
 	return transformedResults, nil
 }
 
-func (m *AggregateCPHMapper) isBlogCategory(mcp *model.MethodeContentPlaceholder) bool {
+func (m *DefaultCPHAggregateMapper) isBlogCategory(mcp *model.MethodeContentPlaceholder) bool {
 	for _, c := range blogCategories {
 		if c == mcp.Attributes.Category {
 			return true
