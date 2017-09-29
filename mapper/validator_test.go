@@ -13,7 +13,7 @@ func TestValidatorHeadline_Ok(t *testing.T) {
 		Body: model.MethodeBody{
 			LeadHeadline: model.LeadHeadline{
 				Text: "some lead headline",
-				URL: "https://www.ft.com/content/e1f02660-d41a-4a56-8eca-d0f8f0fac068",
+				URL:  "https://www.ft.com/content/e1f02660-d41a-4a56-8eca-d0f8f0fac068",
 			},
 		},
 	}
@@ -46,7 +46,7 @@ func TestValidatorHeadlineEmptyText_ThrowsError(t *testing.T) {
 		Body: model.MethodeBody{
 			LeadHeadline: model.LeadHeadline{
 				Text: "",
-				URL: "https://www.ft.com/content/e1f02660-d41a-4a56-8eca-d0f8f0fac068",
+				URL:  "https://www.ft.com/content/e1f02660-d41a-4a56-8eca-d0f8f0fac068",
 			},
 		},
 	}
@@ -79,7 +79,7 @@ func TestValidatorHeadlineEmptyURL_ThrowsError(t *testing.T) {
 		Body: model.MethodeBody{
 			LeadHeadline: model.LeadHeadline{
 				Text: "some lead headline",
-				URL: "",
+				URL:  "",
 			},
 		},
 	}
@@ -96,7 +96,7 @@ func TestValidatorHeadlineRelativeURL_ThrowsError(t *testing.T) {
 		Body: model.MethodeBody{
 			LeadHeadline: model.LeadHeadline{
 				Text: "some lead headline",
-				URL: "www.ft.com/content/e1f02660-d41a-4a56-8eca-d0f8f0fac068",
+				URL:  "www.ft.com/content/e1f02660-d41a-4a56-8eca-d0f8f0fac068",
 			},
 		},
 	}
@@ -113,7 +113,7 @@ func TestValidatorHeadlineInvalidURL_ThrowsError(t *testing.T) {
 		Body: model.MethodeBody{
 			LeadHeadline: model.LeadHeadline{
 				Text: "some lead headline",
-				URL: "content/e1f02660-d41a-4a56-8eca-d0f8f0fac068",
+				URL:  "content/e1f02660-d41a-4a56-8eca-d0f8f0fac068",
 			},
 		},
 	}

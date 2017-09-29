@@ -1,7 +1,6 @@
 package mapper
 
 import (
-	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"strings"
 )
@@ -11,11 +10,11 @@ const complementaryContentURI = "http://methode-content-placeholder-mapper-iw-uk
 type ComplementaryContentCPHMapper struct {
 }
 
-func (ccm *ComplementaryContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid, tid, lmd string) ([]model.UppContent, *utility.MappingError) {
+func (ccm *ComplementaryContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid, tid, lmd string) ([]model.UppContent, error) {
 	var cc *model.UppComplementaryContent
 	if mcp.Attributes.IsDeleted {
 		cc = ccm.mapToUppComplementaryContentDelete(mcp, tid, lmd)
-	} else{
+	} else {
 		cc = ccm.mapToUppComplementaryContent(mcp, tid, lmd)
 	}
 	if uuid != "" {

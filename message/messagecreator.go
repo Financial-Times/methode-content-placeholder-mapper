@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
 	"github.com/satori/go.uuid"
 	"time"
 )
 
 type MessageCreator interface {
-	ToPublicationEventMessage(coreAttributes *model.UppCoreContent, payload interface{}) (*producer.Message, *utility.MappingError)
+	ToPublicationEventMessage(coreAttributes *model.UppCoreContent, payload interface{}) (*producer.Message, error)
 	ToPublicationEvent(coreAttributes *model.UppCoreContent, payload interface{}) *model.PublicationEvent
 }
 
@@ -21,12 +20,12 @@ func NewDefaultCPHMessageCreator() *CPHMessageCreator {
 	return &CPHMessageCreator{}
 }
 
-func (cmc *CPHMessageCreator) ToPublicationEventMessage(coreAttributes *model.UppCoreContent, payload interface{}) (*producer.Message, *utility.MappingError) {
+func (cmc *CPHMessageCreator) ToPublicationEventMessage(coreAttributes *model.UppCoreContent, payload interface{}) (*producer.Message, error) {
 	publicationEvent := cmc.ToPublicationEvent(coreAttributes, payload)
 
 	jsonPublicationEvent, err := json.Marshal(publicationEvent)
 	if err != nil {
-		return nil, utility.NewMappingError().WithMessage(err.Error()).ForContent(coreAttributes.UUID)
+		return nil, err
 	}
 
 	headers := map[string]string{

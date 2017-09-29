@@ -2,18 +2,17 @@ package mapper
 
 import (
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
 	"github.com/Sirupsen/logrus"
 )
 
 var blogCategories = []string{"blog", "webchat-live-blogs", "webchat-live-qa", "webchat-markets-live", "fastft"}
 
 type CPHAggregateMapper interface {
-	MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid, lmd string) ([]model.UppContent, *utility.MappingError)
+	MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid, lmd string) ([]model.UppContent, error)
 }
 
 type CPHMapper interface {
-	MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, uuid, tid, lmd string) ([]model.UppContent, *utility.MappingError)
+	MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, uuid, tid, lmd string) ([]model.UppContent, error)
 }
 
 type DefaultCPHAggregateMapper struct {
@@ -26,10 +25,10 @@ func NewAggregateCPHMapper(iResolver IResolver, validator CPHValidator, cphMappe
 	return &DefaultCPHAggregateMapper{iResolver: iResolver, cphValidator: validator, cphMappers: cphMappers}
 }
 
-func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid, lmd string) ([]model.UppContent, *utility.MappingError) {
+func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid, lmd string) ([]model.UppContent, error) {
 	err := m.cphValidator.Validate(mpc)
 	if err != nil {
-		return nil, utility.NewMappingError().WithMessage(err.Error()).ForContent(mpc.UUID)
+		return nil, err
 	}
 
 	uuid := ""

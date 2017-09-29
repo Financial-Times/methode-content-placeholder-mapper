@@ -5,41 +5,41 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
+	"fmt"
 )
 
 const contentPlaceholderSourceCode = "ContentPlaceholder"
 const eomCompoundStory = "EOM::CompoundStory"
 
 type MessageToContentPlaceholderMapper interface {
-	Map(messageBody []byte) (*model.MethodeContentPlaceholder, *utility.MappingError)
+	Map(messageBody []byte) (*model.MethodeContentPlaceholder, error)
 }
 
 type DefaultMessageMapper struct {
 }
 
-func (m DefaultMessageMapper) Map(messageBody []byte) (*model.MethodeContentPlaceholder, *utility.MappingError) {
+func (m DefaultMessageMapper) Map(messageBody []byte) (*model.MethodeContentPlaceholder, error) {
 	var p model.MethodeContentPlaceholder
 	if err := json.Unmarshal(messageBody, &p); err != nil {
-		return nil, utility.NewMappingError().WithMessage(err.Error())
+		return nil, fmt.Errorf("Error unmarshalling methode messageBody: %v", err)
 	}
 	if p.Type != eomCompoundStory {
-		return nil, utility.NewMappingError().WithMessage("Methode content has not type " + eomCompoundStory).ForContent(p.UUID)
+		return nil, fmt.Errorf("Methode content has not type " + eomCompoundStory)
 	}
 
 	attrs, err := buildAttributes(p.AttributesXML)
 	if err != nil {
-		return nil, utility.NewMappingError().WithMessage(err.Error()).ForContent(p.UUID)
+		return nil, fmt.Errorf("Error unmarshalling not build xml attributes.")
 	}
 	p.Attributes = attrs
 
 	if p.Attributes.SourceCode != contentPlaceholderSourceCode {
-		return nil, utility.NewMappingError().WithMessage("Methode content is not a content placeholder").ForContent(p.UUID)
+		return nil, fmt.Errorf("Methode content is not a content placeholder")
 	}
 
 	body, err := buildMethodeBody(p.Value)
 	if err != nil {
-		return nil, utility.NewMappingError().WithMessage(err.Error()).ForContent(p.UUID)
+		return nil, fmt.Errorf("Error decoding or unmarshalling methode body.")
 	}
 	p.Body = body
 

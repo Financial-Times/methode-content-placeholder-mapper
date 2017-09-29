@@ -5,7 +5,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"strings"
 )
@@ -38,12 +37,11 @@ func TestOnMessage_Ok(t *testing.T) {
 		},
 	}
 
-	nativeMapper := new(mockNativeMapper)
-	var nilErr *utility.MappingError
-	nativeMapper.On("Map", mock.MatchedBy(func(messageBody []byte) bool { return true })).Return(&model.MethodeContentPlaceholder{}, nilErr)
+	nativeMapper := new(model.MockNativeMapper)
+	nativeMapper.On("Map", mock.MatchedBy(func(messageBody []byte) bool { return true })).Return(&model.MethodeContentPlaceholder{}, nil)
 
-	mockedAggregateCPHMapper := new(mockCPHAggregateMapper)
-	mockedAggregateCPHMapper.On("MapContentPlaceholder", mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true }), "tid_test123", "2017-05-15T15:54:32.166Z").Return(uppContents, nilErr)
+	mockedAggregateCPHMapper := new(model.MockCPHAggregateMapper)
+	mockedAggregateCPHMapper.On("MapContentPlaceholder", mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true }), "tid_test123", "2017-05-15T15:54:32.166Z").Return(uppContents, nil)
 
 	mockedMessageCreator := new(mockMessageCreator)
 	mockedMessageCreator.On("ToPublicationEventMessage", mock.MatchedBy(func(c *model.UppCoreContent) bool { return c.UUID == "512c1f3d-e48c-4618-863c-94bc9d913b9b" }), mock.MatchedBy(func(p interface{}) bool { return true })).
@@ -52,14 +50,14 @@ func TestOnMessage_Ok(t *testing.T) {
 				Headers: map[string]string {
 					"X-Request-Id": "tid_test123",
 				},
-		}, nilErr)
+		}, nil)
 	mockedMessageCreator.On("ToPublicationEventMessage", mock.MatchedBy(func(c *model.UppCoreContent) bool { return c.UUID == "43dc1ff3-6d6c-41f3-9196-56dcaa554905" }), mock.MatchedBy(func(p interface{}) bool { return true })).
 		Return(&producer.Message{
 		Body: "{\"uuid\":\"43dc1ff3-6d6c-41f3-9196-56dcaa554905}\",\"lastModifiedDate\":\"2017-05-15T15:54:32.166Z\"}",
 		Headers: map[string]string {
 			"X-Request-Id": "tid_test123",
 		},
-	}, nilErr)
+	}, nil)
 
 	mockedProducer := new(mockProducer)
 	mockedProducer.On("SendMessage", "", mock.MatchedBy(func(msg producer.Message) bool { return true })).Return(nil)
@@ -77,15 +75,6 @@ func TestOnMessage_Ok(t *testing.T) {
 		}))
 
 	mockedProducer.AssertNumberOfCalls(t, "SendMessage", 2)
-}
-
-type mockCPHAggregateMapper struct {
-	mock.Mock
-}
-
-func (m *mockCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid, lmd string) ([]model.UppContent, *utility.MappingError) {
-	args := m.Called(mpc, tid, lmd)
-	return args.Get(0).([]model.UppContent), args.Get(1).(*utility.MappingError)
 }
 
 type mockProducer struct {
@@ -106,21 +95,12 @@ type mockMessageCreator struct {
 	mock.Mock
 }
 
-func (m *mockMessageCreator) ToPublicationEventMessage(coreAttributes *model.UppCoreContent, payload interface{}) (*producer.Message, *utility.MappingError) {
+func (m *mockMessageCreator) ToPublicationEventMessage(coreAttributes *model.UppCoreContent, payload interface{}) (*producer.Message, error) {
 	args := m.Called(coreAttributes, payload)
-	return args.Get(0).(*producer.Message), args.Get(1).(*utility.MappingError)
+	return args.Get(0).(*producer.Message), args.Get(1).(error)
 }
 
 func (m *mockMessageCreator) ToPublicationEvent(coreAttributes *model.UppCoreContent, payload interface{}) *model.PublicationEvent {
 	args := m.Called(coreAttributes, payload)
 	return args.Get(0).(*model.PublicationEvent)
-}
-
-type mockNativeMapper struct {
-	mock.Mock
-}
-
-func (m *mockNativeMapper) Map(messageBody []byte) (*model.MethodeContentPlaceholder, *utility.MappingError) {
-	args := m.Called(messageBody)
-	return args.Get(0).(*model.MethodeContentPlaceholder), args.Get(1).(*utility.MappingError)
 }

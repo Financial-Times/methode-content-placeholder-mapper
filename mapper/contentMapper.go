@@ -1,7 +1,6 @@
 package mapper
 
 import (
-	"github.com/Financial-Times/methode-content-placeholder-mapper/utility"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"strings"
 	"time"
@@ -9,17 +8,17 @@ import (
 
 const (
 	placeholderContentURI = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/content/"
-    methodeAuthority = "http://api.ft.com/system/FTCOM-METHODE"
-    verify = "verify"
-    contentType = "Content"
-	methodeDateFormat = "20060102150405"
-	ftBrand = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
+	methodeAuthority      = "http://api.ft.com/system/FTCOM-METHODE"
+	verify                = "verify"
+	contentType           = "Content"
+	methodeDateFormat     = "20060102150405"
+	ftBrand               = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
 )
 
 type ContentCPHMapper struct {
 }
 
-func (cm *ContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid, tid, lmd string) ([]model.UppContent, *utility.MappingError) {
+func (cm *ContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid, tid, lmd string) ([]model.UppContent, error) {
 	if uuid != "" {
 		return []model.UppContent{}, nil
 	}
@@ -35,10 +34,10 @@ func (cm *ContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlace
 	return []model.UppContent{uppContent}, nil
 }
 
-func (cm *ContentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid, lmd string) (*model.UppContentPlaceholder, *utility.MappingError) {
+func (cm *ContentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid, lmd string) (*model.UppContentPlaceholder, error) {
 	publishDate, err := buildPublishedDate(mpc.Attributes.LastPublicationDate)
 	if err != nil {
-		return nil, utility.NewMappingError().WithMessage(err.Error()).ForContent(mpc.UUID)
+		return nil, err
 	}
 
 	return &model.UppContentPlaceholder{
