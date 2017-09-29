@@ -40,7 +40,7 @@ func (h *MapEndpointHandler) ServeMapEndpoint(w http.ResponseWriter, r *http.Req
 
 	messageBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		writeError(w, err, tid, "could not get uuid from model", r.RequestURI)
+		writeError(w, err, tid, "Could not read messageBody from request.", r.RequestURI)
 		return
 	}
 	methodePlaceholder, err := h.nativeMapper.Map(messageBody)
@@ -55,7 +55,7 @@ func (h *MapEndpointHandler) ServeMapEndpoint(w http.ResponseWriter, r *http.Req
 
 	transformedContents, err := h.aggregateMapper.MapContentPlaceholder(methodePlaceholder, tid, lmd)
 	if err != nil {
-		log.WithField("transaction_id", tid).WithError(err).Error("Error mapping model from queue message")
+		writeError(w, err, tid, "Error mapping model from queue message.", r.RequestURI)
 		return
 	}
 
