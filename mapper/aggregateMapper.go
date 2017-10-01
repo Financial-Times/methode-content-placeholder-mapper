@@ -32,7 +32,6 @@ func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeCont
 	}
 
 	uuid := ""
-	//lmd := time.Now().Format(model.UPPDateFormat)
 	if m.isBlogCategory(mpc) {
 		resolvedUuid, err := m.iResolver.ResolveIdentifier(mpc.Attributes.ServiceId, mpc.Attributes.RefField, tid)
 		if err != nil {
