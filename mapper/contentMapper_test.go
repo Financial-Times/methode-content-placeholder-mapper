@@ -41,8 +41,8 @@ func TestExternalPlaceholder_Ok(t *testing.T) {
 	assert.NotEmpty(t, uppContents[0].(*model.UppContentPlaceholder).UppCoreContent.LastModified)
 	assert.Equal(t, false, uppContents[0].(*model.UppContentPlaceholder).UppCoreContent.IsMarkedDeleted)
 	assert.Equal(t, "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/content/", uppContents[0].(*model.UppContentPlaceholder).UppCoreContent.ContentURI)
-	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].(*model.UppContentPlaceholder).UppCoreContent.PublishReference)
-	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].(*model.UppContentPlaceholder).UppCoreContent.LastModified)
+	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].GetUppCoreContent().PublishReference)
+	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].GetUppCoreContent().LastModified)
 }
 
 func TestExternalPlaceholderDeleted_Ok(t *testing.T) {
@@ -62,6 +62,8 @@ func TestExternalPlaceholderDeleted_Ok(t *testing.T) {
 	assert.Equal(t, 1, len(uppContents))
 	assert.Equal(t, "e1f02660-d41a-4a56-8eca-d0f8f0fac068", uppContents[0].GetUUID())
 	assert.True(t, uppContents[0].GetUppCoreContent().IsMarkedDeleted)
+	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].GetUppCoreContent().LastModified)
+	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].GetUppCoreContent().PublishReference)
 }
 
 func TestInternalPlaceholder_ReturnsEmpty(t *testing.T) {
