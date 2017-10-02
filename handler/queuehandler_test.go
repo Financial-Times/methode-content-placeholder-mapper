@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"testing"
-	"github.com/stretchr/testify/mock"
+	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	"github.com/Financial-Times/message-queue-go-producer/producer"
-	"strings"
 	"github.com/pkg/errors"
+	"github.com/stretchr/testify/mock"
+	"strings"
+	"testing"
 )
 
 const methodeSystemOrigin = "http://cmdb.ft.com/systems/methode-web-pub"
@@ -47,18 +47,18 @@ func TestOnMessage_Ok(t *testing.T) {
 	mockedMessageCreator := new(model.MockMessageCreator)
 	mockedMessageCreator.On("ToPublicationEventMessage", mock.MatchedBy(func(c *model.UppCoreContent) bool { return c.UUID == "512c1f3d-e48c-4618-863c-94bc9d913b9b" }), mock.MatchedBy(func(p interface{}) bool { return true })).
 		Return(&producer.Message{
-		Body: "{\"uuid\":\"512c1f3d-e48c-4618-863c-94bc9d913b9b}\",\"lastModifiedDate\":\"2017-05-15T15:54:32.166Z\"}",
-		Headers: map[string]string{
-			"X-Request-Id": "tid_test123",
-		},
-	}, nil)
+			Body: "{\"uuid\":\"512c1f3d-e48c-4618-863c-94bc9d913b9b}\",\"lastModifiedDate\":\"2017-05-15T15:54:32.166Z\"}",
+			Headers: map[string]string{
+				"X-Request-Id": "tid_test123",
+			},
+		}, nil)
 	mockedMessageCreator.On("ToPublicationEventMessage", mock.MatchedBy(func(c *model.UppCoreContent) bool { return c.UUID == "43dc1ff3-6d6c-41f3-9196-56dcaa554905" }), mock.MatchedBy(func(p interface{}) bool { return true })).
 		Return(&producer.Message{
-		Body: "{\"uuid\":\"43dc1ff3-6d6c-41f3-9196-56dcaa554905}\",\"lastModifiedDate\":\"2017-05-15T15:54:32.166Z\"}",
-		Headers: map[string]string{
-			"X-Request-Id": "tid_test123",
-		},
-	}, nil)
+			Body: "{\"uuid\":\"43dc1ff3-6d6c-41f3-9196-56dcaa554905}\",\"lastModifiedDate\":\"2017-05-15T15:54:32.166Z\"}",
+			Headers: map[string]string{
+				"X-Request-Id": "tid_test123",
+			},
+		}, nil)
 
 	mockedProducer := new(model.MockProducer)
 	mockedProducer.On("SendMessage", "", mock.MatchedBy(func(msg producer.Message) bool { return true })).Return(nil)
@@ -179,18 +179,18 @@ func TestOnMessagePublicationEventError_MessagesNotSent(t *testing.T) {
 	mockedMessageCreator := new(model.MockMessageCreator)
 	mockedMessageCreator.On("ToPublicationEventMessage", mock.MatchedBy(func(c *model.UppCoreContent) bool { return c.UUID == "512c1f3d-e48c-4618-863c-94bc9d913b9b" }), mock.MatchedBy(func(p interface{}) bool { return true })).
 		Return(&producer.Message{
-		Body: "{\"uuid\":\"512c1f3d-e48c-4618-863c-94bc9d913b9b}\",\"lastModifiedDate\":\"2017-05-15T15:54:32.166Z\"}",
-		Headers: map[string]string{
-			"X-Request-Id": "tid_test123",
-		},
-	}, errors.New("Error creating publication event messages."))
+			Body: "{\"uuid\":\"512c1f3d-e48c-4618-863c-94bc9d913b9b}\",\"lastModifiedDate\":\"2017-05-15T15:54:32.166Z\"}",
+			Headers: map[string]string{
+				"X-Request-Id": "tid_test123",
+			},
+		}, errors.New("Error creating publication event messages."))
 	mockedMessageCreator.On("ToPublicationEventMessage", mock.MatchedBy(func(c *model.UppCoreContent) bool { return c.UUID == "43dc1ff3-6d6c-41f3-9196-56dcaa554905" }), mock.MatchedBy(func(p interface{}) bool { return true })).
 		Return(&producer.Message{
-		Body: "{\"uuid\":\"43dc1ff3-6d6c-41f3-9196-56dcaa554905}\",\"lastModifiedDate\":\"2017-05-15T15:54:32.166Z\"}",
-		Headers: map[string]string{
-			"X-Request-Id": "tid_test123",
-		},
-	}, errors.New("Error creating publication event messages."))
+			Body: "{\"uuid\":\"43dc1ff3-6d6c-41f3-9196-56dcaa554905}\",\"lastModifiedDate\":\"2017-05-15T15:54:32.166Z\"}",
+			Headers: map[string]string{
+				"X-Request-Id": "tid_test123",
+			},
+		}, errors.New("Error creating publication event messages."))
 
 	mockedProducer := new(model.MockProducer)
 	mockedProducer.On("SendMessage", "", mock.MatchedBy(func(msg producer.Message) bool { return true })).Return(nil)

@@ -27,9 +27,9 @@ type msg struct {
 
 func NewMapEndpointHandler(aggregateMapper mapper.CPHAggregateMapper, messageCreator message.MessageCreator, nativeMapper mapper.MessageToContentPlaceholderMapper) *MapEndpointHandler {
 	return &MapEndpointHandler{
-		aggregateMapper: aggregateMapper,
+		aggregateMapper:   aggregateMapper,
 		cphMessageCreator: messageCreator,
-		nativeMapper: nativeMapper,
+		nativeMapper:      nativeMapper,
 	}
 }
 

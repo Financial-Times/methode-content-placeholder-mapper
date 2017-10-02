@@ -2,12 +2,12 @@ package mapper
 
 import (
 	"encoding/base64"
-	"testing"
-	"io/ioutil"
-	"github.com/stretchr/testify/assert"
 	"encoding/json"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"encoding/xml"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/stretchr/testify/assert"
+	"io/ioutil"
+	"testing"
 )
 
 func TestMessageMapperMap_Ok(t *testing.T) {

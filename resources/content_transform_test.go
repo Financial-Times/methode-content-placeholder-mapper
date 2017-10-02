@@ -6,14 +6,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/stretchr/testify/assert"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	"io/ioutil"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
-	"github.com/stretchr/testify/mock"
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"github.com/Financial-Times/message-queue-gonsumer/consumer"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"io/ioutil"
 )
 
 const mapperURL = "http://methode-content-placeholder-mapper/map"

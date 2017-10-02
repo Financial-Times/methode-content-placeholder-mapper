@@ -2,14 +2,14 @@ package mapper
 
 import (
 	"fmt"
-	"strings"
-	"regexp"
 	"net/http"
+	"regexp"
+	"strings"
 )
 
 const (
 	authorityPrefix = "http://api.ft.com/system/"
-	uuidPattern = "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
+	uuidPattern     = "^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
 )
 
 var uuidRegex = regexp.MustCompile(uuidPattern)
@@ -19,8 +19,8 @@ type IResolver interface {
 }
 
 type httpIResolver struct {
-	brandMappings       map[string]string
-	client              DocStoreClient
+	brandMappings map[string]string
+	client        DocStoreClient
 }
 
 func NewHttpIResolver(client DocStoreClient, brandMappings map[string]string) *httpIResolver {
@@ -53,7 +53,7 @@ func (r *httpIResolver) resolveIdentifier(authority string, identifier string, t
 	if len(parts) < 2 {
 		return "", fmt.Errorf("Resolved a canonical identifier which is an invalid FT URI for authority=%v identifier=%v location=%v", authority, identifier, location)
 	}
-	uuid := parts[len(parts) - 1]
+	uuid := parts[len(parts)-1]
 	if !uuidRegex.MatchString(uuid) {
 		fmt.Println(parts)
 		return "", fmt.Errorf("Resolved a canonical identifier which contains an invalid uuid for authority=%v identifier=%v uuid=%v", authority, identifier, uuid)

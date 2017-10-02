@@ -1,9 +1,9 @@
 package mapper
 
 import (
-	"testing"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestExternalPlaceholder_Ok(t *testing.T) {
@@ -18,7 +18,7 @@ func TestExternalPlaceholder_Ok(t *testing.T) {
 			ContentPackageHeadline: "cp headline",
 			LeadHeadline: model.LeadHeadline{
 				Text: "lead headline",
-				URL: "www.ft.com/content/e1f02660-d41a-4a56-8eca-d0f8f0fac068",
+				URL:  "www.ft.com/content/e1f02660-d41a-4a56-8eca-d0f8f0fac068",
 			},
 		},
 	}

@@ -36,11 +36,11 @@ func NewCPHMessageHandler(c consumer.MessageConsumer,
 	messageCreator message.MessageCreator) *CPHMessageHandler {
 
 	return &CPHMessageHandler{
-		MessageConsumer : c,
-		messageProducer : p,
-		nativeMapper: nativeMapper,
-		cphMapper:  mapper,
-		messageCreator:   messageCreator,
+		MessageConsumer: c,
+		messageProducer: p,
+		nativeMapper:    nativeMapper,
+		cphMapper:       mapper,
+		messageCreator:  messageCreator,
 	}
 }
 

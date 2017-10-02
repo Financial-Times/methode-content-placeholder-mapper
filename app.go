@@ -16,11 +16,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
 
+	"encoding/json"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/handler"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
-	"encoding/json"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
 	"io/ioutil"
 )
 
@@ -130,7 +130,7 @@ func main() {
 			Authorization: *authorization,
 		}
 
-	    cphValidator := mapper.NewDefaultCPHValidator()
+		cphValidator := mapper.NewDefaultCPHValidator()
 		docStoreClient := mapper.NewHttpDocStoreClient(httpClient, *docStoreAddress)
 		iResolver := mapper.NewHttpIResolver(docStoreClient, readBrandMappings())
 		contentCphMapper := &mapper.ContentCPHMapper{}

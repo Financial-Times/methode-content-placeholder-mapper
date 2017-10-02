@@ -1,9 +1,9 @@
 package mapper
 
 import (
-	"testing"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 func TestValidatorHeadline_Ok(t *testing.T) {

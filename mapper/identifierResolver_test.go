@@ -1,12 +1,12 @@
 package mapper
 
 import (
-	"testing"
-	"net/http"
-	"github.com/stretchr/testify/assert"
-	"strings"
-	"github.com/pkg/errors"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/pkg/errors"
+	"github.com/stretchr/testify/assert"
+	"net/http"
+	"strings"
+	"testing"
 )
 
 func TestResolve_Ok(t *testing.T) {
@@ -27,7 +27,7 @@ func TestResolve_NotInMap(t *testing.T) {
 	resolver := NewHttpIResolver(mockClient, map[string]string{})
 	_, err := resolver.ResolveIdentifier("http://ftalphaville.ft.com/?p=2193913", "2193913", "tid_1")
 
-	assert.True(t, strings.Contains(err.Error(), "Couldn't find authority in mapping table"), )
+	assert.True(t, strings.Contains(err.Error(), "Couldn't find authority in mapping table"))
 }
 
 func TestResolve_InvalidUuid(t *testing.T) {
@@ -37,7 +37,7 @@ func TestResolve_InvalidUuid(t *testing.T) {
 	resolver := NewHttpIResolver(mockClient, map[string]string{"ftalphaville.ft.com": "FT-LABS-WP-1-24"})
 	_, err := resolver.ResolveIdentifier("http://ftalphaville.ft.com/?p=2193913", "2193913", "tid_1")
 
-	assert.True(t, strings.Contains(err.Error(), "invalid uuid"), )
+	assert.True(t, strings.Contains(err.Error(), "invalid uuid"))
 }
 
 func TestResolve_InvalidLocation(t *testing.T) {
@@ -47,7 +47,7 @@ func TestResolve_InvalidLocation(t *testing.T) {
 	resolver := NewHttpIResolver(mockClient, map[string]string{"ftalphaville.ft.com": "FT-LABS-WP-1-24"})
 	_, err := resolver.ResolveIdentifier("http://ftalphaville.ft.com/?p=2193913", "2193913", "tid_1")
 
-	assert.True(t, strings.Contains(err.Error(), "invalid FT URI"), )
+	assert.True(t, strings.Contains(err.Error(), "invalid FT URI"))
 }
 
 func TestResolve_NotFound(t *testing.T) {
@@ -57,7 +57,7 @@ func TestResolve_NotFound(t *testing.T) {
 	resolver := NewHttpIResolver(mockClient, map[string]string{"ftalphaville.ft.com": "FT-LABS-WP-1-24"})
 	_, err := resolver.ResolveIdentifier("http://ftalphaville.ft.com/?p=2193913", "2193913", "tid_1")
 
-	assert.True(t, strings.Contains(err.Error(), "404"), )
+	assert.True(t, strings.Contains(err.Error(), "404"))
 }
 
 func TestResolve_NetFail(t *testing.T) {

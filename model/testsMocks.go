@@ -1,8 +1,8 @@
 package model
 
 import (
-	"github.com/stretchr/testify/mock"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
+	"github.com/stretchr/testify/mock"
 )
 
 type MockNativeMapper struct {

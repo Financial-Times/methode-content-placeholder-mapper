@@ -2,7 +2,7 @@ package model
 
 const (
 	MethodeSystemID = "http://cmdb.ft.com/systems/methode-web-pub"
-	UPPDateFormat = "2006-01-02T15:04:05.000Z0700"
+	UPPDateFormat   = "2006-01-02T15:04:05.000Z0700"
 )
 
 // UppContentPlaceholder represents the content placeholder representation according to UPP model.
