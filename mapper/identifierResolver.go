@@ -20,10 +20,10 @@ type IResolver interface {
 
 type httpIResolver struct {
 	brandMappings       map[string]string
-	client              docStoreClient
+	client              DocStoreClient
 }
 
-func NewHttpIResolver(client docStoreClient, brandMappings map[string]string) *httpIResolver {
+func NewHttpIResolver(client DocStoreClient, brandMappings map[string]string) *httpIResolver {
 	return &httpIResolver{client: client, brandMappings: brandMappings}
 }
 
@@ -41,7 +41,7 @@ func (r *httpIResolver) ResolveIdentifier(serviceId, refField string, tid string
 }
 
 func (r *httpIResolver) resolveIdentifier(authority string, identifier string, tid string) (string, error) {
-	status, location, err := r.client.contentQuery(authority, identifier, tid)
+	status, location, err := r.client.ContentQuery(authority, identifier, tid)
 	if err != nil {
 		return "", err
 	}

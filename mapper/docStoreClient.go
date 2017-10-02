@@ -8,8 +8,8 @@ import (
 	"github.com/Financial-Times/transactionid-utils-go"
 )
 
-type docStoreClient interface {
-	contentQuery(authority string, identifier string, tid string) (status int, location string, err error)
+type DocStoreClient interface {
+	ContentQuery(authority string, identifier string, tid string) (status int, location string, err error)
 }
 
 type httpDocStoreClient struct {
@@ -21,7 +21,7 @@ func NewHttpDocStoreClient(client *http.Client, docStoreAddress string) *httpDoc
 	return &httpDocStoreClient{docStoreAddress: docStoreAddress, client: client}
 }
 
-func (c *httpDocStoreClient) contentQuery(authority string, identifier string, tid string) (status int, location string, err error) {
+func (c *httpDocStoreClient) ContentQuery(authority string, identifier string, tid string) (status int, location string, err error) {
 	docStoreUrl, err := url.Parse(c.docStoreAddress + "/content-query")
 	if err != nil {
 		return -1, "", fmt.Errorf("Invalid address docStoreAddress=%v", c.docStoreAddress)

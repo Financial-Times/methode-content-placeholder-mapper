@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/stretchr/testify/mock"
+	"github.com/Financial-Times/message-queue-go-producer/producer"
 )
 
 type MockNativeMapper struct {
@@ -10,11 +11,7 @@ type MockNativeMapper struct {
 
 func (m *MockNativeMapper) Map(messageBody []byte) (*MethodeContentPlaceholder, error) {
 	args := m.Called(messageBody)
-	err := args.Get(1)
-	if err == nil {
-		return args.Get(0).(*MethodeContentPlaceholder), nil
-	}
-	return args.Get(0).(*MethodeContentPlaceholder), err.(error)
+	return args.Get(0).(*MethodeContentPlaceholder), args.Error(1)
 }
 
 type MockCPHAggregateMapper struct {
@@ -23,9 +20,42 @@ type MockCPHAggregateMapper struct {
 
 func (m *MockCPHAggregateMapper) MapContentPlaceholder(mpc *MethodeContentPlaceholder, tid, lmd string) ([]UppContent, error) {
 	args := m.Called(mpc, tid, lmd)
-	err := args.Get(1)
-	if err == nil {
-		return args.Get(0).([]UppContent), nil
-	}
-	return args.Get(0).([]UppContent), args.Get(1).(error)
+	return args.Get(0).([]UppContent), args.Error(1)
+}
+
+type MockProducer struct {
+	mock.Mock
+}
+
+func (p *MockProducer) SendMessage(key string, msg producer.Message) error {
+	args := p.Called(key, msg)
+	return args.Error(0)
+}
+
+func (p *MockProducer) ConnectivityCheck() (string, error) {
+	args := p.Called()
+	return args.String(0), args.Error(1)
+}
+
+type MockMessageCreator struct {
+	mock.Mock
+}
+
+func (m *MockMessageCreator) ToPublicationEventMessage(coreAttributes *UppCoreContent, payload interface{}) (*producer.Message, error) {
+	args := m.Called(coreAttributes, payload)
+	return args.Get(0).(*producer.Message), args.Error(1)
+}
+
+func (m *MockMessageCreator) ToPublicationEvent(coreAttributes *UppCoreContent, payload interface{}) *PublicationEvent {
+	args := m.Called(coreAttributes, payload)
+	return args.Get(0).(*PublicationEvent)
+}
+
+type MockDocStoreClient struct {
+	mock.Mock
+}
+
+func (m *MockDocStoreClient) ContentQuery(authority string, identifier string, tid string) (status int, location string, err error) {
+	args := m.Called(authority, identifier, tid)
+	return args.Int(0), args.String(1), args.Error(2)
 }
