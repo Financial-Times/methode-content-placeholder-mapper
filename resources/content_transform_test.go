@@ -121,7 +121,7 @@ func TestMapEndpointFailedTransformation_Returns422(t *testing.T) {
 }
 
 func buildIgMethodePlaceholderUpdateMsg() consumer.Message {
-	return buildMethodeMsg("../mapper/test_resources/ig_methode_placeholder_update.json")
+	return buildMethodeMsg("../mapper/test_resources/methode_cph_update.json")
 }
 
 func buildMethodeMsg(examplePath string) consumer.Message {
