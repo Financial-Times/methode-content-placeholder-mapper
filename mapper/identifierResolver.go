@@ -15,7 +15,7 @@ const (
 var uuidRegex = regexp.MustCompile(uuidPattern)
 
 type IResolver interface {
-	ResolveIdentifier(serviceId, refField string, tid string) (string, error)
+	ResolveIdentifier(serviceId, refField, tid string) (string, error)
 }
 
 type httpIResolver struct {
@@ -27,7 +27,7 @@ func NewHttpIResolver(client DocStoreClient, brandMappings map[string]string) *h
 	return &httpIResolver{client: client, brandMappings: brandMappings}
 }
 
-func (r *httpIResolver) ResolveIdentifier(serviceId, refField string, tid string) (string, error) {
+func (r *httpIResolver) ResolveIdentifier(serviceId, refField, tid string) (string, error) {
 	mappingKey := strings.Split(serviceId, "?")[0]
 	mappingKey = strings.Split(mappingKey, "#")[0]
 	for key, value := range r.brandMappings {

@@ -59,3 +59,30 @@ func (m *MockDocStoreClient) ContentQuery(authority string, identifier string, t
 	args := m.Called(authority, identifier, tid)
 	return args.Int(0), args.String(1), args.Error(2)
 }
+
+type MockIResolver struct {
+	mock.Mock
+}
+
+func (m *MockIResolver) ResolveIdentifier(serviceId, refField, tid string) (string, error) {
+	args := m.Called(serviceId, refField, tid)
+	return args.String(0), args.Error(1)
+}
+
+type MockCPHMapper struct {
+	mock.Mock
+}
+
+func (m *MockCPHMapper) MapContentPlaceholder(mpc *MethodeContentPlaceholder, uuid, tid, lmd string) ([]UppContent, error) {
+	args := m.Called(mpc, uuid, tid, lmd)
+	return args.Get(0).([]UppContent), args.Error(1)
+}
+
+type MockCPHValidator struct {
+	mock.Mock
+}
+
+func (m *MockCPHValidator) Validate(mcp *MethodeContentPlaceholder) error {
+	args := m.Called(mcp)
+	return args.Error(0)
+}
