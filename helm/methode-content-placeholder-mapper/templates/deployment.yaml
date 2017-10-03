@@ -36,11 +36,13 @@ spec:
               name: global-config
               key: kafka.proxy.url.with.protocol
         - name: Q_GROUP
-          value: "mcpm"
+          value: {{ .Values.service.QueueGroup }}
         - name: Q_READ_TOPIC
-          value: "NativeCmsPublicationEvents"
+          value: {{ .Values.service.QueueReadTopic }}
         - name: Q_WRITE_TOPIC
-          value: "CmsPublicationEvents"
+          value: {{ .Values.service.QueueWriteTopic }}
+        - name: DOCUMENT_STORE_API_ADDRESS
+          value: {{ .Values.service.DocumentStoreAPIUrl }}
         ports: 
         - containerPort: 8080 
         livenessProbe: 
