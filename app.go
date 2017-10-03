@@ -105,6 +105,7 @@ func main() {
 			Addrs:                *readAddresses,
 			Group:                *group,
 			Topic:                *readTopic,
+			Queue:                "kafka",
 			ConcurrentProcessing: false,
 			AutoCommitEnable:     true,
 			AuthorizationKey:     *authorization,
@@ -113,6 +114,7 @@ func main() {
 		producerConfig := producer.MessageProducerConfig{
 			Addr:          *writeAddress,
 			Topic:         *writeTopic,
+			Queue:         "kafka",
 			Authorization: *authorization,
 		}
 
