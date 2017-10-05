@@ -1,8 +1,8 @@
 package mapper
 
 import (
+	"fmt"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	"github.com/Sirupsen/logrus"
 )
 
 var blogCategories = []string{"blog", "webchat-live-blogs", "webchat-live-qa", "webchat-markets-live", "fastft"}
@@ -35,10 +35,9 @@ func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeCont
 	if m.isBlogCategory(mpc) {
 		resolvedUuid, err := m.iResolver.ResolveIdentifier(mpc.Attributes.ServiceId, mpc.Attributes.RefField, tid)
 		if err != nil {
-			logrus.Warnf("Couldn't resolve blog uuid %v", err)
-		} else {
-			uuid = resolvedUuid
+			return nil, fmt.Errorf("Couldn't resolve blog uuid %v", err)
 		}
+		uuid = resolvedUuid
 	}
 
 	var transformedResults []model.UppContent

@@ -24,7 +24,7 @@ func (m DefaultMessageMapper) Map(messageBody []byte) (*model.MethodeContentPlac
 		return nil, fmt.Errorf("Error unmarshalling methode messageBody: %v", err)
 	}
 	if p.Type != eomCompoundStory {
-		return nil, fmt.Errorf("Methode content has not type " + eomCompoundStory)
+		return nil, model.NewInvalidMethodeCPH(fmt.Sprintf("Methode content has not type %s", eomCompoundStory))
 	}
 
 	attrs, err := buildAttributes(p.AttributesXML)
@@ -34,7 +34,7 @@ func (m DefaultMessageMapper) Map(messageBody []byte) (*model.MethodeContentPlac
 	p.Attributes = attrs
 
 	if p.Attributes.SourceCode != contentPlaceholderSourceCode {
-		return nil, fmt.Errorf("Methode content is not a content placeholder")
+		return nil, model.NewInvalidMethodeCPH("Methode content is not a content placeholder")
 	}
 
 	body, err := buildMethodeBody(p.Value)

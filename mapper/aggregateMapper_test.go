@@ -159,6 +159,37 @@ func TestAggregateMapperIResolverUUID_IsSet(t *testing.T) {
 	assert.Equal(t, "abac1f3d-e48c-4618-863c-94bc9d913b9b", actualUppContents[1].GetUUID())
 }
 
+func TestAggregateMapperIResolverError_ThrowsError(t *testing.T) {
+	mockResolver := new(model.MockIResolver)
+	mockValidator := new(model.MockCPHValidator)
+	mockContentMapper := new(model.MockCPHMapper)
+	mockCompContentMapper := new(model.MockCPHMapper)
+
+	givenMethodeCPH := &model.MethodeContentPlaceholder{
+		UUID: "cdac1f3d-e48c-4618-863c-94bc9d913b9b",
+		Attributes: model.Attributes{
+			Category:  "blog",
+			ServiceId: "1111",
+			RefField:  "7777",
+		},
+	}
+
+	mockValidator.On("Validate",
+		mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true })).
+		Return(nil)
+
+	mockResolver.On("ResolveIdentifier",
+		mock.MatchedBy(func(uuid string) bool { return true }),
+		mock.MatchedBy(func(tid string) bool { return true }),
+		mock.MatchedBy(func(lmd string) bool { return true })).
+		Return("", errors.New("Could not resolve uuid"))
+
+	aggregateMapper := NewAggregateCPHMapper(mockResolver, mockValidator, []CPHMapper{mockContentMapper, mockCompContentMapper})
+
+	_, err := aggregateMapper.MapContentPlaceholder(givenMethodeCPH, "tid_test123", "2017-05-15T15:54:32.166Z")
+	assert.Error(t, err, "An error should be thrown when could not resolve uuid.")
+}
+
 func TestAggregateMapperNotBlog_NoUUIDResolved(t *testing.T) {
 	mockResolver := new(model.MockIResolver)
 	mockValidator := new(model.MockCPHValidator)

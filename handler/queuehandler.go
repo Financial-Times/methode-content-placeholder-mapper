@@ -56,8 +56,13 @@ func (kqh *CPHMessageHandler) HandleMessage(msg consumer.Message) {
 		lmd = time.Now().Format(model.UPPDateFormat)
 	}
 	methodePlaceholder, err := kqh.nativeMapper.Map([]byte(msg.Body))
+
 	if err != nil {
-		log.WithField("transaction_id", tid).WithError(err).Error("Error creating methode model from queue message")
+		if _, ok := err.(*model.InvalidMethodeCPH); ok {
+			log.WithField("transaction_id", tid).WithError(err).Infof(err.Error())
+		} else {
+			log.WithField("transaction_id", tid).WithError(err).Error("Error creating methode model from queue message")
+		}
 		return
 	}
 
