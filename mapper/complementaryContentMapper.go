@@ -32,6 +32,7 @@ func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContent(mpc *mode
 			PublishReference: tid,
 			LastModified:     lmd,
 		},
+		Brands:                 buildBrands(),
 		AlternativeTitles:      buildCCAlternativeTitles(mpc.Body.LeadHeadline.Text),
 		AlternativeImages:      buildCCAlternativeImages(mpc.Body.LeadImage.FileRef),
 		AlternativeStandfirsts: buildCCAlternativeStandfirsts(mpc.Body.LongStandfirst),
