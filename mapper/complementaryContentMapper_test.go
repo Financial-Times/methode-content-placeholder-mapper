@@ -38,6 +38,7 @@ func TestExternalPlaceholderComplementary_Ok(t *testing.T) {
 	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].GetUppCoreContent().LastModified)
 	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].GetUppCoreContent().PublishReference)
 	assert.Equal(t, []model.Brand{{ID: ftBrand}}, uppContents[0].(*model.UppComplementaryContent).Brands)
+	assert.Equal(t, "Content", uppContents[0].(*model.UppComplementaryContent).Type)
 }
 
 func TestExternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
@@ -94,6 +95,7 @@ func TestInternalPlaceholderComplementary_Ok(t *testing.T) {
 	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].GetUppCoreContent().LastModified)
 	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].GetUppCoreContent().PublishReference)
 	assert.Equal(t, []model.Brand{{ID: ftBrand}}, uppContents[0].(*model.UppComplementaryContent).Brands)
+	assert.Equal(t, "Article", uppContents[0].(*model.UppComplementaryContent).Type)
 }
 
 func TestInternalPlaceholderComplementaryDelete_Ok(t *testing.T) {

@@ -6,6 +6,8 @@ import (
 )
 
 const complementaryContentURI = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/complementarycontent/"
+const typeArticle = "Article"
+const typeContent = "Content"
 
 type ComplementaryContentCPHMapper struct {
 }
@@ -19,7 +21,11 @@ func (ccm *ComplementaryContentCPHMapper) MapContentPlaceholder(mcp *model.Metho
 	}
 	if uuid != "" {
 		cc.UUID = uuid
+		cc.Type = typeArticle
+	} else {
+		cc.Type = typeContent
 	}
+
 	return []model.UppContent{cc}, nil
 }
 
