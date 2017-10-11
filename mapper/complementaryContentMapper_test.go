@@ -41,7 +41,7 @@ func TestExternalPlaceholderComplementary_Ok(t *testing.T) {
 	assert.Equal(t, "Content", uppContents[0].(*model.UppComplementaryContent).Type)
 }
 
-func TestExternalPlaceholderComplementaryUpdate_Ok(t *testing.T) {
+func TestExternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
 	ccMapper := ComplementaryContentCPHMapper{}
 
 	placeholder := &model.MethodeContentPlaceholder{
@@ -61,6 +61,7 @@ func TestExternalPlaceholderComplementaryUpdate_Ok(t *testing.T) {
 	assert.Equal(t, true, uppContents[0].GetUppCoreContent().IsMarkedDeleted)
 	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].GetUppCoreContent().LastModified)
 	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].GetUppCoreContent().PublishReference)
+	assert.Equal(t, "Content",  uppContents[0].(*model.UppComplementaryContent).Type)
 }
 
 func TestInternalPlaceholderComplementary_Ok(t *testing.T) {
@@ -118,4 +119,5 @@ func TestInternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
 	assert.Equal(t, false, uppContents[0].GetUppCoreContent().IsMarkedDeleted)
 	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].GetUppCoreContent().LastModified)
 	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].GetUppCoreContent().PublishReference)
+	assert.Equal(t, "Content",  uppContents[0].(*model.UppComplementaryContent).Type)
 }

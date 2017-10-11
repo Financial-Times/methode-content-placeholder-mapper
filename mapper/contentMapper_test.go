@@ -64,6 +64,8 @@ func TestExternalPlaceholderDeleted_Ok(t *testing.T) {
 	assert.True(t, uppContents[0].GetUppCoreContent().IsMarkedDeleted)
 	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].GetUppCoreContent().LastModified)
 	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].GetUppCoreContent().PublishReference)
+	assert.Equal(t, "Content", uppContents[0].(*model.UppContentPlaceholder).Type)
+
 }
 
 func TestInternalPlaceholder_ReturnsEmpty(t *testing.T) {

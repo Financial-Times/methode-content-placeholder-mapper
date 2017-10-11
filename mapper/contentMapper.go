@@ -68,6 +68,7 @@ func (cm *ContentCPHMapper) mapToUppContentPlaceholderDelete(mpc *model.MethodeC
 			ContentURI:       placeholderContentURI,
 			IsMarkedDeleted:  true,
 		},
+		Type: contentType,
 	}
 }
 
