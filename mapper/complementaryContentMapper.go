@@ -60,7 +60,8 @@ func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContentDelete(mpc
 			PublishReference: tid,
 			LastModified:     lmd,
 		},
-		Type: contentType,
+		Type:   contentType,
+		Brands: buildBrands(),
 	}
 }
 
