@@ -1,0 +1,19 @@
+# Default values for methode-content-placeholder-mapper.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+service:
+  name: "" # The name of the service, should be defined in the specific app-configs folder.
+  hasHealthcheck: "true"
+  QueueGroup: "mcpm"
+  QueueReadTopic: "NativeCmsPublicationEvents"
+  QueueWriteTopic: "CmsPublicationEvents"
+  DocumentStoreAPIUrl: "document-store-api:8080"
+replicaCount: 2
+image:
+  repository: coco/methode-content-placeholder-mapper
+  pullPolicy: Always
+#resources:
+#  limits:
+#    memory: 256Mi
+
+

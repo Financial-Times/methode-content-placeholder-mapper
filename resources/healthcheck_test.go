@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	fthealth "github.com/Financial-Times/go-fthealth/v1a"
+	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/stretchr/testify/assert"
@@ -30,7 +30,13 @@ func TestHealthchecks(t *testing.T) {
 	}
 
 	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL))
-	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck())(w, req)
+	hec := fthealth.HealthCheck{
+		SystemCode:  "up-mcpm",
+		Name:        "Dependent services healthcheck",
+		Description: "Checks if all the dependent services are reachable and healthy.",
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+	}
+	fthealth.Handler(hec)(w, req)
 
 	assert.Equal(t, 200, w.Code)
 
@@ -68,7 +74,13 @@ func TestFailingKafka(t *testing.T) {
 	}
 
 	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL))
-	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck())(w, req)
+	hec := fthealth.HealthCheck{
+		SystemCode:  "up-mcpm",
+		Name:        "Dependent services healthcheck",
+		Description: "Checks if all the dependent services are reachable and healthy.",
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+	}
+	fthealth.Handler(hec)(w, req)
 	assert.Equal(t, 200, w.Code)
 
 	decoder := json.NewDecoder(w.Body)
@@ -91,8 +103,13 @@ func TestNoKafkaAtAll(t *testing.T) {
 	}
 
 	hc := NewMapperHealthcheck(getMockedConsumer([]string{"a-fake-url"}), getMockedProducer("a-fake-url"))
-	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck())(w, req)
-
+	hec := fthealth.HealthCheck{
+		SystemCode:  "up-mcpm",
+		Name:        "Dependent services healthcheck",
+		Description: "Checks if all the dependent services are reachable and healthy.",
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+	}
+	fthealth.Handler(hec)(w, req)
 	assert.Equal(t, 200, w.Code)
 
 	decoder := json.NewDecoder(w.Body)
@@ -118,8 +135,13 @@ func TestNoKafkaConsumer(t *testing.T) {
 	}
 
 	hc := NewMapperHealthcheck(getMockedConsumer([]string{"a-fake-url"}), getMockedProducer(kafka.URL))
-	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck())(w, req)
-
+	hec := fthealth.HealthCheck{
+		SystemCode:  "up-mcpm",
+		Name:        "Dependent services healthcheck",
+		Description: "Checks if all the dependent services are reachable and healthy.",
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+	}
+	fthealth.Handler(hec)(w, req)
 	assert.Equal(t, 200, w.Code)
 
 	decoder := json.NewDecoder(w.Body)
@@ -145,8 +167,13 @@ func TestNoKafkaProducer(t *testing.T) {
 	}
 
 	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer("a-fake-url"))
-	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck())(w, req)
-
+	hec := fthealth.HealthCheck{
+		SystemCode:  "up-mcpm",
+		Name:        "Dependent services healthcheck",
+		Description: "Checks if all the dependent services are reachable and healthy.",
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+	}
+	fthealth.Handler(hec)(w, req)
 	assert.Equal(t, 200, w.Code)
 
 	decoder := json.NewDecoder(w.Body)
@@ -172,8 +199,13 @@ func TestMultipleKafkaConsumersFail(t *testing.T) {
 	}
 
 	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL, "a-fake-url"}), getMockedProducer(kafka.URL))
-	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck())(w, req)
-
+	hec := fthealth.HealthCheck{
+		SystemCode:  "up-mcpm",
+		Name:        "Dependent services healthcheck",
+		Description: "Checks if all the dependent services are reachable and healthy.",
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+	}
+	fthealth.Handler(hec)(w, req)
 	assert.Equal(t, 200, w.Code)
 
 	decoder := json.NewDecoder(w.Body)
@@ -201,8 +233,13 @@ func TestMultipleKafkaConsumersOK(t *testing.T) {
 	}
 
 	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL, kafka2.URL}), getMockedProducer(kafka1.URL))
-	fthealth.Handler("Dependent services healthcheck", "Checks if all the dependent services are reachable and healthy.", hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck())(w, req)
-
+	hec := fthealth.HealthCheck{
+		SystemCode:  "up-mcpm",
+		Name:        "Dependent services healthcheck",
+		Description: "Checks if all the dependent services are reachable and healthy.",
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+	}
+	fthealth.Handler(hec)(w, req)
 	assert.Equal(t, 200, w.Code)
 
 	decoder := json.NewDecoder(w.Body)

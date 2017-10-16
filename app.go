@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	fthealth "github.com/Financial-Times/go-fthealth/v1a"
+	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/service-status-go/httphandlers"
@@ -16,8 +16,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jawher/mow.cli"
 
+	"encoding/json"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/handler"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
+	"io/ioutil"
 )
 
 func init() {
@@ -55,23 +59,11 @@ func main() {
 		Desc:   "The topic to read the messages from.",
 		EnvVar: "Q_READ_TOPIC",
 	})
-	readQueueHostHeader := app.String(cli.StringOpt{
-		Name:   "read-queue-host-header",
-		Value:  "kafka",
-		Desc:   "The host header for the queue to read the meassages from.",
-		EnvVar: "Q_READ_QUEUE_HOST_HEADER",
-	})
 	writeTopic := app.String(cli.StringOpt{
 		Name:   "write-topic",
 		Value:  "",
 		Desc:   "The topic to write the messages to.",
 		EnvVar: "Q_WRITE_TOPIC",
-	})
-	writeQueueHostHeader := app.String(cli.StringOpt{
-		Name:   "write-queue-host-header",
-		Value:  "kafka",
-		Desc:   "The host header for the queue to write the messages to.",
-		EnvVar: "Q_WRITE_QUEUE_HOST_HEADER",
 	})
 	authorization := app.String(cli.StringOpt{
 		Name:   "authorization",
@@ -84,6 +76,12 @@ func main() {
 		Value:  8080,
 		Desc:   "application port",
 		EnvVar: "PORT",
+	})
+	docStoreAddress := app.String(cli.StringOpt{
+		Name:   "document-store-api-addresses",
+		Value:  "",
+		Desc:   "Addresses to connect to the consumer queue (URLs).",
+		EnvVar: "DOCUMENT_STORE_API_ADDRESS",
 	})
 
 	app.Action = func() {
@@ -98,13 +96,16 @@ func main() {
 				TLSHandshakeTimeout:   3 * time.Second,
 				ExpectContinueTimeout: 1 * time.Second,
 			},
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
 		}
 
 		consumerConfig := consumer.QueueConfig{
 			Addrs:                *readAddresses,
 			Group:                *group,
 			Topic:                *readTopic,
-			Queue:                *readQueueHostHeader,
+			Queue:                "kafka",
 			ConcurrentProcessing: false,
 			AutoCommitEnable:     true,
 			AuthorizationKey:     *authorization,
@@ -113,17 +114,27 @@ func main() {
 		producerConfig := producer.MessageProducerConfig{
 			Addr:          *writeAddress,
 			Topic:         *writeTopic,
-			Queue:         *writeQueueHostHeader,
+			Queue:         "kafka",
 			Authorization: *authorization,
 		}
 
-		m := mapper.New()
-		messageConsumer := consumer.NewConsumer(consumerConfig, m.HandlePlaceholderMessages, httpClient)
+		cphValidator := mapper.NewDefaultCPHValidator()
+		docStoreClient := mapper.NewHttpDocStoreClient(httpClient, *docStoreAddress)
+		iResolver := mapper.NewHttpIResolver(docStoreClient, readBrandMappings())
+		contentCphMapper := &mapper.ContentCPHMapper{}
+		complementaryContentCPHMapper := &mapper.ComplementaryContentCPHMapper{}
+		aggregateMapper := mapper.NewAggregateCPHMapper(iResolver, cphValidator, []mapper.CPHMapper{contentCphMapper, complementaryContentCPHMapper})
+		nativeMapper := mapper.DefaultMessageMapper{}
+		messageCreator := message.NewDefaultCPHMessageCreator()
 		messageProducer := producer.NewMessageProducerWithHTTPClient(producerConfig, httpClient)
+		h := handler.NewCPHMessageHandler(nil, messageProducer, aggregateMapper, nativeMapper, messageCreator)
+		messageConsumer := consumer.NewConsumer(consumerConfig, h.HandleMessage, httpClient)
+		h.MessageConsumer = messageConsumer
+		endpointHandler := resources.NewMapEndpointHandler(aggregateMapper, messageCreator, nativeMapper)
 
-		go serve(*port, resources.NewMapperHealthcheck(messageConsumer, messageProducer), resources.NewMapEndpointHandler(m))
+		go serve(*port, resources.NewMapperHealthcheck(messageConsumer, messageProducer), endpointHandler)
 
-		m.StartMappingMessages(messageConsumer, messageProducer)
+		h.StartHandlingMessages()
 	}
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
@@ -133,14 +144,14 @@ func main() {
 func serve(port int, hc *resources.MapperHealthcheck, meh *resources.MapEndpointHandler) {
 	r := mux.NewRouter()
 
-	hcHandler := fthealth.HandlerParallel(
-		"Dependent services healthcheck",
-		"Checks if all the dependent services are reachable and healthy.",
-		hc.ConsumerConnectivityCheck(),
-		hc.ProducerConnectivityCheck(),
-	)
+	hec := fthealth.HealthCheck{
+		SystemCode:  "up-mcpm",
+		Name:        "Dependent services healthcheck",
+		Description: "Checks if all the dependent services are reachable and healthy.",
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+	}
 	r.HandleFunc("/map", meh.ServeMapEndpoint).Methods("POST")
-	r.HandleFunc("/__health", hcHandler)
+	r.HandleFunc("/__health", fthealth.Handler(hec))
 	r.HandleFunc(httphandlers.GTGPath, httphandlers.NewGoodToGoHandler(hc.GTG)).Methods("GET")
 	r.HandleFunc(httphandlers.BuildInfoPath, httphandlers.BuildInfoHandler).Methods("GET")
 	r.HandleFunc(httphandlers.PingPath, httphandlers.PingHandler).Methods("GET")
@@ -149,4 +160,19 @@ func serve(port int, hc *resources.MapperHealthcheck, meh *resources.MapEndpoint
 
 	err := http.ListenAndServe(":"+strconv.Itoa(port), nil)
 	log.Fatal(err)
+}
+
+func readBrandMappings() map[string]string {
+	brandMappingsFile, err := ioutil.ReadFile("./brandMappings.json")
+	if err != nil {
+		log.Errorf("Couldn't read brand mapping configuration: %v\n", err)
+		os.Exit(1)
+	}
+	var brandMappings map[string]string
+	err = json.Unmarshal(brandMappingsFile, &brandMappings)
+	if err != nil {
+		log.Errorf("Couldn't unmarshal brand mapping configuration: %v\n", err)
+		os.Exit(1)
+	}
+	return brandMappings
 }

@@ -1,9 +1,9 @@
 # methode-content-placeholder-mapper
 [![CircleCI](https://circleci.com/gh/Financial-Times/methode-content-placeholder-mapper.svg?style=svg)](https://circleci.com/gh/Financial-Times/methode-content-placeholder-mapper) [![Go Report Card](https://goreportcard.com/badge/github.com/Financial-Times/methode-content-placeholder-mapper)](https://goreportcard.com/report/github.com/Financial-Times/methode-content-placeholder-mapper) [![Coverage Status](https://coveralls.io/repos/github/Financial-Times/methode-content-placeholder-mapper/badge.svg)](https://coveralls.io/github/Financial-Times/methode-content-placeholder-mapper)
 
-The Methode-content-placeholder-mapper (MCPM) is a microservice that maps a content placeholder from Methode to a UP piece of content.
+The Methode-content-placeholder-mapper (MCPM) is a microservice that maps a content placeholder from Methode to an UP piece of content, which is written in 2 parts: one in the content collection, and one in the complementarycontent collection (which keeps the CPHs promotional fields as of now).
 The microservice consumes a specific Apache Kafka topic group.
-All the consumed messages that contain a Methode placeholder are mapped, then MCPM put the result of the mapping on another Kafka queue topic.
+All the consumed messages that contain a Methode placeholder are mapped, then MCPM put the results of the mapping on another Kafka queue topic.
 
 ## Installation
 
@@ -31,6 +31,7 @@ govendor test +local
                 && export Q_GROUP="methode-messages" \
                 && export Q_READ_TOPIC=NativeCmsPublicationEvents \
                 && export Q_WRITE_TOPIC=CmsPublicationEvents \
+                && export DOCUMENT_STORE_API_ADDRESS="http://%H:8080" \
                 && ./methode-content-placeholder-mapper
 ```
 
@@ -43,6 +44,7 @@ govendor test +local
                 --group="methode-messages"
                 --read-topic="NativeCmsPublicationEvents" \
                 --write-topic="CmsPublicationEvents"
+                --document-store-api-addresses="http://%H:8080"
 ```
 
 NB: for the complete list of options run `./methode-content-placeholder-mapper -h`
@@ -57,6 +59,7 @@ How to Build & Run with Docker
       --env Q_GROUP="methode-messages" \
       --env Q_READ_TOPIC=NativeCmsPublicationEvents \
       --env Q_WRITE_TOPIC=CmsPublicationEvents \
+      --env DOCUMENT_STORE_API_ADDRESS="http://%H:8080" \
         coco/methode-content-placeholder-mapper
 ```
 
@@ -74,39 +77,90 @@ to validate Methode placeholders.
 The endpoint will return HTTP status 200 (OK) for successful transformation,
 422 (Unprocessable Entity) in case of failure and 404 if the content was deleted.
 
-The following listing shows an example of successfully mapped Methode placeholder:
+A successful response will always be an array containing either 1 or 2 transformed objects, each being a message to be send to kafka, on different ContentUri. One for the content collection and one for the complementarycontent collection.
+Depending on the type of CPH, they will be as follow:
+
+1. If the CPH is internal (i.e. a Wordpress blog), there will be only complementarycontent transformation (note the contentUri contains complementarycontent which is whitelisted on the complementarycontent-ingester service):
 ```
-{
-  "uuid": "f9845f8a-c210-11e6-91a7-e73ace06f770",
-  "title": "Interactive: The Virgin empire",
-  "identifiers": [
-    {
-      "authority": "http://api.ft.com/system/FTCOM-METHODE",
-      "identifierValue": "f9845f8a-c210-11e6-91a7-e73ace06f770"
-    }
-  ],
-  "brands": [
-    {
-      "id": "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
-    }
-  ],
-  "alternativeTitles": {
-    "promotionalTitle": "Interactive: The Virgin empire",
-    "contentPackageTitle": "The Virgin empire"
-  },
-  "alternativeImages": {
-    "promotionalImage": "http://api.ft.com/content/8f7b3e6a-327b-11e3-91d2-00144feab7de"
-  },
-  "alternativeStandfirst": {
-    "promotionalStandfirst": "The alternative standfirst!"
-  },
-  "publishedDate": "2014-08-05T01:40:48.000Z",
-  "publishReference": "tid_MKEFgEWbVW",
-  "lastModified": "2016-12-28 17:18:13.468759906 +0000 GMT",
-  "webUrl": "http://www.ft.com/ig/sites/2014/virgingroup-timeline/",
-  "canBeSyndicated": "verify",
-  "canBeDistributed": "verify"
-}
+[
+        {
+          "contentUri": "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/complementarycontent/f9845f8a-c210-11e6-91a7-e73ace06f770",
+          "payload": {
+            "uuid": "f9845f8a-c210-11e6-91a7-e73ace06f770",
+            "publishReference": "tid_szBwcQ7sDl",
+            "lastModified": "2017-10-02T07:50:34.690Z",
+            "alternativeTitles": {
+              "promotionalTitle": "Interactive: The Virgin empire"
+            },
+            "alternativeImages": {
+              "promotionalImage": "8f7b3e6a-327b-11e3-91d2-00144feab7de"
+            },
+            "alternativeStandfirsts": {
+              "promotionalStandfirst": "Long standfirst here"
+            }
+          },
+          "lastModified": "2017-10-02T07:50:34.690Z"
+        }
+]
+```
+
+2. If the CPH is external (i.e. external links, not Wordpress articles we have in our db), there will be both content transformation and complementarycontent transformation (note the different contentUri for each one):
+```
+[
+        {
+        "contentUri": "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/content/f9845f8a-c210-11e6-91a7-e73ace06f770",
+        "payload": {
+            "uuid": "f9845f8a-c210-11e6-91a7-e73ace06f770",
+            "publishReference": "tid_yqWmJVm2FN",
+            "lastModified": "2017-10-12T11:26:18.341Z",
+            "publishedDate": "2014-08-05T13:40:48.000Z",
+            "title": "Interactive: The Virgin empire",
+            "identifiers": [
+                {
+                    "authority": "http://api.ft.com/system/FTCOM-METHODE",
+                    "identifierValue": "f9845f8a-c210-11e6-91a7-e73ace06f770"
+                }
+            ],
+            "brands": [
+                {
+                    "id": "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
+                }
+            ],
+            "alternativeTitles": {
+                "contentPackageTitle": "The Virgin empire"
+            },
+            "webUrl": "http://www.ft.com/ig/sites/2014/virgingroup-timeline/",
+            "type": "Content",
+            "canBeSyndicated": "verify",
+            "canBeDistributed": "verify"
+        },
+        "lastModified": "2017-10-12T11:26:18.341Z"
+        },
+        {
+        "contentUri": "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/complementarycontent/f9845f8a-c210-11e6-91a7-e73ace06f770",
+        "payload": {
+            "uuid": "f9845f8a-c210-11e6-91a7-e73ace06f770",
+            "publishReference": "tid_yqWmJVm2FN",
+            "lastModified": "2017-10-12T11:26:18.341Z",
+            "alternativeTitles": {
+                "promotionalTitle": "Interactive: The Virgin empire"
+            },
+            "alternativeImages": {
+                "promotionalImage": "8f7b3e6a-327b-11e3-91d2-00144feab7de"
+            },
+            "alternativeStandfirsts": {
+                "promotionalStandfirst": "Long standfirst here"
+            },
+            "brands": [
+                {
+                    "id": "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
+                }
+            ],
+            "type": "Content"
+        },
+        "lastModified": "2017-10-12T11:26:18.341Z"
+        }
+]
 ```
 
 Examples of placeholder payloads are available in the `test_resources` folder
