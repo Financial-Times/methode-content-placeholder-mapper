@@ -83,6 +83,12 @@ func main() {
 		Desc:   "Addresses to connect to the consumer queue (URLs).",
 		EnvVar: "DOCUMENT_STORE_API_ADDRESS",
 	})
+	apiHost := app.String(cli.StringOpt{
+		Name:   "api.ft.com",
+		Value:  "",
+		Desc:   "API hostname e.g. (api.ft.com)",
+		EnvVar: "API_HOST",
+	})
 
 	app.Action = func() {
 		httpClient := &http.Client{
@@ -122,7 +128,7 @@ func main() {
 		docStoreClient := mapper.NewHttpDocStoreClient(httpClient, *docStoreAddress)
 		iResolver := mapper.NewHttpIResolver(docStoreClient, readBrandMappings())
 		contentCphMapper := &mapper.ContentCPHMapper{}
-		complementaryContentCPHMapper := &mapper.ComplementaryContentCPHMapper{}
+		complementaryContentCPHMapper := mapper.NewComplementaryContentCPHMapper(*apiHost)
 		aggregateMapper := mapper.NewAggregateCPHMapper(iResolver, cphValidator, []mapper.CPHMapper{contentCphMapper, complementaryContentCPHMapper})
 		nativeMapper := mapper.DefaultMessageMapper{}
 		messageCreator := message.NewDefaultCPHMessageCreator()

@@ -10,7 +10,11 @@ type UppComplementaryContent struct {
 }
 
 type AlternativeImages struct {
-	PromotionalImage string `json:"promotionalImage"`
+	PromotionalImage *PromotionalImage `json:"promotionalImage"`
+}
+
+type PromotionalImage struct {
+	Id string `json:"id"`
 }
 
 type AlternativeStandfirsts struct {
