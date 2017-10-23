@@ -14,7 +14,7 @@ type ComplementaryContentCPHMapper struct {
 
 func NewComplementaryContentCPHMapper(apiHost string) *ComplementaryContentCPHMapper {
 	return &ComplementaryContentCPHMapper{
-		apiHostFormat: "https://" + apiHost + "/content/%s",
+		apiHostFormat: "http://" + apiHost + "/content/%s",
 	}
 }
 
