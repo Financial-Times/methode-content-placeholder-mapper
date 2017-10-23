@@ -85,7 +85,7 @@ func main() {
 	})
 	apiHost := app.String(cli.StringOpt{
 		Name:   "api.ft.com",
-		Value:  "",
+		Value:  "api.ft.com",
 		Desc:   "API hostname e.g. (api.ft.com)",
 		EnvVar: "API_HOST",
 	})
