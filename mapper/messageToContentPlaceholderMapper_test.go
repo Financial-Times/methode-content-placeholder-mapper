@@ -4,10 +4,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
+
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMessageMapperMap_Ok(t *testing.T) {

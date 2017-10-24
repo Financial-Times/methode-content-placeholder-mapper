@@ -1,12 +1,13 @@
 package mapper
 
 import (
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	"github.com/pkg/errors"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/pkg/errors"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestResolve_Ok(t *testing.T) {

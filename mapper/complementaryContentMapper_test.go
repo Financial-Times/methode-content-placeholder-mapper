@@ -1,9 +1,10 @@
 package mapper
 
 import (
+	"testing"
+
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestExternalPlaceholderComplementary_Ok(t *testing.T) {

@@ -1,9 +1,10 @@
 package mapper
 
 import (
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"strings"
 	"fmt"
+
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 )
 
 const complementaryContentURI = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/complementarycontent/"
@@ -52,7 +53,7 @@ func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContentUpdate(mpc
 			LastModified:     lmd,
 		},
 		Type:                   contentType,
-		Brands:                 buildBrands(),
+		Brands:                 model.BuildBrands(),
 		AlternativeTitles:      ccm.buildCCAlternativeTitles(mpc.Body.LeadHeadline.Text),
 		AlternativeImages:      ccm.buildCCAlternativeImages(mpc.Body.LeadImage.FileRef),
 		AlternativeStandfirsts: ccm.buildCCAlternativeStandfirsts(mpc.Body.LongStandfirst),
@@ -69,7 +70,7 @@ func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContentDelete(mpc
 			LastModified:     lmd,
 		},
 		Type:   contentType,
-		Brands: buildBrands(),
+		Brands: model.BuildBrands(),
 	}
 }
 

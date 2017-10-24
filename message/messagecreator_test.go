@@ -2,10 +2,11 @@ package message
 
 import (
 	"encoding/json"
+	"testing"
+
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestToPublicationEventUpdate_Ok(t *testing.T) {

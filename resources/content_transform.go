@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"io/ioutil"
+	"time"
 
 	tidUtils "github.com/Financial-Times/transactionid-utils-go"
 	log "github.com/Sirupsen/logrus"
@@ -11,8 +13,6 @@ import (
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	"io/ioutil"
-	"time"
 )
 
 type MapEndpointHandler struct {

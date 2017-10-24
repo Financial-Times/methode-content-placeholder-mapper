@@ -1,9 +1,10 @@
 package mapper
 
 import (
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"strings"
 	"time"
+
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 )
 
 const (
@@ -12,7 +13,6 @@ const (
 	verify                = "verify"
 	contentType           = "Content"
 	methodeDateFormat     = "20060102150405"
-	ftBrand               = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
 )
 
 type ContentCPHMapper struct {
@@ -50,7 +50,7 @@ func (cm *ContentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContent
 		PublishedDate:     publishDate,
 		Title:             mpc.Body.LeadHeadline.Text,
 		Identifiers:       buildIdentifiers(mpc.UUID),
-		Brands:            buildBrands(),
+		Brands:            model.BuildBrands(),
 		WebURL:            mpc.Body.LeadHeadline.URL,
 		AlternativeTitles: buildAlternativeTitles(mpc.Body.ContentPackageHeadline),
 		Type:              contentType,
@@ -78,11 +78,6 @@ func buildIdentifiers(uuid string) []model.Identifier {
 		IdentifierValue: uuid,
 	}
 	return []model.Identifier{id}
-}
-
-func buildBrands() []model.Brand {
-	brand := model.Brand{ID: ftBrand}
-	return []model.Brand{brand}
 }
 
 func buildAlternativeTitles(contentPackageTitle string) *model.AlternativeTitles {

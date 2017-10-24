@@ -2,10 +2,11 @@ package mapper
 
 import (
 	"fmt"
-	"github.com/Financial-Times/transactionid-utils-go"
-	"github.com/Sirupsen/logrus"
 	"net/http"
 	"net/url"
+
+	"github.com/Financial-Times/transactionid-utils-go"
+	"github.com/Sirupsen/logrus"
 )
 
 type DocStoreClient interface {
