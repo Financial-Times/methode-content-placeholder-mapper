@@ -2,6 +2,7 @@ package mapper
 
 import (
 	"fmt"
+
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 )
 

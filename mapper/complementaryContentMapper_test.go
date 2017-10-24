@@ -1,13 +1,14 @@
 package mapper
 
 import (
+	"testing"
+
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestExternalPlaceholderComplementary_Ok(t *testing.T) {
-	ccMapper := ComplementaryContentCPHMapper{}
+	ccMapper := NewComplementaryContentCPHMapper("api.ft.com")
 
 	placeholder := &model.MethodeContentPlaceholder{
 		UUID: "e1f02660-d41a-4a56-8eca-d0f8f0fac068",
@@ -33,7 +34,7 @@ func TestExternalPlaceholderComplementary_Ok(t *testing.T) {
 	assert.Equal(t, 1, len(uppContents), "Should be one")
 	assert.Equal(t, "e1f02660-d41a-4a56-8eca-d0f8f0fac068", uppContents[0].GetUUID())
 	assert.Equal(t, "lead headline", uppContents[0].(*model.UppComplementaryContent).AlternativeTitles.PromotionalTitle)
-	assert.Equal(t, "abffff60-d41a-4a56-8eca-d0f8f0fac068", uppContents[0].(*model.UppComplementaryContent).AlternativeImages.PromotionalImage)
+	assert.Equal(t, "http://api.ft.com/content/abffff60-d41a-4a56-8eca-d0f8f0fac068", uppContents[0].(*model.UppComplementaryContent).AlternativeImages.PromotionalImage.Id)
 	assert.Equal(t, "long standfirst", uppContents[0].(*model.UppComplementaryContent).AlternativeStandfirsts.PromotionalStandfirst)
 	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].GetUppCoreContent().LastModified)
 	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].GetUppCoreContent().PublishReference)
@@ -42,7 +43,7 @@ func TestExternalPlaceholderComplementary_Ok(t *testing.T) {
 }
 
 func TestExternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
-	ccMapper := ComplementaryContentCPHMapper{}
+	ccMapper := NewComplementaryContentCPHMapper("api.ft.com")
 
 	placeholder := &model.MethodeContentPlaceholder{
 		UUID: "e1f02660-d41a-4a56-8eca-d0f8f0fac068",
@@ -65,7 +66,7 @@ func TestExternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
 }
 
 func TestInternalPlaceholderComplementary_Ok(t *testing.T) {
-	ccMapper := ComplementaryContentCPHMapper{}
+	ccMapper := NewComplementaryContentCPHMapper("api.ft.com")
 
 	placeholder := &model.MethodeContentPlaceholder{
 		UUID: "e1f02660-d41a-4a56-8eca-d0f8f0fac068",
@@ -91,7 +92,7 @@ func TestInternalPlaceholderComplementary_Ok(t *testing.T) {
 	assert.Equal(t, 1, len(uppContents), "Should be one")
 	assert.Equal(t, "abcf2660-bbad-4a56-8eca-d0f8f0fac068", uppContents[0].GetUUID())
 	assert.Equal(t, "lead headline", uppContents[0].(*model.UppComplementaryContent).AlternativeTitles.PromotionalTitle)
-	assert.Equal(t, "abffff60-d41a-4a56-8eca-d0f8f0fac068", uppContents[0].(*model.UppComplementaryContent).AlternativeImages.PromotionalImage)
+	assert.Equal(t, "http://api.ft.com/content/abffff60-d41a-4a56-8eca-d0f8f0fac068", uppContents[0].(*model.UppComplementaryContent).AlternativeImages.PromotionalImage.Id)
 	assert.Equal(t, "long standfirst", uppContents[0].(*model.UppComplementaryContent).AlternativeStandfirsts.PromotionalStandfirst)
 	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].GetUppCoreContent().LastModified)
 	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].GetUppCoreContent().PublishReference)
@@ -100,7 +101,7 @@ func TestInternalPlaceholderComplementary_Ok(t *testing.T) {
 }
 
 func TestInternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
-	ccMapper := ComplementaryContentCPHMapper{}
+	ccMapper := NewComplementaryContentCPHMapper("api.ft.com")
 
 	placeholder := &model.MethodeContentPlaceholder{
 		UUID: "e1f02660-d41a-4a56-8eca-d0f8f0fac068",

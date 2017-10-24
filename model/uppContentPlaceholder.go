@@ -3,6 +3,7 @@ package model
 const (
 	MethodeSystemID = "http://cmdb.ft.com/systems/methode-web-pub"
 	UPPDateFormat   = "2006-01-02T15:04:05.000Z0700"
+	ftBrand         = "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
 )
 
 // UppContentPlaceholder represents the content placeholder representation according to UPP model.
@@ -35,4 +36,9 @@ type Brand struct {
 type AlternativeTitles struct {
 	PromotionalTitle    string `json:"promotionalTitle,omitempty"`
 	ContentPackageTitle string `json:"contentPackageTitle,omitempty"`
+}
+
+func BuildBrands() []Brand {
+	brand := Brand{ID: ftBrand}
+	return []Brand{brand}
 }

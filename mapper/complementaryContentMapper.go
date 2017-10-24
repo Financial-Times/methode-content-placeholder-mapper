@@ -1,13 +1,22 @@
 package mapper
 
 import (
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"strings"
+	"fmt"
+
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 )
 
 const complementaryContentURI = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/complementarycontent/"
 
 type ComplementaryContentCPHMapper struct {
+		apiHostFormat string
+}
+
+func NewComplementaryContentCPHMapper(apiHost string) *ComplementaryContentCPHMapper {
+	return &ComplementaryContentCPHMapper{
+		apiHostFormat: "http://" + apiHost + "/content/%s",
+	}
 }
 
 func (ccm *ComplementaryContentCPHMapper) MapContentPlaceholder(mcp *model.MethodeContentPlaceholder, uuid, tid, lmd string) ([]model.UppContent, error) {
@@ -44,10 +53,10 @@ func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContentUpdate(mpc
 			LastModified:     lmd,
 		},
 		Type:                   contentType,
-		Brands:                 buildBrands(),
-		AlternativeTitles:      buildCCAlternativeTitles(mpc.Body.LeadHeadline.Text),
-		AlternativeImages:      buildCCAlternativeImages(mpc.Body.LeadImage.FileRef),
-		AlternativeStandfirsts: buildCCAlternativeStandfirsts(mpc.Body.LongStandfirst),
+		Brands:                 model.BuildBrands(),
+		AlternativeTitles:      ccm.buildCCAlternativeTitles(mpc.Body.LeadHeadline.Text),
+		AlternativeImages:      ccm.buildCCAlternativeImages(mpc.Body.LeadImage.FileRef),
+		AlternativeStandfirsts: ccm.buildCCAlternativeStandfirsts(mpc.Body.LongStandfirst),
 	}
 }
 
@@ -61,11 +70,11 @@ func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContentDelete(mpc
 			LastModified:     lmd,
 		},
 		Type:   contentType,
-		Brands: buildBrands(),
+		Brands: model.BuildBrands(),
 	}
 }
 
-func buildCCAlternativeTitles(promoTitle string) *model.AlternativeTitles {
+func (ccm *ComplementaryContentCPHMapper) buildCCAlternativeTitles(promoTitle string) *model.AlternativeTitles {
 	promoTitle = strings.TrimSpace(promoTitle)
 
 	if promoTitle == "" {
@@ -74,19 +83,19 @@ func buildCCAlternativeTitles(promoTitle string) *model.AlternativeTitles {
 	return &model.AlternativeTitles{PromotionalTitle: promoTitle}
 }
 
-func buildCCAlternativeImages(fileRef string) *model.AlternativeImages {
+func (ccm *ComplementaryContentCPHMapper) buildCCAlternativeImages(fileRef string) *model.AlternativeImages {
 	if fileRef == "" {
 		return nil
 	}
 	imageUUID := extractImageUUID(fileRef)
-	return &model.AlternativeImages{PromotionalImage: imageUUID}
+	return &model.AlternativeImages{PromotionalImage: &model.PromotionalImage{Id: fmt.Sprintf(ccm.apiHostFormat, imageUUID)}}
 }
 
 func extractImageUUID(fileRef string) string {
 	return strings.Split(fileRef, "uuid=")[1]
 }
 
-func buildCCAlternativeStandfirsts(promoStandfirst string) *model.AlternativeStandfirsts {
+func (ccm *ComplementaryContentCPHMapper) buildCCAlternativeStandfirsts(promoStandfirst string) *model.AlternativeStandfirsts {
 	promoStandfirst = strings.TrimSpace(promoStandfirst)
 	if promoStandfirst == "" {
 		return nil

@@ -5,15 +5,15 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"io/ioutil"
 )
 
 const mapperURL = "http://methode-content-placeholder-mapper/map"

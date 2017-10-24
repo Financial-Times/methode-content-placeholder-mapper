@@ -2,8 +2,9 @@ package mapper
 
 import (
 	"errors"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"net/url"
+
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 )
 
 type CPHValidator interface {

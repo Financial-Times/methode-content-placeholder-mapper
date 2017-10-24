@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 )
 

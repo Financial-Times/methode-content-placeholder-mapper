@@ -1,28 +1,30 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"strconv"
 	"time"
+	
+	log "github.com/Sirupsen/logrus"
+	"github.com/gorilla/mux"
+	"github.com/jawher/mow.cli"
 
 	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/service-status-go/httphandlers"
-	log "github.com/Sirupsen/logrus"
-	"github.com/gorilla/mux"
-	"github.com/jawher/mow.cli"
-
-	"encoding/json"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/handler"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
-	"io/ioutil"
 )
+
+const defaultApiHost = "api.ft.com"
 
 func init() {
 	f := &log.TextFormatter{
@@ -83,6 +85,12 @@ func main() {
 		Desc:   "Addresses to connect to the consumer queue (URLs).",
 		EnvVar: "DOCUMENT_STORE_API_ADDRESS",
 	})
+	apiHost := app.String(cli.StringOpt{
+		Name:   defaultApiHost,
+		Value:  "",
+		Desc:   "API hostname e.g. (api.ft.com)",
+		EnvVar: "API_HOST",
+	})
 
 	app.Action = func() {
 		httpClient := &http.Client{
@@ -122,7 +130,7 @@ func main() {
 		docStoreClient := mapper.NewHttpDocStoreClient(httpClient, *docStoreAddress)
 		iResolver := mapper.NewHttpIResolver(docStoreClient, readBrandMappings())
 		contentCphMapper := &mapper.ContentCPHMapper{}
-		complementaryContentCPHMapper := &mapper.ComplementaryContentCPHMapper{}
+		complementaryContentCPHMapper := mapper.NewComplementaryContentCPHMapper(*apiHost)
 		aggregateMapper := mapper.NewAggregateCPHMapper(iResolver, cphValidator, []mapper.CPHMapper{contentCphMapper, complementaryContentCPHMapper})
 		nativeMapper := mapper.DefaultMessageMapper{}
 		messageCreator := message.NewDefaultCPHMessageCreator()
