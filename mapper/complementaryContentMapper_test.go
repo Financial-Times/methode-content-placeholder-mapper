@@ -38,7 +38,7 @@ func TestExternalPlaceholderComplementary_Ok(t *testing.T) {
 	assert.Equal(t, "long standfirst", uppContents[0].(*model.UppComplementaryContent).AlternativeStandfirsts.PromotionalStandfirst)
 	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].GetUppCoreContent().LastModified)
 	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].GetUppCoreContent().PublishReference)
-	assert.Equal(t, []model.Brand{{ID: ftBrand}}, uppContents[0].(*model.UppComplementaryContent).Brands)
+	assert.Equal(t, []model.Brand{{ID: "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"}}, uppContents[0].(*model.UppComplementaryContent).Brands)
 	assert.Equal(t, "Content", uppContents[0].(*model.UppComplementaryContent).Type)
 }
 
@@ -96,7 +96,7 @@ func TestInternalPlaceholderComplementary_Ok(t *testing.T) {
 	assert.Equal(t, "long standfirst", uppContents[0].(*model.UppComplementaryContent).AlternativeStandfirsts.PromotionalStandfirst)
 	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].GetUppCoreContent().LastModified)
 	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].GetUppCoreContent().PublishReference)
-	assert.Equal(t, []model.Brand{{ID: ftBrand}}, uppContents[0].(*model.UppComplementaryContent).Brands)
+	assert.Equal(t, []model.Brand{{ID: "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"}}, uppContents[0].(*model.UppComplementaryContent).Brands)
 	assert.Equal(t, "Content", uppContents[0].(*model.UppComplementaryContent).Type)
 }
 
@@ -121,5 +121,5 @@ func TestInternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
 	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].GetUppCoreContent().LastModified)
 	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].GetUppCoreContent().PublishReference)
 	assert.Equal(t, "Content",  uppContents[0].(*model.UppComplementaryContent).Type)
-	assert.Equal(t, []model.Brand{{ID: ftBrand}}, uppContents[0].(*model.UppComplementaryContent).Brands)
+	assert.Equal(t, []model.Brand{{ID: "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"}}, uppContents[0].(*model.UppComplementaryContent).Brands)
 }
