@@ -24,8 +24,6 @@ import (
 	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
 )
 
-const defaultApiHost = "api.ft.com"
-
 func init() {
 	f := &log.TextFormatter{
 		FullTimestamp:   true,
@@ -86,8 +84,8 @@ func main() {
 		EnvVar: "DOCUMENT_STORE_API_ADDRESS",
 	})
 	apiHost := app.String(cli.StringOpt{
-		Name:   defaultApiHost,
-		Value:  "",
+		Name:   "api-host",
+		Value:  "api.ft.com",
 		Desc:   "API hostname e.g. (api.ft.com)",
 		EnvVar: "API_HOST",
 	})
