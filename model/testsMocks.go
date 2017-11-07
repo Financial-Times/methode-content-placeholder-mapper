@@ -60,6 +60,10 @@ func (m *MockDocStoreClient) ContentQuery(authority string, identifier string, t
 	return args.Int(0), args.String(1), args.Error(2)
 }
 
+func (m *MockDocStoreClient) ConnectivityCheck() (string, error) {
+	return "", nil
+}
+
 type MockIResolver struct {
 	mock.Mock
 }
