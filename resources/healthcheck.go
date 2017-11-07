@@ -19,10 +19,11 @@ type MapperHealthcheck struct {
 }
 
 // NewMapperHealthcheck returns a new instance of the MapperHealthcheck
-func NewMapperHealthcheck(c consumer.MessageConsumer, p producer.MessageProducer) *MapperHealthcheck {
+func NewMapperHealthcheck(c consumer.MessageConsumer, p producer.MessageProducer, d mapper.DocStoreClient) *MapperHealthcheck {
 	return &MapperHealthcheck{
 		consumer: c,
 		producer: p,
+		docStore: d,
 	}
 }
 

@@ -138,7 +138,7 @@ func main() {
 		h.MessageConsumer = messageConsumer
 		endpointHandler := resources.NewMapEndpointHandler(aggregateMapper, messageCreator, nativeMapper)
 
-		go serve(*port, resources.NewMapperHealthcheck(messageConsumer, messageProducer), endpointHandler)
+		go serve(*port, resources.NewMapperHealthcheck(messageConsumer, messageProducer, docStoreClient), endpointHandler)
 
 		h.StartHandlingMessages()
 	}
