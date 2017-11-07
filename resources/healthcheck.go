@@ -7,6 +7,7 @@ import (
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/service-status-go/gtg"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
 )
 
 // MapperHealthcheck represents the health check for the methode content placeholder mapper
@@ -14,6 +15,7 @@ type MapperHealthcheck struct {
 	Client   *http.Client
 	consumer consumer.MessageConsumer
 	producer producer.MessageProducer
+	docStore mapper.DocStoreClient
 }
 
 // NewMapperHealthcheck returns a new instance of the MapperHealthcheck
@@ -68,5 +70,16 @@ func (hc *MapperHealthcheck) ProducerConnectivityCheck() fthealth.Check {
 		Severity:         1,
 		TechnicalSummary: "Producer message queue proxy is not reachable/healthy",
 		Checker:          hc.producer.ConnectivityCheck,
+	}
+}
+
+func (hc *MapperHealthcheck) DocumentStoreConnectivityCheck() fthealth.Check {
+	return fthealth.Check{
+		BusinessImpact:   "Internal content placeholders will not publish",
+		Name:             "DocumentStoreApiReachable",
+		PanicGuide:       "https://dewey.ft.com/up-mcpm.html",
+		Severity:         1,
+		TechnicalSummary: "document-store-api is not reachable/healthy",
+		Checker:          hc.docStore.ConnectivityCheck,
 	}
 }
