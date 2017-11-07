@@ -29,7 +29,7 @@ func TestHealthchecks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL))
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL), &mockDocStore{})
 	hec := fthealth.HealthCheck{
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
@@ -73,7 +73,7 @@ func TestFailingKafka(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL))
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL), &mockDocStore{})
 	hec := fthealth.HealthCheck{
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
@@ -102,7 +102,7 @@ func TestNoKafkaAtAll(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{"a-fake-url"}), getMockedProducer("a-fake-url"))
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{"a-fake-url"}), getMockedProducer("a-fake-url"), &mockDocStore{})
 	hec := fthealth.HealthCheck{
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
@@ -134,7 +134,7 @@ func TestNoKafkaConsumer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{"a-fake-url"}), getMockedProducer(kafka.URL))
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{"a-fake-url"}), getMockedProducer(kafka.URL), &mockDocStore{})
 	hec := fthealth.HealthCheck{
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
@@ -166,7 +166,7 @@ func TestNoKafkaProducer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer("a-fake-url"))
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer("a-fake-url"), &mockDocStore{})
 	hec := fthealth.HealthCheck{
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
@@ -198,7 +198,7 @@ func TestMultipleKafkaConsumersFail(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL, "a-fake-url"}), getMockedProducer(kafka.URL))
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL, "a-fake-url"}), getMockedProducer(kafka.URL), &mockDocStore{})
 	hec := fthealth.HealthCheck{
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
@@ -232,7 +232,7 @@ func TestMultipleKafkaConsumersOK(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL, kafka2.URL}), getMockedProducer(kafka1.URL))
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL, kafka2.URL}), getMockedProducer(kafka1.URL), &mockDocStore{})
 	hec := fthealth.HealthCheck{
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
@@ -258,7 +258,7 @@ func TestGTG(t *testing.T) {
 	kafka := setupMockKafka(t, 200)
 	defer kafka.Close()
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL))
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL), &mockDocStore{})
 
 	status := hc.GTG()
 
@@ -271,7 +271,7 @@ func TestGTGConsumerFailing(t *testing.T) {
 	kafka2 := setupMockKafka(t, 200)
 	defer kafka2.Close()
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL}), getMockedProducer(kafka2.URL))
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL}), getMockedProducer(kafka2.URL), &mockDocStore{})
 
 	status := hc.GTG()
 
@@ -284,7 +284,7 @@ func TestGTGProducerFailing(t *testing.T) {
 	kafka2 := setupMockKafka(t, 503)
 	defer kafka2.Close()
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL}), getMockedProducer(kafka2.URL))
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL}), getMockedProducer(kafka2.URL), &mockDocStore{})
 
 	status := hc.GTG()
 
@@ -308,4 +308,14 @@ func getMockedProducer(addr string) producer.MessageProducer {
 			Addr:          addr,
 			Authorization: "my-first-auth-key"},
 	)
+}
+
+type mockDocStore struct {}
+
+func (m *mockDocStore) ContentQuery(authority string, identifier string, tid string) (status int, location string, err error) {
+	return 200, "test.api.ft.com/content/5d88c1d5-4400-4b18-b421-970cc4070538", nil
+}
+
+func (m *mockDocStore) ConnectivityCheck() (string, error) {
+	return "", nil
 }
