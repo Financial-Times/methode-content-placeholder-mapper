@@ -36,9 +36,14 @@ func (hc *MapperHealthcheck) GTG() gtg.Status {
 		return gtgCheck(hc.producer.ConnectivityCheck)
 	}
 
+	docStoreCheck := func() gtg.Status {
+		return gtgCheck(hc.docStore.ConnectivityCheck)
+	}
+
 	return gtg.FailFastParallelCheck([]gtg.StatusChecker{
 		consumerCheck,
 		producerCheck,
+		docStoreCheck,
 	})()
 }
 
