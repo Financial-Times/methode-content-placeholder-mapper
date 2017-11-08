@@ -138,7 +138,7 @@ func main() {
 		h.MessageConsumer = messageConsumer
 		endpointHandler := resources.NewMapEndpointHandler(aggregateMapper, messageCreator, nativeMapper)
 
-		go serve(*port, resources.NewMapperHealthcheck(messageConsumer, messageProducer), endpointHandler)
+		go serve(*port, resources.NewMapperHealthcheck(messageConsumer, messageProducer, docStoreClient), endpointHandler)
 
 		h.StartHandlingMessages()
 	}
@@ -154,7 +154,7 @@ func serve(port int, hc *resources.MapperHealthcheck, meh *resources.MapEndpoint
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
 		Description: "Checks if all the dependent services are reachable and healthy.",
-		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck(), hc.DocumentStoreConnectivityCheck()},
 	}
 	r.HandleFunc("/map", meh.ServeMapEndpoint).Methods("POST")
 	r.HandleFunc("/__health", fthealth.Handler(hec))

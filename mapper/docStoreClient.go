@@ -11,6 +11,7 @@ import (
 
 type DocStoreClient interface {
 	ContentQuery(authority string, identifier string, tid string) (status int, location string, err error)
+	ConnectivityCheck() (string, error)
 }
 
 type httpDocStoreClient struct {
@@ -45,6 +46,27 @@ func (c *httpDocStoreClient) ContentQuery(authority string, identifier string, t
 	niceClose(resp)
 
 	return resp.StatusCode, resp.Header.Get("Location"), nil
+}
+
+func (c *httpDocStoreClient) ConnectivityCheck() (string, error) {
+	docStoreGtgUrl, err := url.Parse(c.docStoreAddress + "/__gtg")
+	if err != nil {
+		return "Error connecting to document-store-api", fmt.Errorf("Invalid address docStoreAddress=%v", c.docStoreAddress)
+	}
+	req, err := http.NewRequest(http.MethodGet, docStoreGtgUrl.String(), nil)
+	if err != nil {
+		return "Error connecting to document-store-api", fmt.Errorf("Couldn't create request to GTG")
+	}
+	req.Host = "document-store-api"
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return "Error connecting to document-store-api", fmt.Errorf("Unsucessful request for GTG")
+	}
+	niceClose(resp)
+	if resp.StatusCode != 200 {
+		return "Error connecting to document-store-api", fmt.Errorf("status=%v", resp.StatusCode)
+	}
+	return "OK", nil
 }
 
 func niceClose(resp *http.Response) {
