@@ -60,8 +60,14 @@ func (m *MockDocStoreClient) ContentQuery(authority string, identifier string, t
 	return args.Int(0), args.String(1), args.Error(2)
 }
 
+func (m *MockDocStoreClient) GetContent(uuid, tid string) (*DocStoreUppContent, error) {
+	args := m.Called(uuid, tid)
+	return args.Get(0).(*DocStoreUppContent), args.Error(1)
+}
+
 func (m *MockDocStoreClient) ConnectivityCheck() (string, error) {
-	return "", nil
+	args := m.Called()
+	return args.String(0), args.Error(1)
 }
 
 type MockIResolver struct {
