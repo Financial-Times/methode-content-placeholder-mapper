@@ -37,7 +37,7 @@ func (r *httpIResolver) ResolveIdentifier(serviceId, refField, tid string) (stri
 			return r.resolveIdentifier(authority, identifierValue, tid)
 		}
 	}
-	return "", fmt.Errorf("Couldn't find authority in mapping table serviceId=%v refField=%v", serviceId, refField)
+	return "", fmt.Errorf("couldn't find authority in mapping table serviceId=%v refField=%v", serviceId, refField)
 }
 
 func (r *httpIResolver) resolveIdentifier(authority string, identifier string, tid string) (string, error) {
@@ -46,17 +46,17 @@ func (r *httpIResolver) resolveIdentifier(authority string, identifier string, t
 		return "", err
 	}
 	if status != http.StatusMovedPermanently {
-		return "", fmt.Errorf("Unexpected response code while fetching canonical identifier for authority=%v identifier=%v status=%v", authority, identifier, status)
+		return "", fmt.Errorf("unexpected response code while fetching canonical identifier for authority=%v identifier=%v status=%v", authority, identifier, status)
 	}
 
 	parts := strings.Split(location, "/")
 	if len(parts) < 2 {
-		return "", fmt.Errorf("Resolved a canonical identifier which is an invalid FT URI for authority=%v identifier=%v location=%v", authority, identifier, location)
+		return "", fmt.Errorf("resolved a canonical identifier which is an invalid FT URI for authority=%v identifier=%v location=%v", authority, identifier, location)
 	}
 	uuid := parts[len(parts)-1]
 	if !uuidRegex.MatchString(uuid) {
 		fmt.Println(parts)
-		return "", fmt.Errorf("Resolved a canonical identifier which contains an invalid uuid for authority=%v identifier=%v uuid=%v", authority, identifier, uuid)
+		return "", fmt.Errorf("resolved a canonical identifier which contains an invalid uuid for authority=%v identifier=%v uuid=%v", authority, identifier, uuid)
 	}
 
 	return uuid, nil

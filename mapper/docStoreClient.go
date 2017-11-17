@@ -64,7 +64,7 @@ func (c *httpDocStoreClient) GetContent(uuid, tid string) (*model.DocStoreUppCon
 func (c *httpDocStoreClient) ContentQuery(authority, identifier, tid string) (status int, location string, err error) {
 	docStoreUrl, err := url.Parse(c.docStoreAddress + "/content-query")
 	if err != nil {
-		return -1, "", fmt.Errorf("Invalid address docStoreAddress=%v", c.docStoreAddress)
+		return -1, "", fmt.Errorf("invalid address docStoreAddress=%v: %v", c.docStoreAddress, err.Error())
 	}
 	query := url.Values{}
 	query.Add("identifierValue", identifier)
@@ -72,14 +72,14 @@ func (c *httpDocStoreClient) ContentQuery(authority, identifier, tid string) (st
 	docStoreUrl.RawQuery = query.Encode()
 	req, err := http.NewRequest(http.MethodGet, docStoreUrl.String(), nil)
 	if err != nil {
-		return -1, "", fmt.Errorf("Couldn't create request to fetch canonical identifier for authority=%v identifier=%v", authority, identifier)
+		return -1, "", fmt.Errorf("couldn't create request to fetch canonical identifier for authority=%v identifier=%v: %v", authority, identifier, err.Error())
 	}
 	// TODO: Remove when host based routing doesn't exist any more.
 	req.Host = documentStoreApiHost
 	req.Header.Add(transactionidutils.TransactionIDHeader, tid)
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return -1, "", fmt.Errorf("Unsucessful request for fetching canonical identifier for authority=%v identifier=%v", authority, identifier)
+		return -1, "", fmt.Errorf("unsucessful request for fetching canonical identifier for authority=%v identifier=%v: %v", authority, identifier, err.Error())
 	}
 	niceClose(resp)
 
@@ -89,16 +89,16 @@ func (c *httpDocStoreClient) ContentQuery(authority, identifier, tid string) (st
 func (c *httpDocStoreClient) ConnectivityCheck() (string, error) {
 	docStoreGtgUrl, err := url.Parse(c.docStoreAddress + "/__gtg")
 	if err != nil {
-		return "Error connecting to document-store-api", fmt.Errorf("Invalid address docStoreAddress=%v", c.docStoreAddress)
+		return "Error connecting to document-store-api", fmt.Errorf("invalid address docStoreAddress=%v: %v", c.docStoreAddress, err.Error())
 	}
 	req, err := http.NewRequest(http.MethodGet, docStoreGtgUrl.String(), nil)
 	if err != nil {
-		return "Error connecting to document-store-api", fmt.Errorf("Couldn't create request to GTG")
+		return "Error connecting to document-store-api", fmt.Errorf("couldn't create request to GTG: %v", err.Error())
 	}
 	req.Host = "document-store-api"
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return "Error connecting to document-store-api", fmt.Errorf("Unsucessful request for GTG")
+		return "Error connecting to document-store-api", fmt.Errorf("unsucessful request for GTG: %v", err.Error())
 	}
 	niceClose(resp)
 	if resp.StatusCode != http.StatusOK {
