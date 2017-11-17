@@ -90,21 +90,7 @@ func main() {
 	})
 
 	app.Action = func() {
-		httpClient := &http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-				DialContext: (&net.Dialer{
-					Timeout:   30 * time.Second,
-					KeepAlive: 30 * time.Second,
-				}).DialContext,
-				MaxIdleConnsPerHost:   20,
-				TLSHandshakeTimeout:   3 * time.Second,
-				ExpectContinueTimeout: 1 * time.Second,
-			},
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		}
+		httpClient := setupHttpClient()
 
 		consumerConfig := consumer.QueueConfig{
 			Addrs:                *readAddresses,
