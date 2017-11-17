@@ -28,7 +28,7 @@ func TestResolve_NotInMap(t *testing.T) {
 	resolver := NewHttpIResolver(mockClient, map[string]string{})
 	_, err := resolver.ResolveIdentifier("http://ftalphaville.ft.com/?p=2193913", "2193913", "tid_1")
 
-	assert.True(t, strings.Contains(err.Error(), "Couldn't find authority in mapping table"))
+	assert.True(t, strings.Contains(err.Error(), "couldn't find authority in mapping table"))
 }
 
 func TestResolve_InvalidUuid(t *testing.T) {
