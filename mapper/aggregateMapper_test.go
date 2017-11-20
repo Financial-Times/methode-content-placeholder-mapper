@@ -4,10 +4,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 )
 
 func TestAggregateMapperMap_Ok(t *testing.T) {

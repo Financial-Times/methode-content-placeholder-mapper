@@ -1,8 +1,8 @@
 package mapper
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 )
@@ -10,12 +10,14 @@ import (
 const complementaryContentURI = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/complementarycontent/"
 
 type ComplementaryContentCPHMapper struct {
-		apiHostFormat string
+	apiHostFormat string
+	client        DocStoreClient
 }
 
-func NewComplementaryContentCPHMapper(apiHost string) *ComplementaryContentCPHMapper {
+func NewComplementaryContentCPHMapper(apiHost string, client DocStoreClient) *ComplementaryContentCPHMapper {
 	return &ComplementaryContentCPHMapper{
 		apiHostFormat: "http://" + apiHost + "/content/%s",
+		client:        client,
 	}
 }
 
@@ -38,6 +40,9 @@ func (ccm *ComplementaryContentCPHMapper) MapContentPlaceholder(mcp *model.Metho
 
 	if isInternalCPH {
 		cc.UUID = uuid
+		if err := ccm.setBrands(uuid, tid, cc); err != nil {
+			return nil, fmt.Errorf("failed to retrieve brands for complementary content: %v", err.Error())
+		}
 	}
 
 	return []model.UppContent{cc}, nil
@@ -101,4 +106,13 @@ func (ccm *ComplementaryContentCPHMapper) buildCCAlternativeStandfirsts(promoSta
 		return nil
 	}
 	return &model.AlternativeStandfirsts{PromotionalStandfirst: promoStandfirst}
+}
+
+func (ccm *ComplementaryContentCPHMapper) setBrands(uuid, tid string, cc *model.UppComplementaryContent) error {
+	content, err := ccm.client.GetContent(uuid, tid)
+	if err != nil {
+		return fmt.Errorf("failed to get content from document-store-api: %v", err.Error())
+	}
+	cc.Brands = content.Brands
+	return nil
 }

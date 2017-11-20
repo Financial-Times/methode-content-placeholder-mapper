@@ -2,6 +2,7 @@ package resources
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,6 +10,7 @@ import (
 	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,12 +31,15 @@ func TestHealthchecks(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL), &mockDocStore{})
+	dockStoreMockClient := new(model.MockDocStoreClient)
+	dockStoreMockClient.On("ConnectivityCheck").Return("", nil)
+
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL), dockStoreMockClient)
 	hec := fthealth.HealthCheck{
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
 		Description: "Checks if all the dependent services are reachable and healthy.",
-		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck(), hc.DocumentStoreConnectivityCheck()},
 	}
 	fthealth.Handler(hec)(w, req)
 
@@ -45,12 +50,12 @@ func TestHealthchecks(t *testing.T) {
 	var result fthealth.HealthResult
 	decoder.Decode(&result)
 
-	t.Log(len(result.Checks))
+	assert.True(t, result.Ok)
+
 	consumerCheck := result.Checks[0]
 	assert.True(t, consumerCheck.BusinessImpact != "")
 	assert.Equal(t, "ConsumerQueueProxyReachable", consumerCheck.Name)
 	assert.True(t, consumerCheck.Ok)
-	assert.True(t, result.Ok)
 	assert.True(t, consumerCheck.PanicGuide != "")
 	assert.Equal(t, uint8(1), consumerCheck.Severity)
 
@@ -58,9 +63,15 @@ func TestHealthchecks(t *testing.T) {
 	assert.True(t, producerCheck.BusinessImpact != "")
 	assert.Equal(t, "ProducerQueueProxyReachable", producerCheck.Name)
 	assert.True(t, producerCheck.Ok)
-	assert.True(t, result.Ok)
 	assert.True(t, producerCheck.PanicGuide != "")
 	assert.Equal(t, uint8(1), producerCheck.Severity)
+
+	docStoreCheck := result.Checks[2]
+	assert.True(t, docStoreCheck.BusinessImpact != "")
+	assert.Equal(t, "DocumentStoreApiReachable", docStoreCheck.Name)
+	assert.True(t, docStoreCheck.Ok)
+	assert.True(t, docStoreCheck.PanicGuide != "")
+	assert.Equal(t, uint8(1), docStoreCheck.Severity)
 }
 
 func TestFailingKafka(t *testing.T) {
@@ -73,12 +84,15 @@ func TestFailingKafka(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL), &mockDocStore{})
+	dockStoreMockClient := new(model.MockDocStoreClient)
+	dockStoreMockClient.On("ConnectivityCheck").Return("", nil)
+
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL), dockStoreMockClient)
 	hec := fthealth.HealthCheck{
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
 		Description: "Checks if all the dependent services are reachable and healthy.",
-		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck(), hc.DocumentStoreConnectivityCheck()},
 	}
 	fthealth.Handler(hec)(w, req)
 	assert.Equal(t, 200, w.Code)
@@ -93,6 +107,8 @@ func TestFailingKafka(t *testing.T) {
 	assert.False(t, consumerCheck.Ok)
 	producerCheck := result.Checks[1]
 	assert.False(t, producerCheck.Ok)
+	docStoreCheck := result.Checks[2]
+	assert.True(t, docStoreCheck.Ok)
 }
 
 func TestNoKafkaAtAll(t *testing.T) {
@@ -102,12 +118,15 @@ func TestNoKafkaAtAll(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{"a-fake-url"}), getMockedProducer("a-fake-url"), &mockDocStore{})
+	dockStoreMockClient := new(model.MockDocStoreClient)
+	dockStoreMockClient.On("ConnectivityCheck").Return("", nil)
+
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{"http://a-fake-url"}), getMockedProducer("http://a-fake-url"), dockStoreMockClient)
 	hec := fthealth.HealthCheck{
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
 		Description: "Checks if all the dependent services are reachable and healthy.",
-		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck(), hc.DocumentStoreConnectivityCheck()},
 	}
 	fthealth.Handler(hec)(w, req)
 	assert.Equal(t, 200, w.Code)
@@ -122,6 +141,8 @@ func TestNoKafkaAtAll(t *testing.T) {
 	assert.False(t, consumerCheck.Ok)
 	producerCheck := result.Checks[1]
 	assert.False(t, producerCheck.Ok)
+	docStoreCheck := result.Checks[2]
+	assert.True(t, docStoreCheck.Ok)
 }
 
 func TestNoKafkaConsumer(t *testing.T) {
@@ -134,12 +155,15 @@ func TestNoKafkaConsumer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{"a-fake-url"}), getMockedProducer(kafka.URL), &mockDocStore{})
+	dockStoreMockClient := new(model.MockDocStoreClient)
+	dockStoreMockClient.On("ConnectivityCheck").Return("", nil)
+
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{"http://a-fake-url"}), getMockedProducer(kafka.URL), dockStoreMockClient)
 	hec := fthealth.HealthCheck{
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
 		Description: "Checks if all the dependent services are reachable and healthy.",
-		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck(), hc.DocumentStoreConnectivityCheck()},
 	}
 	fthealth.Handler(hec)(w, req)
 	assert.Equal(t, 200, w.Code)
@@ -154,6 +178,8 @@ func TestNoKafkaConsumer(t *testing.T) {
 	assert.False(t, consumerCheck.Ok)
 	producerCheck := result.Checks[1]
 	assert.True(t, producerCheck.Ok)
+	docStoreCheck := result.Checks[2]
+	assert.True(t, docStoreCheck.Ok)
 }
 
 func TestNoKafkaProducer(t *testing.T) {
@@ -166,12 +192,15 @@ func TestNoKafkaProducer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer("a-fake-url"), &mockDocStore{})
+	dockStoreMockClient := new(model.MockDocStoreClient)
+	dockStoreMockClient.On("ConnectivityCheck").Return("", nil)
+
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer("http://a-fake-url"), dockStoreMockClient)
 	hec := fthealth.HealthCheck{
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
 		Description: "Checks if all the dependent services are reachable and healthy.",
-		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck(), hc.DocumentStoreConnectivityCheck()},
 	}
 	fthealth.Handler(hec)(w, req)
 	assert.Equal(t, 200, w.Code)
@@ -186,6 +215,8 @@ func TestNoKafkaProducer(t *testing.T) {
 	assert.True(t, consumerCheck.Ok)
 	producerCheck := result.Checks[1]
 	assert.False(t, producerCheck.Ok)
+	docStoreCheck := result.Checks[2]
+	assert.True(t, docStoreCheck.Ok)
 }
 
 func TestMultipleKafkaConsumersFail(t *testing.T) {
@@ -198,12 +229,15 @@ func TestMultipleKafkaConsumersFail(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL, "a-fake-url"}), getMockedProducer(kafka.URL), &mockDocStore{})
+	dockStoreMockClient := new(model.MockDocStoreClient)
+	dockStoreMockClient.On("ConnectivityCheck").Return("", nil)
+
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL, "http://a-fake-url"}), getMockedProducer(kafka.URL), dockStoreMockClient)
 	hec := fthealth.HealthCheck{
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
 		Description: "Checks if all the dependent services are reachable and healthy.",
-		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck(), hc.DocumentStoreConnectivityCheck()},
 	}
 	fthealth.Handler(hec)(w, req)
 	assert.Equal(t, 200, w.Code)
@@ -218,6 +252,8 @@ func TestMultipleKafkaConsumersFail(t *testing.T) {
 	assert.False(t, consumerCheck.Ok)
 	producerCheck := result.Checks[1]
 	assert.True(t, producerCheck.Ok)
+	docStoreCheck := result.Checks[2]
+	assert.True(t, docStoreCheck.Ok)
 }
 
 func TestMultipleKafkaConsumersOK(t *testing.T) {
@@ -232,12 +268,15 @@ func TestMultipleKafkaConsumersOK(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL, kafka2.URL}), getMockedProducer(kafka1.URL), &mockDocStore{})
+	dockStoreMockClient := new(model.MockDocStoreClient)
+	dockStoreMockClient.On("ConnectivityCheck").Return("", nil)
+
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL, kafka2.URL}), getMockedProducer(kafka1.URL), dockStoreMockClient)
 	hec := fthealth.HealthCheck{
 		SystemCode:  "up-mcpm",
 		Name:        "Dependent services healthcheck",
 		Description: "Checks if all the dependent services are reachable and healthy.",
-		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck()},
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck(), hc.DocumentStoreConnectivityCheck()},
 	}
 	fthealth.Handler(hec)(w, req)
 	assert.Equal(t, 200, w.Code)
@@ -252,13 +291,58 @@ func TestMultipleKafkaConsumersOK(t *testing.T) {
 	assert.True(t, consumerCheck.Ok)
 	producerCheck := result.Checks[1]
 	assert.True(t, producerCheck.Ok)
+	docStoreCheck := result.Checks[2]
+	assert.True(t, docStoreCheck.Ok)
+}
+
+func TestDocStoreFail(t *testing.T) {
+	kafka1 := setupMockKafka(t, 200)
+	defer kafka1.Close()
+	kafka2 := setupMockKafka(t, 200)
+	defer kafka2.Close()
+
+	w := httptest.NewRecorder()
+	req, err := http.NewRequest("GET", "/__health", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dockStoreMockClient := new(model.MockDocStoreClient)
+	dockStoreMockClient.On("ConnectivityCheck").Return("", errors.New("DocStore error"))
+
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL, kafka2.URL}), getMockedProducer(kafka1.URL), dockStoreMockClient)
+	hec := fthealth.HealthCheck{
+		SystemCode:  "up-mcpm",
+		Name:        "Dependent services healthcheck",
+		Description: "Checks if all the dependent services are reachable and healthy.",
+		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck(), hc.DocumentStoreConnectivityCheck()},
+	}
+	fthealth.Handler(hec)(w, req)
+	assert.Equal(t, 200, w.Code)
+
+	decoder := json.NewDecoder(w.Body)
+
+	var result fthealth.HealthResult
+	decoder.Decode(&result)
+
+	assert.False(t, result.Ok)
+	consumerCheck := result.Checks[0]
+	assert.True(t, consumerCheck.Ok)
+	producerCheck := result.Checks[1]
+	assert.True(t, producerCheck.Ok)
+	docStoreCheck := result.Checks[2]
+	assert.False(t, docStoreCheck.Ok)
+	assert.Equal(t, "DocStore error", docStoreCheck.CheckOutput)
 }
 
 func TestGTG(t *testing.T) {
 	kafka := setupMockKafka(t, 200)
 	defer kafka.Close()
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL), &mockDocStore{})
+	dockStoreMockClient := new(model.MockDocStoreClient)
+	dockStoreMockClient.On("ConnectivityCheck").Return("", nil)
+
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka.URL}), getMockedProducer(kafka.URL), dockStoreMockClient)
 
 	status := hc.GTG()
 
@@ -271,7 +355,10 @@ func TestGTGConsumerFailing(t *testing.T) {
 	kafka2 := setupMockKafka(t, 200)
 	defer kafka2.Close()
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL}), getMockedProducer(kafka2.URL), &mockDocStore{})
+	dockStoreMockClient := new(model.MockDocStoreClient)
+	dockStoreMockClient.On("ConnectivityCheck").Return("", nil)
+
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL}), getMockedProducer(kafka2.URL), dockStoreMockClient)
 
 	status := hc.GTG()
 
@@ -284,7 +371,26 @@ func TestGTGProducerFailing(t *testing.T) {
 	kafka2 := setupMockKafka(t, 503)
 	defer kafka2.Close()
 
-	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL}), getMockedProducer(kafka2.URL), &mockDocStore{})
+	dockStoreMockClient := new(model.MockDocStoreClient)
+	dockStoreMockClient.On("ConnectivityCheck").Return("", nil)
+
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL}), getMockedProducer(kafka2.URL), dockStoreMockClient)
+
+	status := hc.GTG()
+
+	assert.False(t, status.GoodToGo)
+}
+
+func TestGTGDocStoreFailing(t *testing.T) {
+	kafka1 := setupMockKafka(t, 200)
+	defer kafka1.Close()
+	kafka2 := setupMockKafka(t, 200)
+	defer kafka2.Close()
+
+	dockStoreMockClient := new(model.MockDocStoreClient)
+	dockStoreMockClient.On("ConnectivityCheck").Return("", errors.New("DocStore error"))
+
+	hc := NewMapperHealthcheck(getMockedConsumer([]string{kafka1.URL}), getMockedProducer(kafka2.URL), dockStoreMockClient)
 
 	status := hc.GTG()
 
@@ -308,14 +414,4 @@ func getMockedProducer(addr string) producer.MessageProducer {
 			Addr:          addr,
 			Authorization: "my-first-auth-key"},
 	)
-}
-
-type mockDocStore struct {}
-
-func (m *mockDocStore) ContentQuery(authority string, identifier string, tid string) (status int, location string, err error) {
-	return 200, "test.api.ft.com/content/5d88c1d5-4400-4b18-b421-970cc4070538", nil
-}
-
-func (m *mockDocStore) ConnectivityCheck() (string, error) {
-	return "", nil
 }

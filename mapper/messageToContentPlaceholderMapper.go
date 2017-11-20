@@ -22,7 +22,7 @@ type DefaultMessageMapper struct {
 func (m DefaultMessageMapper) Map(messageBody []byte) (*model.MethodeContentPlaceholder, error) {
 	var p model.MethodeContentPlaceholder
 	if err := json.Unmarshal(messageBody, &p); err != nil {
-		return nil, fmt.Errorf("Error unmarshalling methode messageBody: %v", err)
+		return nil, fmt.Errorf("error unmarshalling methode messageBody: %v", err)
 	}
 	if p.Type != eomCompoundStory {
 		return nil, model.NewInvalidMethodeCPH(fmt.Sprintf("Methode content has not type %s", eomCompoundStory))
@@ -30,7 +30,7 @@ func (m DefaultMessageMapper) Map(messageBody []byte) (*model.MethodeContentPlac
 
 	attrs, err := buildAttributes(p.AttributesXML)
 	if err != nil {
-		return nil, fmt.Errorf("Error unmarshalling not build xml attributes.")
+		return nil, fmt.Errorf("error unmarshalling not build xml attributes: %v", err.Error())
 	}
 	p.Attributes = attrs
 
@@ -40,7 +40,7 @@ func (m DefaultMessageMapper) Map(messageBody []byte) (*model.MethodeContentPlac
 
 	body, err := buildMethodeBody(p.Value)
 	if err != nil {
-		return nil, fmt.Errorf("Error decoding or unmarshalling methode body.")
+		return nil, fmt.Errorf("error decoding or unmarshalling methode body: %v", err.Error())
 	}
 	p.Body = body
 

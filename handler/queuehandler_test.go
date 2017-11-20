@@ -1,13 +1,14 @@
 package handler
 
 import (
+	"strings"
+	"testing"
+
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/mock"
-	"strings"
-	"testing"
 )
 
 const methodeSystemOrigin = "http://cmdb.ft.com/systems/methode-web-pub"

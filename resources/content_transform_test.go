@@ -2,12 +2,12 @@ package resources
 
 import (
 	"bytes"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/message"

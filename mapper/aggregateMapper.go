@@ -36,7 +36,7 @@ func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeCont
 	if m.isBlogCategory(mpc) {
 		resolvedUuid, err := m.iResolver.ResolveIdentifier(mpc.Attributes.ServiceId, mpc.Attributes.RefField, tid)
 		if err != nil {
-			return nil, fmt.Errorf("Couldn't resolve blog uuid %v", err)
+			return nil, fmt.Errorf("couldn't resolve blog uuid: %v", err)
 		}
 		uuid = resolvedUuid
 	}

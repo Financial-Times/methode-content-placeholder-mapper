@@ -1,0 +1,50 @@
+{
+  "uuid": "abcf2660-bbad-4a56-8eca-d0f8f0fac068",
+  "title": "57m channels and still nothing to watch",
+  "titles": null,
+  "byline": "Richard Waters",
+  "brands": [
+    {
+      "id": "http://api.ft.com/things/164d0c3b-8a5a-4163-9519-96b57ed159bf"
+    },
+    {
+      "id": "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
+    }
+  ],
+  "publishedDate": "2006-11-07T00:00:54.000Z",
+  "identifiers": [
+    {
+      "authority": "http://api.ft.com/system/FT-LABS-WP-1-10",
+      "identifierValue": "http://blogs.ft.com/tech-blog/2006/11/57m-channels-anhtml/"
+    },
+    {
+      "authority": "http://api.ft.com/system/FT-LABS-WP-1-10",
+      "identifierValue": "http://blogs.ft.com/tech-blog/?p=2"
+    }
+  ],
+  "description": null,
+  "mediaType": null,
+  "pixelWidth": null,
+  "pixelHeight": null,
+  "internalBinaryUrl": null,
+  "externalBinaryUrl": null,
+  "mainImage": null,
+  "comments": {
+    "enabled": true
+  },
+  "publishReference": "tid_Ml748dA0Wt_carousel_1509368354_gentx",
+  "lastModified": "2017-10-30T12:59:14.183Z",
+  "firstPublishedDate": "2006-11-07T00:00:54.000Z",
+  "accessLevel": "subscribed",
+  "canBeDistributed": "yes",
+  "webUrl": "http://blogs.ft.com/tech-blog/2006/11/57m-channels-anhtml/",
+  "standout": {
+    "editorsChoice": false,
+    "exclusive": false,
+    "scoop": false
+  },
+  "body": "<body></body>",
+  "opening": "<body></body>",
+  "type": "Article",
+  "members": null
+}

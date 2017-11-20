@@ -9,19 +9,18 @@ import (
 	"os"
 	"strconv"
 	"time"
-	
-	log "github.com/Sirupsen/logrus"
-	"github.com/gorilla/mux"
-	"github.com/jawher/mow.cli"
 
 	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
 	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/Financial-Times/service-status-go/httphandlers"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/handler"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
 	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
+	"github.com/Financial-Times/service-status-go/httphandlers"
+	log "github.com/Sirupsen/logrus"
+	"github.com/gorilla/mux"
+	"github.com/jawher/mow.cli"
 )
 
 func init() {
@@ -91,21 +90,7 @@ func main() {
 	})
 
 	app.Action = func() {
-		httpClient := &http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-				DialContext: (&net.Dialer{
-					Timeout:   30 * time.Second,
-					KeepAlive: 30 * time.Second,
-				}).DialContext,
-				MaxIdleConnsPerHost:   20,
-				TLSHandshakeTimeout:   3 * time.Second,
-				ExpectContinueTimeout: 1 * time.Second,
-			},
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		}
+		httpClient := setupHttpClient()
 
 		consumerConfig := consumer.QueueConfig{
 			Addrs:                *readAddresses,
@@ -128,7 +113,7 @@ func main() {
 		docStoreClient := mapper.NewHttpDocStoreClient(httpClient, *docStoreAddress)
 		iResolver := mapper.NewHttpIResolver(docStoreClient, readBrandMappings())
 		contentCphMapper := &mapper.ContentCPHMapper{}
-		complementaryContentCPHMapper := mapper.NewComplementaryContentCPHMapper(*apiHost)
+		complementaryContentCPHMapper := mapper.NewComplementaryContentCPHMapper(*apiHost, docStoreClient)
 		aggregateMapper := mapper.NewAggregateCPHMapper(iResolver, cphValidator, []mapper.CPHMapper{contentCphMapper, complementaryContentCPHMapper})
 		nativeMapper := mapper.DefaultMessageMapper{}
 		messageCreator := message.NewDefaultCPHMessageCreator()
@@ -181,4 +166,22 @@ func readBrandMappings() map[string]string {
 		os.Exit(1)
 	}
 	return brandMappings
+}
+
+func setupHttpClient() *http.Client {
+	return &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			MaxIdleConnsPerHost:   20,
+			TLSHandshakeTimeout:   3 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+		},
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
 }
