@@ -12,8 +12,8 @@ replicaCount: 2
 image:
   repository: coco/methode-content-placeholder-mapper
   pullPolicy: Always
-#resources:
-#  limits:
-#    memory: 256Mi
-
-
+resources:
+  requests:
+    memory: 64Mi
+  limits:
+    memory: 256Mi
