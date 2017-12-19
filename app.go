@@ -135,14 +135,17 @@ func main() {
 func serve(port int, hc *resources.MapperHealthcheck, meh *resources.MapEndpointHandler) {
 	r := mux.NewRouter()
 
-	hec := fthealth.HealthCheck{
-		SystemCode:  "up-mcpm",
-		Name:        "Dependent services healthcheck",
-		Description: "Checks if all the dependent services are reachable and healthy.",
-		Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck(), hc.DocumentStoreConnectivityCheck()},
+	timedHec := fthealth.TimedHealthCheck{
+		HealthCheck: fthealth.HealthCheck{
+			SystemCode:  "up-mcpm",
+			Name:        "Dependent services healthcheck",
+			Description: "Checks if all the dependent services are reachable and healthy.",
+			Checks:      []fthealth.Check{hc.ConsumerConnectivityCheck(), hc.ProducerConnectivityCheck(), hc.DocumentStoreConnectivityCheck()},
+		},
+		Timeout: 10 * time.Second,
 	}
 	r.HandleFunc("/map", meh.ServeMapEndpoint).Methods("POST")
-	r.HandleFunc("/__health", fthealth.Handler(hec))
+	r.HandleFunc("/__health", fthealth.Handler(timedHec))
 	r.HandleFunc(httphandlers.GTGPath, httphandlers.NewGoodToGoHandler(hc.GTG)).Methods("GET")
 	r.HandleFunc(httphandlers.BuildInfoPath, httphandlers.BuildInfoHandler).Methods("GET")
 	r.HandleFunc(httphandlers.PingPath, httphandlers.PingHandler).Methods("GET")
