@@ -14,6 +14,6 @@ image:
   pullPolicy: Always
 resources:
   requests:
-    memory: 64Mi
+    memory: 170Mi
   limits:
-    memory: 256Mi
+    memory: 300Mi
