@@ -61,7 +61,7 @@ func (hc *MapperHealthcheck) ConsumerConnectivityCheck() fthealth.Check {
 		BusinessImpact:   "Methode content placeholders will not reach this app, nor will they be mapped to UP placeholders.",
 		Name:             "ConsumerQueueProxyReachable",
 		PanicGuide:       "https://dewey.ft.com/up-mcpm.html",
-		Severity:         1,
+		Severity:         2,
 		TechnicalSummary: "Consumer message queue proxy is not reachable/healthy",
 		Checker:          hc.consumer.ConnectivityCheck,
 	}
@@ -73,7 +73,7 @@ func (hc *MapperHealthcheck) ProducerConnectivityCheck() fthealth.Check {
 		BusinessImpact:   "Methode content placeholders mappings will not be publish",
 		Name:             "ProducerQueueProxyReachable",
 		PanicGuide:       "https://dewey.ft.com/up-mcpm.html",
-		Severity:         1,
+		Severity:         2,
 		TechnicalSummary: "Producer message queue proxy is not reachable/healthy",
 		Checker:          hc.producer.ConnectivityCheck,
 	}
@@ -84,7 +84,7 @@ func (hc *MapperHealthcheck) DocumentStoreConnectivityCheck() fthealth.Check {
 		BusinessImpact:   "Internal content placeholders will not publish",
 		Name:             "DocumentStoreApiReachable",
 		PanicGuide:       "https://dewey.ft.com/up-mcpm.html",
-		Severity:         1,
+		Severity:         2,
 		TechnicalSummary: "document-store-api is not reachable/healthy",
 		Checker:          hc.docStore.ConnectivityCheck,
 	}
