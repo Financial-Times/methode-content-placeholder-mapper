@@ -14,6 +14,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const defaultSeverity = uint8(2)
+
 func setupMockKafka(t *testing.T, status int) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(status)
@@ -57,21 +59,21 @@ func TestHealthchecks(t *testing.T) {
 	assert.Equal(t, "ConsumerQueueProxyReachable", consumerCheck.Name)
 	assert.True(t, consumerCheck.Ok)
 	assert.True(t, consumerCheck.PanicGuide != "")
-	assert.Equal(t, uint8(1), consumerCheck.Severity)
+	assert.Equal(t, defaultSeverity, consumerCheck.Severity)
 
 	producerCheck := result.Checks[1]
 	assert.True(t, producerCheck.BusinessImpact != "")
 	assert.Equal(t, "ProducerQueueProxyReachable", producerCheck.Name)
 	assert.True(t, producerCheck.Ok)
 	assert.True(t, producerCheck.PanicGuide != "")
-	assert.Equal(t, uint8(1), producerCheck.Severity)
+	assert.Equal(t, defaultSeverity, producerCheck.Severity)
 
 	docStoreCheck := result.Checks[2]
 	assert.True(t, docStoreCheck.BusinessImpact != "")
 	assert.Equal(t, "DocumentStoreApiReachable", docStoreCheck.Name)
 	assert.True(t, docStoreCheck.Ok)
 	assert.True(t, docStoreCheck.PanicGuide != "")
-	assert.Equal(t, uint8(1), docStoreCheck.Severity)
+	assert.Equal(t, defaultSeverity, docStoreCheck.Severity)
 }
 
 func TestFailingKafka(t *testing.T) {

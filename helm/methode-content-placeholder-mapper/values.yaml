@@ -8,6 +8,7 @@ service:
   QueueReadTopic: "NativeCmsPublicationEvents"
   QueueWriteTopic: "CmsPublicationEvents"
   DocumentStoreAPIUrl: "http://document-store-api:8080"
+  isResilient: "false"
 replicaCount: 2
 image:
   repository: coco/methode-content-placeholder-mapper
