@@ -16,6 +16,7 @@ type UppContentPlaceholder struct {
 	Brands            []Brand            `json:"brands"`
 	AlternativeTitles *AlternativeTitles `json:"alternativeTitles"`
 	WebURL            string             `json:"webUrl"`
+	CanonicalWebUrl   string             `json:"canonicalWebUrl"`
 	Type              string             `json:"type"`
 	CanBeSyndicated   string             `json:"canBeSyndicated"`
 	CanBeDistributed  string             `json:"canBeDistributed"`
