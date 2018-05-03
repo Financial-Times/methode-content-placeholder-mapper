@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -8,11 +9,13 @@ import (
 )
 
 const (
-	placeholderContentURI = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/content/"
-	methodeAuthority      = "http://api.ft.com/system/FTCOM-METHODE"
-	verify                = "verify"
-	contentType           = "Content"
-	methodeDateFormat     = "20060102150405"
+	placeholderContentURI   = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/content/"
+	methodeAuthority        = "http://api.ft.com/system/FTCOM-METHODE"
+	verify                  = "verify"
+	contentType             = "Content"
+	methodeDateFormat       = "20060102150405"
+	canonicalWebUrlTemplate = "https://www.ft.com/content/%s"
+	webUrlTemplate          = "https://www.ft.com/content/%s"
 )
 
 type ContentCPHMapper struct {
@@ -40,6 +43,11 @@ func (cm *ContentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContent
 		return nil, err
 	}
 
+	webUrl := mpc.Body.LeadHeadline.URL
+	if webUrl == "" {
+		webUrl = fmt.Sprintf(webUrlTemplate, mpc.UUID)
+	}
+
 	return &model.UppContentPlaceholder{
 		UppCoreContent: model.UppCoreContent{
 			UUID:             mpc.UUID,
@@ -51,7 +59,8 @@ func (cm *ContentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContent
 		Title:             mpc.Body.LeadHeadline.Text,
 		Identifiers:       buildIdentifiers(mpc.UUID),
 		Brands:            model.BuildBrands(),
-		WebURL:            mpc.Body.LeadHeadline.URL,
+		WebURL:            webUrl,
+		CanonicalWebUrl:   fmt.Sprintf(canonicalWebUrlTemplate, mpc.UUID),
 		AlternativeTitles: buildAlternativeTitles(mpc.Body.ContentPackageHeadline),
 		Type:              contentType,
 		CanBeSyndicated:   verify,

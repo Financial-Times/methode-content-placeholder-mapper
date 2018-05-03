@@ -130,6 +130,7 @@ Depending on the type of CPH, they will be as follow:
                 "contentPackageTitle": "The Virgin empire"
             },
             "webUrl": "http://www.ft.com/ig/sites/2014/virgingroup-timeline/",
+            "canonicalWebUrl": "https://www.ft.com/content/f9845f8a-c210-11e6-91a7-e73ace06f770",
             "type": "Content",
             "canBeSyndicated": "verify",
             "canBeDistributed": "verify"
