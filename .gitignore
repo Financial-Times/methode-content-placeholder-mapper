@@ -2,6 +2,6 @@
 *.exe
 .idea
 /methode-content-placeholder-mapper
-vendor/*/
+vendor/*
 .project
 .vscode
