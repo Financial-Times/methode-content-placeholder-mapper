@@ -8,11 +8,13 @@ All the consumed messages that contain a Methode placeholder are mapped, then MC
 ## Installation
 
 Download the source code, dependencies and test dependencies:
-
-        go get -u github.com/kardianos/govendor
-        go get -u github.com/Financial-Times/methode-content-placeholder-mapper
-        cd $GOPATH/src/github.com/Financial-Times/methode-content-placeholder-mapper
-        govendor sync
+       curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+       mkdir $GOPATH/src/github.com/Financial-Times/methode-content-placeholder-mapper	
+       cd $GOPATH/src/github.com/Financial-Times	
+       git clone https://github.com/Financial-Times/methode-content-placeholder-mapper.git
+       cd methode-content-placeholder-mapper && dep ensure -vendor-only
+       go build .	 
+        
 
 ## How to Build & Run the binary
 
@@ -20,7 +22,7 @@ Download the source code, dependencies and test dependencies:
 
 ```
 go build
-govendor test +local
+go test ./...
 ```
 
 * Run by environment variables:
