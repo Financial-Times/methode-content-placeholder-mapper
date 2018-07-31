@@ -20,7 +20,7 @@ RUN apk --no-cache --virtual .build-dependencies add git curl \
   && echo "Build flags: $LDFLAGS" \
   && echo "Fetching dependencies..." \
   && curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh \
-  && && $GOPATH/bin/dep ensure -v -vendor-only \
+  && $GOPATH/bin/dep ensure -v -vendor-only \
   && go build -v -ldflags="${LDFLAGS}" \
   && mv ${PROJECT} /${PROJECT} \
   && mv brandMappings.json /brandMappings.json \
