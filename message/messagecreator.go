@@ -9,6 +9,13 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+const (
+	article				= "application/vnd.ft-upp-article"
+	dynamicContent		= "application/vnd.ft-upp-dynamic-content"
+	contentPackage		= "application/vnd.ft-upp-content-package"
+	audio 				= "application/vnd.ft-upp-content-package"
+)
+
 type MessageCreator interface {
 	ToPublicationEventMessage(coreAttributes *model.UppCoreContent, payload interface{}) (*producer.Message, error)
 	ToPublicationEvent(coreAttributes *model.UppCoreContent, payload interface{}) *model.PublicationEvent
@@ -36,6 +43,10 @@ func (cmc *CPHMessageCreator) ToPublicationEventMessage(coreAttributes *model.Up
 		"Message-Type":      "cms-content-published",
 		"Content-Type":      "application/json",
 		"Origin-System-Id":  model.MethodeSystemID,
+		"Article":    		 article,
+		"DynamicContent":    dynamicContent,
+		"ContentPackage":    contentPackage,
+		"Audio":	 		 audio,
 	}
 
 	return &producer.Message{Headers: headers, Body: string(jsonPublicationEvent)}, nil
@@ -46,11 +57,13 @@ func (cmc *CPHMessageCreator) ToPublicationEvent(coreAttributes *model.UppCoreCo
 		return &model.PublicationEvent{
 			ContentURI:   coreAttributes.ContentURI + coreAttributes.UUID,
 			LastModified: coreAttributes.LastModified,
+			ContentTypeHeader: coreAttributes.ContentTypeHeader,
 		}
 	}
 	return &model.PublicationEvent{
 		ContentURI:   coreAttributes.ContentURI + coreAttributes.UUID,
 		Payload:      payload,
 		LastModified: coreAttributes.LastModified,
+		ContentTypeHeader: coreAttributes.ContentTypeHeader,
 	}
 }
