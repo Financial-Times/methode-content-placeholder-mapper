@@ -12,7 +12,7 @@ import (
 
 func TestExternalPlaceholderComplementary_Ok(t *testing.T) {
 	mockClient := new(model.MockDocStoreClient)
-	ccMapper := NewComplementaryContentCPHMapper("api.ft.com", mockClient)
+	ccMapper := NewComplementaryContentCPHMapper(mockClient)
 
 	uppContents, err := ccMapper.MapContentPlaceholder(getPlaceholder(), "", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
 
@@ -20,7 +20,7 @@ func TestExternalPlaceholderComplementary_Ok(t *testing.T) {
 	assert.Equal(t, 1, len(uppContents), "Should be one")
 	assert.Equal(t, "e1f02660-d41a-4a56-8eca-d0f8f0fac068", uppContents[0].GetUUID())
 	assert.Equal(t, "lead headline", uppContents[0].(*model.UppComplementaryContent).AlternativeTitles.PromotionalTitle)
-	assert.Equal(t, "http://api.ft.com/content/abffff60-d41a-4a56-8eca-d0f8f0fac068", uppContents[0].(*model.UppComplementaryContent).AlternativeImages.PromotionalImage.Id)
+	assert.Equal(t, "abffff60-d41a-4a56-8eca-d0f8f0fac068", uppContents[0].(*model.UppComplementaryContent).AlternativeImages.PromotionalImage.Id)
 	assert.Equal(t, "long standfirst", uppContents[0].(*model.UppComplementaryContent).AlternativeStandfirsts.PromotionalStandfirst)
 	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].GetUppCoreContent().LastModified)
 	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].GetUppCoreContent().PublishReference)
@@ -30,7 +30,7 @@ func TestExternalPlaceholderComplementary_Ok(t *testing.T) {
 
 func TestExternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
 	mockClient := new(model.MockDocStoreClient)
-	ccMapper := NewComplementaryContentCPHMapper("api.ft.com", mockClient)
+	ccMapper := NewComplementaryContentCPHMapper(mockClient)
 
 	uppContents, err := ccMapper.MapContentPlaceholder(getDeletedPlaceholder(), "", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
 
@@ -46,7 +46,7 @@ func TestExternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
 func TestInternalPlaceholderComplementary_Ok(t *testing.T) {
 	mockClient := new(model.MockDocStoreClient)
 	mockClient.On("GetContent", "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il").Return(getDocStoreContent(t, "document_store_content.json"), nil)
-	ccMapper := NewComplementaryContentCPHMapper("api.ft.com", mockClient)
+	ccMapper := NewComplementaryContentCPHMapper(mockClient)
 
 	uppContents, err := ccMapper.MapContentPlaceholder(getPlaceholder(), "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
 
@@ -54,7 +54,7 @@ func TestInternalPlaceholderComplementary_Ok(t *testing.T) {
 	assert.Equal(t, 1, len(uppContents), "Should be one")
 	assert.Equal(t, "abcf2660-bbad-4a56-8eca-d0f8f0fac068", uppContents[0].GetUUID())
 	assert.Equal(t, "lead headline", uppContents[0].(*model.UppComplementaryContent).AlternativeTitles.PromotionalTitle)
-	assert.Equal(t, "http://api.ft.com/content/abffff60-d41a-4a56-8eca-d0f8f0fac068", uppContents[0].(*model.UppComplementaryContent).AlternativeImages.PromotionalImage.Id)
+	assert.Equal(t, "abffff60-d41a-4a56-8eca-d0f8f0fac068", uppContents[0].(*model.UppComplementaryContent).AlternativeImages.PromotionalImage.Id)
 	assert.Equal(t, "long standfirst", uppContents[0].(*model.UppComplementaryContent).AlternativeStandfirsts.PromotionalStandfirst)
 	assert.Equal(t, "2017-09-27T15:00:00.000Z", uppContents[0].GetUppCoreContent().LastModified)
 	assert.Equal(t, "tid_bh7VTFj9Il", uppContents[0].GetUppCoreContent().PublishReference)
@@ -65,7 +65,7 @@ func TestInternalPlaceholderComplementary_Ok(t *testing.T) {
 func TestInternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
 	mockClient := new(model.MockDocStoreClient)
 	mockClient.On("GetContent", "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il").Return(getDocStoreContent(t, "document_store_content.json"), nil)
-	ccMapper := NewComplementaryContentCPHMapper("api.ft.com", mockClient)
+	ccMapper := NewComplementaryContentCPHMapper(mockClient)
 
 	uppContents, err := ccMapper.MapContentPlaceholder(getDeletedPlaceholder(), "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
 
@@ -82,7 +82,7 @@ func TestInternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
 func TestInternalPlaceholderComplementary_DocumentStoreClientError(t *testing.T) {
 	mockClient := new(model.MockDocStoreClient)
 	mockClient.On("GetContent", "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il").Return(&model.DocStoreUppContent{}, errors.New("DocStore error"))
-	ccMapper := NewComplementaryContentCPHMapper("api.ft.com", mockClient)
+	ccMapper := NewComplementaryContentCPHMapper(mockClient)
 
 	_, err := ccMapper.MapContentPlaceholder(getPlaceholder(), "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
 	assert.Error(t, err)

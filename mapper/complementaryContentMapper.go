@@ -10,13 +10,11 @@ import (
 const complementaryContentURI = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/complementarycontent/"
 
 type ComplementaryContentCPHMapper struct {
-	apiHostFormat string
 	client        DocStoreClient
 }
 
-func NewComplementaryContentCPHMapper(apiHost string, client DocStoreClient) *ComplementaryContentCPHMapper {
+func NewComplementaryContentCPHMapper(client DocStoreClient) *ComplementaryContentCPHMapper {
 	return &ComplementaryContentCPHMapper{
-		apiHostFormat: "http://" + apiHost + "/content/%s",
 		client:        client,
 	}
 }
@@ -93,7 +91,7 @@ func (ccm *ComplementaryContentCPHMapper) buildCCAlternativeImages(fileRef strin
 		return nil
 	}
 	imageUUID := extractImageUUID(fileRef)
-	return &model.AlternativeImages{PromotionalImage: &model.PromotionalImage{Id: fmt.Sprintf(ccm.apiHostFormat, imageUUID)}}
+	return &model.AlternativeImages{PromotionalImage: &model.PromotionalImage{Id: fmt.Sprintf(imageUUID)}}
 }
 
 func extractImageUUID(fileRef string) string {
