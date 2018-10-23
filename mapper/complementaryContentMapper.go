@@ -91,7 +91,7 @@ func (ccm *ComplementaryContentCPHMapper) buildCCAlternativeImages(fileRef strin
 		return nil
 	}
 	imageUUID := extractImageUUID(fileRef)
-	return &model.AlternativeImages{PromotionalImage: &model.PromotionalImage{Id: fmt.Sprintf(imageUUID)}}
+	return &model.AlternativeImages{PromotionalImage: &model.PromotionalImage{Id: imageUUID}}
 }
 
 func extractImageUUID(fileRef string) string {
