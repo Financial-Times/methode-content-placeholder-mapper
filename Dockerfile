@@ -29,5 +29,7 @@ FROM scratch
 WORKDIR /
 COPY --from=0 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=0 /artifacts/* /
+# copy config files
+COPY ./*.json /
 
 CMD [ "/methode-content-placeholder-mapper" ]
