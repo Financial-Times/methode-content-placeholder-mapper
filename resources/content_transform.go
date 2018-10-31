@@ -45,6 +45,7 @@ func (h *MapEndpointHandler) ServeMapEndpoint(w http.ResponseWriter, r *http.Req
 	methodePlaceholder, err := h.nativeMapper.Map(messageBody)
 	if err != nil {
 		writeError(w, err, tid, "Could not map request body to intermediate model.", r.RequestURI)
+		return
 	}
 
 	if methodePlaceholder.Attributes.IsDeleted {
