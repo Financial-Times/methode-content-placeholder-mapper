@@ -42,7 +42,7 @@ func (c *httpDocStoreClient) GetContent(uuid, tid string) (*model.DocStoreUppCon
 	req.Header.Add(transactionidutils.TransactionIDHeader, tid)
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("unsucessful request for content for uuid=%v: %v", uuid, err.Error())
+		return nil, fmt.Errorf("unsuccessful request for content for uuid=%v: %v", uuid, err.Error())
 	}
 	defer niceClose(resp)
 	if resp.StatusCode != http.StatusOK {
@@ -79,7 +79,7 @@ func (c *httpDocStoreClient) ContentQuery(authority, identifier, tid string) (st
 	req.Header.Add(transactionidutils.TransactionIDHeader, tid)
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return -1, "", fmt.Errorf("unsucessful request for fetching canonical identifier for authority=%v identifier=%v: %v", authority, identifier, err.Error())
+		return -1, "", fmt.Errorf("unsuccessful request for fetching canonical identifier for authority=%v identifier=%v: %v", authority, identifier, err.Error())
 	}
 	niceClose(resp)
 
@@ -87,18 +87,19 @@ func (c *httpDocStoreClient) ContentQuery(authority, identifier, tid string) (st
 }
 
 func (c *httpDocStoreClient) ConnectivityCheck() (string, error) {
+	errMsg := "Error connecting to document-store-api"
 	docStoreGtgUrl, err := url.Parse(c.docStoreAddress + "/__gtg")
 	if err != nil {
-		return "Error connecting to document-store-api", fmt.Errorf("invalid address docStoreAddress=%v: %v", c.docStoreAddress, err.Error())
+		return errMsg, fmt.Errorf("invalid address docStoreAddress=%v: %v", c.docStoreAddress, err.Error())
 	}
 	req, err := http.NewRequest(http.MethodGet, docStoreGtgUrl.String(), nil)
 	if err != nil {
-		return "Error connecting to document-store-api", fmt.Errorf("couldn't create request to GTG: %v", err.Error())
+		return errMsg, fmt.Errorf("couldn't create request to GTG: %v", err.Error())
 	}
 	req.Host = "document-store-api"
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return "Error connecting to document-store-api", fmt.Errorf("unsucessful request for GTG: %v", err.Error())
+		return errMsg, fmt.Errorf("unsuccessful request for GTG: %v", err.Error())
 	}
 	niceClose(resp)
 	if resp.StatusCode != http.StatusOK {

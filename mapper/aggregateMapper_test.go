@@ -260,6 +260,49 @@ func TestAggregateMapperNotBlog_NoUUIDResolved(t *testing.T) {
 	assert.Equal(t, "cdac1f3d-e48c-4618-863c-94bc9d913b9b", actualUppContents[1].GetUUID())
 }
 
+func TestAggregateMapperGenericUUIDResolved(t *testing.T) {
+	mockResolver := new(model.MockIResolver)
+	mockValidator := new(model.MockCPHValidator)
+	mockCompContentMapper := new(model.MockCPHMapper)
+
+	givenMethodeCPH := &model.MethodeContentPlaceholder{
+		UUID: "cdac1f3d-e48c-4618-863c-94bc9d913b9b",
+		Attributes: model.Attributes{
+			Category:  "generic",
+			ServiceId: "1111",
+			RefField:  "075d679e-0033-11e8-9650-9c0ad2d7c5b5",
+		},
+	}
+
+	expectedUppContents := []model.UppContent{
+		&model.UppContentPlaceholder{
+			UppCoreContent: model.UppCoreContent{
+				UUID:             "075d679e-0033-11e8-9650-9c0ad2d7c5b5",
+				PublishReference: "tid_test123",
+				LastModified:     "2017-05-15T15:54:32.166Z",
+				ContentURI:       "",
+				IsMarkedDeleted:  false,
+			},
+		},
+	}
+
+	mockValidator.On("Validate",
+		mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true })).
+		Return(nil)
+
+	mockCompContentMapper.On("MapContentPlaceholder",
+		mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true }),
+		mock.MatchedBy(func(uuid string) bool { return uuid == "075d679e-0033-11e8-9650-9c0ad2d7c5b5" }),
+		mock.MatchedBy(func(tid string) bool { return tid == "tid_test123" }),
+		mock.MatchedBy(func(lmd string) bool { return true })).
+		Return([]model.UppContent{expectedUppContents[0]}, nil)
+
+	aggregateMapper := NewAggregateCPHMapper(mockResolver, mockValidator, []CPHMapper{mockCompContentMapper})
+
+	actualUppContents, err := aggregateMapper.MapContentPlaceholder(givenMethodeCPH, "tid_test123", "2017-05-15T15:54:32.166Z")
+	assert.NoError(t, err, "No error should be thrown for correct mapping.")
+	assert.Equal(t, "075d679e-0033-11e8-9650-9c0ad2d7c5b5", actualUppContents[0].GetUUID())
+}
 func TestAggregateMapperMappingError_ThrowsError(t *testing.T) {
 	mockResolver := new(model.MockIResolver)
 	mockValidator := new(model.MockCPHValidator)

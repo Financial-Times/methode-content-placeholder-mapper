@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	uuid "github.com/satori/go.uuid"
 )
 
 var blogCategories = []string{"blog", "webchat-live-blogs", "webchat-live-qa", "webchat-markets-live", "fastft"}
@@ -41,15 +42,17 @@ func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeCont
 		uuid = resolvedUuid
 	}
 
+	if m.isSparkContent(mpc) {
+		uuid = mpc.Attributes.RefField
+	}
+
 	var transformedResults []model.UppContent
 	for _, cphMapper := range m.cphMappers {
 		transformedContents, err := cphMapper.MapContentPlaceholder(mpc, uuid, tid, lmd)
 		if err != nil {
 			return nil, err
 		}
-		for _, transformedContent := range transformedContents {
-			transformedResults = append(transformedResults, transformedContent)
-		}
+		transformedResults = append(transformedResults, transformedContents...)
 	}
 	return transformedResults, nil
 }
@@ -61,4 +64,12 @@ func (m *DefaultCPHAggregateMapper) isBlogCategory(mcp *model.MethodeContentPlac
 		}
 	}
 	return false
+}
+
+func (m *DefaultCPHAggregateMapper) isSparkContent(mcp *model.MethodeContentPlaceholder) bool {
+	if mcp.Attributes.Category != "generic" {
+		return false
+	}
+	_, err := uuid.FromString(mcp.Attributes.RefField)
+	return err == nil
 }
