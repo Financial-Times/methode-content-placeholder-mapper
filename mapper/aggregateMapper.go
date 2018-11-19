@@ -4,10 +4,12 @@ import (
 	"fmt"
 
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	uuid "github.com/satori/go.uuid"
+	gouuid "github.com/satori/go.uuid"
 )
 
 var blogCategories = []string{"blog", "webchat-live-blogs", "webchat-live-qa", "webchat-markets-live", "fastft"}
+
+const genericCategory string = "generic"
 
 type CPHAggregateMapper interface {
 	MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid, lmd string) ([]model.UppContent, error)
@@ -35,15 +37,19 @@ func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeCont
 
 	uuid := ""
 	if m.isBlogCategory(mpc) {
-		resolvedUuid, err := m.iResolver.ResolveIdentifier(mpc.Attributes.ServiceId, mpc.Attributes.RefField, tid)
+		resolvedUUID, err := m.iResolver.ResolveIdentifier(mpc.Attributes.ServiceId, mpc.Attributes.RefField, tid)
 		if err != nil {
 			return nil, fmt.Errorf("couldn't resolve blog uuid: %v", err)
 		}
-		uuid = resolvedUuid
+		uuid = resolvedUUID
 	}
 
-	if m.isSparkContent(mpc) {
-		uuid = mpc.Attributes.RefField
+	if m.isGenericContent(mpc) {
+		resolvedUUID, err := gouuid.FromString(mpc.Attributes.RefField)
+		if err != nil {
+			return nil, fmt.Errorf("invalid generic uuid: %v", err)
+		}
+		uuid = resolvedUUID.String()
 	}
 
 	var transformedResults []model.UppContent
@@ -66,10 +72,6 @@ func (m *DefaultCPHAggregateMapper) isBlogCategory(mcp *model.MethodeContentPlac
 	return false
 }
 
-func (m *DefaultCPHAggregateMapper) isSparkContent(mcp *model.MethodeContentPlaceholder) bool {
-	if mcp.Attributes.Category != "generic" {
-		return false
-	}
-	_, err := uuid.FromString(mcp.Attributes.RefField)
-	return err == nil
+func (m *DefaultCPHAggregateMapper) isGenericContent(mcp *model.MethodeContentPlaceholder) bool {
+	return mcp.Attributes.Category == genericCategory
 }

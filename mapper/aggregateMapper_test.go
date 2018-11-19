@@ -268,9 +268,8 @@ func TestAggregateMapperGenericUUIDResolved(t *testing.T) {
 	givenMethodeCPH := &model.MethodeContentPlaceholder{
 		UUID: "cdac1f3d-e48c-4618-863c-94bc9d913b9b",
 		Attributes: model.Attributes{
-			Category:  "generic",
-			ServiceId: "1111",
-			RefField:  "075d679e-0033-11e8-9650-9c0ad2d7c5b5",
+			Category: genericCategory,
+			RefField: "075d679e-0033-11e8-9650-9c0ad2d7c5b5",
 		},
 	}
 
