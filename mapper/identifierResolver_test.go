@@ -70,3 +70,21 @@ func TestResolve_NetFail(t *testing.T) {
 
 	assert.Equal(t, "Couldn't make HTTP call", err.Error())
 }
+
+func TestCheckContentExists_OK(t *testing.T) {
+	mockClient := new(model.MockDocStoreClient)
+	mockClient.On("CheckContentExists", "111", "tid_1").Return(nil)
+
+	resolver := NewHttpIResolver(mockClient, map[string]string{})
+	err := resolver.CheckContentExists("111", "tid_1")
+	assert.NoError(t, err)
+}
+
+func TestCheckContentExists_NOK(t *testing.T) {
+	mockClient := new(model.MockDocStoreClient)
+	mockClient.On("CheckContentExists", "111", "tid_1").Return(errors.New("any"))
+
+	resolver := NewHttpIResolver(mockClient, map[string]string{})
+	err := resolver.CheckContentExists("111", "tid_1")
+	assert.Error(t, err)
+}

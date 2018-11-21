@@ -9,8 +9,6 @@ import (
 
 var blogCategories = []string{"blog", "webchat-live-blogs", "webchat-live-qa", "webchat-markets-live", "fastft"}
 
-const genericCategory string = "generic"
-
 type CPHAggregateMapper interface {
 	MapContentPlaceholder(mpc *model.MethodeContentPlaceholder, tid, lmd string) ([]model.UppContent, error)
 }
@@ -45,11 +43,15 @@ func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeCont
 	}
 
 	if m.isGenericContent(mpc) {
-		resolvedUUID, err := gouuid.FromString(mpc.Attributes.RefField)
+		resolvedUUID, err := gouuid.FromString(mpc.Attributes.GenericRefID)
 		if err != nil {
 			return nil, fmt.Errorf("invalid generic uuid: %v", err)
 		}
 		uuid = resolvedUUID.String()
+		err = m.iResolver.CheckContentExists(uuid, tid)
+		if err != nil {
+			uuid = ""
+		}
 	}
 
 	var transformedResults []model.UppContent
@@ -73,5 +75,5 @@ func (m *DefaultCPHAggregateMapper) isBlogCategory(mcp *model.MethodeContentPlac
 }
 
 func (m *DefaultCPHAggregateMapper) isGenericContent(mcp *model.MethodeContentPlaceholder) bool {
-	return mcp.Attributes.Category == genericCategory
+	return mcp.Attributes.GenericRefID != ""
 }

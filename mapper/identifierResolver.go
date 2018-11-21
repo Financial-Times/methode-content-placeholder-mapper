@@ -16,6 +16,7 @@ var uuidRegex = regexp.MustCompile(uuidPattern)
 
 type IResolver interface {
 	ResolveIdentifier(serviceId, refField, tid string) (string, error)
+	CheckContentExists(uuid, tid string) error
 }
 
 type httpIResolver struct {
@@ -60,4 +61,12 @@ func (r *httpIResolver) resolveIdentifier(authority string, identifier string, t
 	}
 
 	return uuid, nil
+}
+
+func (r *httpIResolver) CheckContentExists(uuid, tid string) error {
+	err := r.client.CheckContentExists(uuid, tid)
+	if err != nil {
+		return fmt.Errorf("failed to get content from document-store-api: %v", err.Error())
+	}
+	return nil
 }

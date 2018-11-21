@@ -263,13 +263,13 @@ func TestAggregateMapperNotBlog_NoUUIDResolved(t *testing.T) {
 func TestAggregateMapperGenericUUIDResolved(t *testing.T) {
 	mockResolver := new(model.MockIResolver)
 	mockValidator := new(model.MockCPHValidator)
+	mockContentMapper := new(model.MockCPHMapper)
 	mockCompContentMapper := new(model.MockCPHMapper)
 
 	givenMethodeCPH := &model.MethodeContentPlaceholder{
 		UUID: "cdac1f3d-e48c-4618-863c-94bc9d913b9b",
 		Attributes: model.Attributes{
-			Category: genericCategory,
-			RefField: "075d679e-0033-11e8-9650-9c0ad2d7c5b5",
+			GenericRefID: "075d679e-0033-11e8-9650-9c0ad2d7c5b5",
 		},
 	}
 
@@ -288,6 +288,13 @@ func TestAggregateMapperGenericUUIDResolved(t *testing.T) {
 	mockValidator.On("Validate",
 		mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true })).
 		Return(nil)
+
+	mockContentMapper.On("MapContentPlaceholder",
+		mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true }),
+		mock.MatchedBy(func(uuid string) bool { return uuid == "075d679e-0033-11e8-9650-9c0ad2d7c5b5" }),
+		mock.MatchedBy(func(tid string) bool { return tid == "tid_test123" }),
+		mock.MatchedBy(func(lmd string) bool { return true })).
+		Return([]model.UppContent{}, nil)
 
 	mockCompContentMapper.On("MapContentPlaceholder",
 		mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true }),
@@ -310,14 +317,20 @@ func TestAggregateMapperGenericInvalidUUID(t *testing.T) {
 	givenMethodeCPH := &model.MethodeContentPlaceholder{
 		UUID: "cdac1f3d-e48c-4618-863c-94bc9d913b9b",
 		Attributes: model.Attributes{
-			Category: genericCategory,
-			RefField: "075d679e-0033-11e8-9650-",
+			GenericRefID: "075d679e-0033-11e8-9650-",
 		},
 	}
 
 	mockValidator.On("Validate",
 		mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true })).
 		Return(nil)
+
+	mockCompContentMapper.On("MapContentPlaceholder",
+		mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true }),
+		mock.MatchedBy(func(uuid string) bool { return true }),
+		mock.MatchedBy(func(tid string) bool { return true }),
+		mock.MatchedBy(func(lmd string) bool { return true })).
+		Return([]model.UppContent{}, errors.New("invalid generic uuid: 075d679e-0033-11e8-9650-"))
 
 	mockCompContentMapper.On("MapContentPlaceholder",
 		mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true }),

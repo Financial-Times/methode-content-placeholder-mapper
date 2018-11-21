@@ -17,6 +17,7 @@ const documentStoreApiHost = "document-store-api"
 type DocStoreClient interface {
 	ContentQuery(authority, identifier, tid string) (status int, location string, err error)
 	GetContent(uuid, tid string) (*model.DocStoreUppContent, error)
+	CheckContentExists(uuid, tid string) error
 	ConnectivityCheck() (string, error)
 }
 
@@ -59,6 +60,28 @@ func (c *httpDocStoreClient) GetContent(uuid, tid string) (*model.DocStoreUppCon
 	}
 
 	return &content, nil
+}
+
+func (c *httpDocStoreClient) CheckContentExists(uuid, tid string) error {
+	docStoreUrl, err := url.Parse(c.docStoreAddress + "/content/" + uuid)
+	if err != nil {
+		return fmt.Errorf("failed to parse rawurl into URL structure for docStoreAddress=%v uuid=%v: %v", c.docStoreAddress, uuid, err.Error())
+	}
+	req, err := http.NewRequest(http.MethodGet, docStoreUrl.String(), nil)
+	if err != nil {
+		return fmt.Errorf("failed to create request to fetch content for uuid=%v: %v", uuid, err.Error())
+	}
+	req.Host = documentStoreApiHost
+	req.Header.Add(transactionidutils.TransactionIDHeader, tid)
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return fmt.Errorf("unsuccessful request for content for uuid=%v: %v", uuid, err.Error())
+	}
+	defer niceClose(resp)
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("received status code=%v for uuid=%v", resp.StatusCode, uuid)
+	}
+	return nil
 }
 
 func (c *httpDocStoreClient) ContentQuery(authority, identifier, tid string) (status int, location string, err error) {
