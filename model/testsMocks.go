@@ -80,7 +80,8 @@ type MockIResolver struct {
 }
 
 func (m *MockIResolver) CheckContentExists(uuid, tid string) error {
-	return nil
+	args := m.Called(uuid, tid)
+	return args.Error(0)
 }
 
 func (m *MockIResolver) ResolveIdentifier(serviceId, refField, tid string) (string, error) {
