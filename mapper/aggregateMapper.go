@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
@@ -35,6 +36,9 @@ func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeCont
 
 	uuid := ""
 	if m.isBlogCategory(mpc) {
+		if m.isGenericContent(mpc) {
+			return nil, errors.New("wrong configuration - blog and generic CPH in the same time")
+		}
 		resolvedUUID, err := m.iResolver.ResolveIdentifier(mpc.Attributes.ServiceId, mpc.Attributes.RefField, tid)
 		if err != nil {
 			return nil, fmt.Errorf("couldn't resolve blog uuid: %v", err)
