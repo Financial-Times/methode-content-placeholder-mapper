@@ -1,7 +1,6 @@
 package mapper
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
@@ -33,30 +32,29 @@ func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeCont
 	if err != nil {
 		return nil, err
 	}
-
 	uuid := ""
-	if m.isBlogCategory(mpc) {
-		if m.isGenericContent(mpc) {
-			return nil, errors.New("wrong configuration - blog and generic CPH in the same time")
-		}
-		resolvedUUID, err := m.iResolver.ResolveIdentifier(mpc.Attributes.ServiceId, mpc.Attributes.RefField, tid)
-		if err != nil {
-			return nil, fmt.Errorf("couldn't resolve blog uuid: %v", err)
-		}
-		uuid = resolvedUUID
-	}
 
 	if m.isGenericContent(mpc) {
-		resolvedUUID, err := gouuid.FromString(mpc.Attributes.GenericRefID)
+		resolvedUUID, err := gouuid.FromString(mpc.Attributes.OriginalUUID)
 		if err != nil {
 			return nil, fmt.Errorf("invalid generic uuid: %v", err)
 		}
 		uuid = resolvedUUID.String()
-		err = m.iResolver.CheckContentExists(uuid, tid)
+		found, err := m.iResolver.ContentExists(uuid, tid)
 		if err != nil {
+			return nil, fmt.Errorf("couldn't check uuid in document store: %v", err)
+		}
+		if !found {
 			uuid = ""
 		}
+	} else if m.isBlogCategory(mpc) {
+		uuid, err = m.iResolver.ResolveIdentifier(mpc.Attributes.ServiceId, mpc.Attributes.RefField, tid)
+		if err != nil {
+			return nil, fmt.Errorf("couldn't resolve blog uuid: %v", err)
+		}
 	}
+
+	// internal CPH = uuid is set
 
 	var transformedResults []model.UppContent
 	for _, cphMapper := range m.cphMappers {
@@ -79,5 +77,5 @@ func (m *DefaultCPHAggregateMapper) isBlogCategory(mcp *model.MethodeContentPlac
 }
 
 func (m *DefaultCPHAggregateMapper) isGenericContent(mcp *model.MethodeContentPlaceholder) bool {
-	return mcp.Attributes.GenericRefID != ""
+	return mcp.Attributes.OriginalUUID != ""
 }

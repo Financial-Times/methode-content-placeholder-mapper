@@ -15,33 +15,33 @@ const (
 var uuidRegex = regexp.MustCompile(uuidPattern)
 
 type IResolver interface {
-	ResolveIdentifier(serviceId, refField, tid string) (string, error)
-	CheckContentExists(uuid, tid string) error
+	ResolveIdentifier(serviceID, refField, tid string) (string, error)
+	ContentExists(uuid, tid string) (bool, error)
 }
 
-type httpIResolver struct {
+type HTTPIResolver struct {
 	brandMappings map[string]string
 	client        DocStoreClient
 }
 
-func NewHttpIResolver(client DocStoreClient, brandMappings map[string]string) *httpIResolver {
-	return &httpIResolver{client: client, brandMappings: brandMappings}
+func NewHttpIResolver(client DocStoreClient, brandMappings map[string]string) *HTTPIResolver {
+	return &HTTPIResolver{client: client, brandMappings: brandMappings}
 }
 
-func (r *httpIResolver) ResolveIdentifier(serviceId, refField, tid string) (string, error) {
-	mappingKey := strings.Split(serviceId, "?")[0]
+func (r *HTTPIResolver) ResolveIdentifier(serviceID, refField, tid string) (string, error) {
+	mappingKey := strings.Split(serviceID, "?")[0]
 	mappingKey = strings.Split(mappingKey, "#")[0]
 	for key, value := range r.brandMappings {
 		if strings.Contains(mappingKey, key) {
 			authority := authorityPrefix + value
-			identifierValue := strings.Split(serviceId, "://")[0] + "://" + key + "/?p=" + refField
+			identifierValue := strings.Split(serviceID, "://")[0] + "://" + key + "/?p=" + refField
 			return r.resolveIdentifier(authority, identifierValue, tid)
 		}
 	}
-	return "", fmt.Errorf("couldn't find authority in mapping table serviceId=%v refField=%v", serviceId, refField)
+	return "", fmt.Errorf("couldn't find authority in mapping table serviceId=%v refField=%v", serviceID, refField)
 }
 
-func (r *httpIResolver) resolveIdentifier(authority string, identifier string, tid string) (string, error) {
+func (r *HTTPIResolver) resolveIdentifier(authority string, identifier string, tid string) (string, error) {
 	status, location, err := r.client.ContentQuery(authority, identifier, tid)
 	if err != nil {
 		return "", err
@@ -63,10 +63,6 @@ func (r *httpIResolver) resolveIdentifier(authority string, identifier string, t
 	return uuid, nil
 }
 
-func (r *httpIResolver) CheckContentExists(uuid, tid string) error {
-	err := r.client.CheckContentExists(uuid, tid)
-	if err != nil {
-		return fmt.Errorf("failed to get content from document-store-api: %v", err.Error())
-	}
-	return nil
+func (r *HTTPIResolver) ContentExists(uuid, tid string) (bool, error) {
+	return r.client.ContentExists(uuid, tid)
 }

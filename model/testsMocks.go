@@ -70,18 +70,18 @@ func (m *MockDocStoreClient) ConnectivityCheck() (string, error) {
 	return args.String(0), args.Error(1)
 }
 
-func (m *MockDocStoreClient) CheckContentExists(uuid, tid string) error {
+func (m *MockDocStoreClient) ContentExists(uuid, tid string) (bool, error) {
 	args := m.Called(uuid, tid)
-	return args.Error(0)
+	return args.Bool(0), args.Error(1)
 }
 
 type MockIResolver struct {
 	mock.Mock
 }
 
-func (m *MockIResolver) CheckContentExists(uuid, tid string) error {
+func (m *MockIResolver) ContentExists(uuid, tid string) (bool, error) {
 	args := m.Called(uuid, tid)
-	return args.Error(0)
+	return args.Bool(0), args.Error(1)
 }
 
 func (m *MockIResolver) ResolveIdentifier(serviceId, refField, tid string) (string, error) {

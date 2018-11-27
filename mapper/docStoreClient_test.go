@@ -83,18 +83,20 @@ func TestGetContent_InvalidJsonInResponse(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestCheckContentExists_StatusNotFound(t *testing.T) {
+func TestContentExists_StatusNotFound(t *testing.T) {
 	serverMock := errorDocumentStoreServerMock(t, http.StatusNotFound)
 	defer serverMock.Close()
 	client := NewHttpDocStoreClient(http.DefaultClient, serverMock.URL)
-	err := client.CheckContentExists("e1f02660-d41a-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il")
-	assert.Error(t, err)
+	found, err := client.ContentExists("e1f02660-d41a-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il")
+	assert.NoError(t, err)
+	assert.False(t, found)
 }
 
-func TestCheckContentExists_StatusOK(t *testing.T) {
+func TestContentExists_StatusOK(t *testing.T) {
 	serverMock := successfulDocumentStoreServerMock(t, "document_store_content.json")
 	defer serverMock.Close()
 	client := NewHttpDocStoreClient(http.DefaultClient, serverMock.URL)
-	err := client.CheckContentExists("e1f02660-d41a-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il")
+	found, err := client.ContentExists("e1f02660-d41a-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il")
 	assert.NoError(t, err)
+	assert.True(t, found)
 }
