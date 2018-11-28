@@ -42,10 +42,10 @@ func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeCont
 		uuid = resolvedUUID.String()
 		found, err := m.iResolver.ContentExists(uuid, tid)
 		if err != nil {
-			return nil, fmt.Errorf("couldn't check uuid in document store: %v", err)
+			return nil, fmt.Errorf("couldn't check OriginalUUID in document store: %v", err)
 		}
 		if !found {
-			uuid = ""
+			return nil, fmt.Errorf("couldn't find OriginalUUID %s in document store", uuid)
 		}
 	} else if m.isBlogCategory(mpc) {
 		uuid, err = m.iResolver.ResolveIdentifier(mpc.Attributes.ServiceId, mpc.Attributes.RefField, tid)
