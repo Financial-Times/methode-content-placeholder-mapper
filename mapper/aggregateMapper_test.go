@@ -325,27 +325,6 @@ func TestAggregateMapperGenericUUIDNotResolved(t *testing.T) {
 		},
 	}
 
-	expectedUppContents := []model.UppContent{
-		&model.UppContentPlaceholder{
-			UppCoreContent: model.UppCoreContent{
-				UUID:             "cdac1f3d-e48c-4618-863c-94bc9d913b9b",
-				PublishReference: "tid_test123",
-				LastModified:     "2017-05-15T15:54:32.166Z",
-				ContentURI:       "",
-				IsMarkedDeleted:  false,
-			},
-		},
-		&model.UppComplementaryContent{
-			UppCoreContent: model.UppCoreContent{
-				UUID:             "cdac1f3d-e48c-4618-863c-94bc9d913b9b",
-				PublishReference: "tid_test123",
-				LastModified:     "2017-05-15T15:54:32.166Z",
-				ContentURI:       "",
-				IsMarkedDeleted:  false,
-			},
-		},
-	}
-
 	mockValidator.On("Validate",
 		mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true })).
 		Return(nil)
@@ -357,21 +336,19 @@ func TestAggregateMapperGenericUUIDNotResolved(t *testing.T) {
 		mock.MatchedBy(func(uuid string) bool { return uuid == "" }),
 		mock.MatchedBy(func(tid string) bool { return tid == "tid_test123" }),
 		mock.MatchedBy(func(lmd string) bool { return true })).
-		Return([]model.UppContent{expectedUppContents[0]}, nil)
+		Return([]model.UppContent{}, nil)
 
 	mockCompContentMapper.On("MapContentPlaceholder",
 		mock.MatchedBy(func(mpc *model.MethodeContentPlaceholder) bool { return true }),
 		mock.MatchedBy(func(uuid string) bool { return uuid == "" }),
 		mock.MatchedBy(func(tid string) bool { return tid == "tid_test123" }),
 		mock.MatchedBy(func(lmd string) bool { return true })).
-		Return([]model.UppContent{expectedUppContents[1]}, nil)
+		Return([]model.UppContent{}, nil)
 
 	aggregateMapper := NewAggregateCPHMapper(mockResolver, mockValidator, []CPHMapper{mockCompContentMapper})
 
-	actualUppContents, err := aggregateMapper.MapContentPlaceholder(givenMethodeCPH, "tid_test123", "2017-05-15T15:54:32.166Z")
-	assert.NoError(t, err, "No error should be thrown for correct mapping.")
-	assert.Equal(t, "cdac1f3d-e48c-4618-863c-94bc9d913b9b", actualUppContents[0].GetUUID())
-	assert.Equal(t, "cdac1f3d-e48c-4618-863c-94bc9d913b9b", actualUppContents[0].GetUUID())
+	_, err := aggregateMapper.MapContentPlaceholder(givenMethodeCPH, "tid_test123", "2017-05-15T15:54:32.166Z")
+	assert.Error(t, err, "Error should be thrown for correct mapping.")
 }
 
 func TestAggregateMapperGenerigAndBlog(t *testing.T) {
