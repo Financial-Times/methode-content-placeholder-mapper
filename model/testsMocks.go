@@ -70,8 +70,18 @@ func (m *MockDocStoreClient) ConnectivityCheck() (string, error) {
 	return args.String(0), args.Error(1)
 }
 
+func (m *MockDocStoreClient) ContentExists(uuid, tid string) (bool, error) {
+	args := m.Called(uuid, tid)
+	return args.Bool(0), args.Error(1)
+}
+
 type MockIResolver struct {
 	mock.Mock
+}
+
+func (m *MockIResolver) ContentExists(uuid, tid string) (bool, error) {
+	args := m.Called(uuid, tid)
+	return args.Bool(0), args.Error(1)
 }
 
 func (m *MockIResolver) ResolveIdentifier(serviceId, refField, tid string) (string, error) {

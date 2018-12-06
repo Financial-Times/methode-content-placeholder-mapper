@@ -61,7 +61,7 @@ func buildMethodeBody(methodeBodyXMLBase64 string) (model.MethodeBody, error) {
 		return model.MethodeBody{}, err
 	}
 	var body model.MethodeBody
-	if err := xml.Unmarshal([]byte(methodeBodyXML), &body); err != nil {
+	if err := xml.Unmarshal(methodeBodyXML, &body); err != nil {
 		return model.MethodeBody{}, err
 	}
 	return body, nil

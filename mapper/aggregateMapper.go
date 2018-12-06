@@ -1,9 +1,11 @@
 package mapper
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	gouuid "github.com/satori/go.uuid"
 )
 
 var blogCategories = []string{"blog", "webchat-live-blogs", "webchat-live-qa", "webchat-markets-live", "fastft"}
@@ -31,15 +33,33 @@ func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeCont
 	if err != nil {
 		return nil, err
 	}
-
 	uuid := ""
-	if m.isBlogCategory(mpc) {
-		resolvedUuid, err := m.iResolver.ResolveIdentifier(mpc.Attributes.ServiceId, mpc.Attributes.RefField, tid)
+
+	if m.isGenericContent(mpc) {
+		resolvedUUID, err := gouuid.FromString(mpc.Attributes.OriginalUUID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid generic uuid: %v", err)
+		}
+		uuid = resolvedUUID.String()
+		found, err := m.iResolver.ContentExists(uuid, tid)
+		if err != nil {
+			return nil, fmt.Errorf("couldn't check OriginalUUID in document store: %v", err)
+		}
+		if !found {
+			return nil, fmt.Errorf("couldn't find OriginalUUID %s in document store", uuid)
+		}
+	} else if m.isBlogCategory(mpc) {
+		err = m.validateBlogCPH(mpc)
+		if err != nil {
+			return nil, err
+		}
+		uuid, err = m.iResolver.ResolveIdentifier(mpc.Attributes.ServiceId, mpc.Attributes.RefField, tid)
 		if err != nil {
 			return nil, fmt.Errorf("couldn't resolve blog uuid: %v", err)
 		}
-		uuid = resolvedUuid
 	}
+
+	// internal CPH = uuid is set
 
 	var transformedResults []model.UppContent
 	for _, cphMapper := range m.cphMappers {
@@ -47,9 +67,7 @@ func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeCont
 		if err != nil {
 			return nil, err
 		}
-		for _, transformedContent := range transformedContents {
-			transformedResults = append(transformedResults, transformedContent)
-		}
+		transformedResults = append(transformedResults, transformedContents...)
 	}
 	return transformedResults, nil
 }
@@ -61,4 +79,15 @@ func (m *DefaultCPHAggregateMapper) isBlogCategory(mcp *model.MethodeContentPlac
 		}
 	}
 	return false
+}
+
+func (m *DefaultCPHAggregateMapper) validateBlogCPH(mcp *model.MethodeContentPlaceholder) error {
+	if mcp.Attributes.ServiceId == "" || mcp.Attributes.RefField == "" {
+		return errors.New("blog attributes ServiceId, ref_field should not be empty")
+	}
+	return nil
+}
+
+func (m *DefaultCPHAggregateMapper) isGenericContent(mcp *model.MethodeContentPlaceholder) bool {
+	return mcp.Attributes.OriginalUUID != ""
 }

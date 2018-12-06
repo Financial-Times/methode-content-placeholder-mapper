@@ -21,6 +21,7 @@ type MethodeContentPlaceholder struct {
 type Attributes struct {
 	XMLName             xml.Name `xml:"ObjectMetadata"`
 	SourceCode          string   `xml:"EditorialNotes>Sources>Source>SourceCode"`
+	OriginalUUID        string   `xml:"EditorialNotes>OriginalUUID"`
 	LastPublicationDate string   `xml:"OutputChannels>DIFTcom>DIFTcomLastPublication"`
 	RefField            string   `xml:"WiresIndexing>ref_field"`
 	ServiceId           string   `xml:"WiresIndexing>serviceid"`

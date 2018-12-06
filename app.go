@@ -90,7 +90,7 @@ func main() {
 	})
 
 	app.Action = func() {
-		httpClient := setupHttpClient()
+		httpClient := setupHTTPClient()
 
 		consumerConfig := consumer.QueueConfig{
 			Addrs:                *readAddresses,
@@ -171,7 +171,7 @@ func readBrandMappings() map[string]string {
 	return brandMappings
 }
 
-func setupHttpClient() *http.Client {
+func setupHTTPClient() *http.Client {
 	return &http.Client{
 		Transport: &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
