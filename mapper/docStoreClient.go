@@ -12,8 +12,6 @@ import (
 	"github.com/Sirupsen/logrus"
 )
 
-const documentStoreApiHost = "document-store-api"
-
 type DocStoreClient interface {
 	ContentQuery(authority, identifier, tid string) (status int, location string, err error)
 	GetContent(uuid, tid string) (*model.DocStoreUppContent, error)
@@ -31,15 +29,14 @@ func NewHttpDocStoreClient(client *http.Client, docStoreAddress string) *httpDoc
 }
 
 func (c *httpDocStoreClient) GetContent(uuid, tid string) (*model.DocStoreUppContent, error) {
-	docStoreUrl, err := url.Parse(c.docStoreAddress + "/content/" + uuid)
+	docStoreURL, err := url.Parse(c.docStoreAddress + "/content/" + uuid)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse rawurl into URL structure for docStoreAddress=%v uuid=%v: %v", c.docStoreAddress, uuid, err.Error())
 	}
-	req, err := http.NewRequest(http.MethodGet, docStoreUrl.String(), nil)
+	req, err := http.NewRequest(http.MethodGet, docStoreURL.String(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request to fetch content for uuid=%v: %v", uuid, err.Error())
 	}
-	req.Host = documentStoreApiHost
 	req.Header.Add(transactionidutils.TransactionIDHeader, tid)
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -71,7 +68,6 @@ func (c *httpDocStoreClient) ContentExists(uuid, tid string) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("failed to create request to fetch content for uuid=%v: %v", uuid, err.Error())
 	}
-	req.Host = documentStoreApiHost
 	req.Header.Add(transactionidutils.TransactionIDHeader, tid)
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -97,8 +93,6 @@ func (c *httpDocStoreClient) ContentQuery(authority, identifier, tid string) (st
 	if err != nil {
 		return -1, "", fmt.Errorf("couldn't create request to fetch canonical identifier for authority=%v identifier=%v: %v", authority, identifier, err.Error())
 	}
-	// TODO: Remove when host based routing doesn't exist any more.
-	req.Host = documentStoreApiHost
 	req.Header.Add(transactionidutils.TransactionIDHeader, tid)
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -119,7 +113,6 @@ func (c *httpDocStoreClient) ConnectivityCheck() (string, error) {
 	if err != nil {
 		return errMsg, fmt.Errorf("couldn't create request to GTG: %v", err.Error())
 	}
-	req.Host = "document-store-api"
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return errMsg, fmt.Errorf("unsuccessful request for GTG: %v", err.Error())

@@ -1,6 +1,7 @@
 package mapper
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
@@ -48,6 +49,10 @@ func (m *DefaultCPHAggregateMapper) MapContentPlaceholder(mpc *model.MethodeCont
 			return nil, fmt.Errorf("couldn't find OriginalUUID %s in document store", uuid)
 		}
 	} else if m.isBlogCategory(mpc) {
+		err = m.validateBlogCPH(mpc)
+		if err != nil {
+			return nil, err
+		}
 		uuid, err = m.iResolver.ResolveIdentifier(mpc.Attributes.ServiceId, mpc.Attributes.RefField, tid)
 		if err != nil {
 			return nil, fmt.Errorf("couldn't resolve blog uuid: %v", err)
@@ -74,6 +79,13 @@ func (m *DefaultCPHAggregateMapper) isBlogCategory(mcp *model.MethodeContentPlac
 		}
 	}
 	return false
+}
+
+func (m *DefaultCPHAggregateMapper) validateBlogCPH(mcp *model.MethodeContentPlaceholder) error {
+	if mcp.Attributes.ServiceId == "" || mcp.Attributes.RefField == "" {
+		return errors.New("blog attributes ServiceId, ref_field should not be empty")
+	}
+	return nil
 }
 
 func (m *DefaultCPHAggregateMapper) isGenericContent(mcp *model.MethodeContentPlaceholder) bool {
