@@ -5,7 +5,6 @@ type UppComplementaryContent struct {
 	AlternativeTitles      *AlternativeTitles      `json:"alternativeTitles"`
 	AlternativeImages      *AlternativeImages      `json:"alternativeImages"`
 	AlternativeStandfirsts *AlternativeStandfirsts `json:"alternativeStandfirsts"`
-	Brands                 []Brand                 `json:"brands"`
 	Type                   string                  `json:"type"`
 }
 

@@ -40,9 +40,6 @@ func (ccm *ComplementaryContentCPHMapper) MapContentPlaceholder(mcp *model.Metho
 
 	if isInternalCPH {
 		cc.UUID = uuid
-		if err := ccm.setBrands(uuid, tid, cc); err != nil {
-			return nil, fmt.Errorf("failed to retrieve brands for complementary content: %v", err.Error())
-		}
 	}
 
 	return []model.UppContent{cc}, nil
@@ -58,7 +55,6 @@ func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContentUpdate(mpc
 			LastModified:     lmd,
 		},
 		Type:                   contentType,
-		Brands:                 model.BuildBrands(),
 		AlternativeTitles:      ccm.buildCCAlternativeTitles(mpc.Body.LeadHeadline.Text),
 		AlternativeImages:      ccm.buildCCAlternativeImages(mpc.Body.LeadImage.FileRef),
 		AlternativeStandfirsts: ccm.buildCCAlternativeStandfirsts(mpc.Body.LongStandfirst),
@@ -74,8 +70,7 @@ func (ccm *ComplementaryContentCPHMapper) mapToUppComplementaryContentDelete(mpc
 			PublishReference: tid,
 			LastModified:     lmd,
 		},
-		Type:   contentType,
-		Brands: model.BuildBrands(),
+		Type:   contentType
 	}
 }
 
@@ -106,13 +101,4 @@ func (ccm *ComplementaryContentCPHMapper) buildCCAlternativeStandfirsts(promoSta
 		return nil
 	}
 	return &model.AlternativeStandfirsts{PromotionalStandfirst: promoStandfirst}
-}
-
-func (ccm *ComplementaryContentCPHMapper) setBrands(uuid, tid string, cc *model.UppComplementaryContent) error {
-	content, err := ccm.client.GetContent(uuid, tid)
-	if err != nil {
-		return fmt.Errorf("failed to get content from document-store-api: %v", err.Error())
-	}
-	cc.Brands = content.Brands
-	return nil
 }

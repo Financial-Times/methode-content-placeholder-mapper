@@ -37,7 +37,6 @@ func TestGetContent_StatusOk(t *testing.T) {
 	content, err := client.GetContent("e1f02660-d41a-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il")
 
 	assert.NoError(t, err, "Error wasn't expected during GetContent")
-	assert.Equal(t, []model.Brand{{ID: "http://api.ft.com/things/164d0c3b-8a5a-4163-9519-96b57ed159bf"}, {ID: "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"}}, content.Brands)
 	assert.Equal(t, "abcf2660-bbad-4a56-8eca-d0f8f0fac068", content.GetUppCoreContent().UUID)
 	assert.Equal(t, "tid_Ml748dA0Wt_carousel_1509368354_gentx", content.GetUppCoreContent().PublishReference)
 	assert.Equal(t, "2017-10-30T12:59:14.183Z", content.GetUppCoreContent().LastModified)

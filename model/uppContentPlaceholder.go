@@ -13,7 +13,6 @@ type UppContentPlaceholder struct {
 	PublishedDate     string             `json:"publishedDate"`
 	Title             string             `json:"title"`
 	Identifiers       []Identifier       `json:"identifiers"`
-	Brands            []Brand            `json:"brands"`
 	AlternativeTitles *AlternativeTitles `json:"alternativeTitles"`
 	WebURL            string             `json:"webUrl"`
 	CanonicalWebUrl   string             `json:"canonicalWebUrl"`
@@ -28,18 +27,8 @@ type Identifier struct {
 	IdentifierValue string `json:"identifierValue"`
 }
 
-// Brand represents a content brand according to UP data model
-type Brand struct {
-	ID string `json:"id"`
-}
-
 // AlternativeTitles represents the alternative titles for content according to UP data model
 type AlternativeTitles struct {
 	PromotionalTitle    string `json:"promotionalTitle,omitempty"`
 	ContentPackageTitle string `json:"contentPackageTitle,omitempty"`
-}
-
-func BuildBrands() []Brand {
-	brand := Brand{ID: ftBrand}
-	return []Brand{brand}
 }

@@ -123,11 +123,6 @@ Depending on the type of CPH, they will be as follow:
                     "identifierValue": "f9845f8a-c210-11e6-91a7-e73ace06f770"
                 }
             ],
-            "brands": [
-                {
-                    "id": "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
-                }
-            ],
             "alternativeTitles": {
                 "contentPackageTitle": "The Virgin empire"
             },
@@ -154,11 +149,6 @@ Depending on the type of CPH, they will be as follow:
             "alternativeStandfirsts": {
                 "promotionalStandfirst": "Long standfirst here"
             },
-            "brands": [
-                {
-                    "id": "http://api.ft.com/things/dbb0bdae-1f0c-11e4-b0cb-b2227cce2b54"
-                }
-            ],
             "type": "Content"
         },
         "lastModified": "2017-10-12T11:26:18.341Z"

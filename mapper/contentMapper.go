@@ -58,7 +58,6 @@ func (cm *ContentCPHMapper) mapToUppContentPlaceholder(mpc *model.MethodeContent
 		PublishedDate:     publishDate,
 		Title:             mpc.Body.LeadHeadline.Text,
 		Identifiers:       buildIdentifiers(mpc.UUID),
-		Brands:            model.BuildBrands(),
 		WebURL:            webUrl,
 		CanonicalWebUrl:   fmt.Sprintf(canonicalWebUrlTemplate, mpc.UUID),
 		AlternativeTitles: buildAlternativeTitles(mpc.Body.ContentPackageHeadline),
