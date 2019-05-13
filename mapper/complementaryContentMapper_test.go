@@ -79,10 +79,6 @@ func TestInternalPlaceholderComplementaryDelete_Ok(t *testing.T) {
 func TestInternalPlaceholderComplementary_DocumentStoreClientError(t *testing.T) {
 	mockClient := new(model.MockDocStoreClient)
 	mockClient.On("GetContent", "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il").Return(&model.DocStoreUppContent{}, errors.New("DocStore error"))
-	//ccMapper := NewComplementaryContentCPHMapper("api.ft.com", mockClient)
-
-	//_, err := ccMapper.MapContentPlaceholder(getPlaceholder(), "abcf2660-bbad-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il", "2017-09-27T15:00:00.000Z")
-	//assert.Error(t, err)
 }
 
 func getPlaceholder() *model.MethodeContentPlaceholder {

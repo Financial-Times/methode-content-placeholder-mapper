@@ -74,11 +74,6 @@ func TestGetContent_StatusServiceUnavailable(t *testing.T) {
 func TestGetContent_InvalidJsonInResponse(t *testing.T) {
 	serverMock := successfulDocumentStoreServerMock(t, "invalid_document_store_content.json")
 	defer serverMock.Close()
-	//client := NewHttpDocStoreClient(http.DefaultClient, serverMock.URL)
-
-	//_, err := client.GetContent("e1f02660-d41a-4a56-8eca-d0f8f0fac068", "tid_bh7VTFj9Il")
-
-	//assert.Error(t, err)
 }
 
 func TestContentExists_StatusNotFound(t *testing.T) {
