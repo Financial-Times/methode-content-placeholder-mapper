@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/Financial-TimesFinancial-Times/methode-content-placeholder-mapper/v2/model"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )

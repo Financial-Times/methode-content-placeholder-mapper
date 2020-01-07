@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/Financial-Times/message-queue-go-producer/producer"
-	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	consumer "github.com/Financial-Times/message-queue-gonsumer"
+	"github.com/Financial-TimesFinancial-Times/methode-content-placeholder-mapper/v2/model"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/mock"
 )

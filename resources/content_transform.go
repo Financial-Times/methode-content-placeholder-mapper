@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/Financial-TimesFinancial-Times/methode-content-placeholder-mapper/v2/mapper"
+	"github.com/Financial-TimesFinancial-Times/methode-content-placeholder-mapper/v2/message"
+	"github.com/Financial-TimesFinancial-Times/methode-content-placeholder-mapper/v2/model"
 	tidUtils "github.com/Financial-Times/transactionid-utils-go"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type MapEndpointHandler struct {

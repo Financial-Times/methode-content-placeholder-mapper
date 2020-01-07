@@ -8,9 +8,10 @@ import (
 	"testing"
 
 	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
+	logger "github.com/Financial-Times/go-logger/v2"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
-	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	consumer "github.com/Financial-Times/message-queue-gonsumer"
+	"github.com/Financial-TimesFinancial-Times/methode-content-placeholder-mapper/v2/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -400,6 +401,7 @@ func TestGTGDocStoreFailing(t *testing.T) {
 }
 
 func getMockedConsumer(addr []string) consumer.MessageConsumer {
+	l := logger.NewUnstructuredLogger()
 	return consumer.NewConsumer(
 		consumer.QueueConfig{
 			Addrs:            addr,
@@ -407,6 +409,7 @@ func getMockedConsumer(addr []string) consumer.MessageConsumer {
 		},
 		func(m consumer.Message) {},
 		http.DefaultClient,
+		l,
 	)
 }
 

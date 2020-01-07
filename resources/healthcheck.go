@@ -5,9 +5,9 @@ import (
 
 	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
-	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
+	consumer "github.com/Financial-Times/message-queue-gonsumer"
 	"github.com/Financial-Times/service-status-go/gtg"
+	"github.com/Financial-TimesFinancial-Times/methode-content-placeholder-mapper/v2/mapper"
 )
 
 // MapperHealthcheck represents the health check for the methode content placeholder mapper

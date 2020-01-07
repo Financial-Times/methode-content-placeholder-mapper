@@ -9,14 +9,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	consumer "github.com/Financial-Times/message-queue-gonsumer"
+	"github.com/Financial-TimesFinancial-Times/methode-content-placeholder-mapper/v2/message"
+	"github.com/Financial-TimesFinancial-Times/methode-content-placeholder-mapper/v2/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
 
-const mapperURL = "http://methode-content-placeholder-mapper/map"
+const mapperURL = "http:/Financial-Times/methode-content-placeholder-mapper/v2/map"
 const expectedTransactionID = "tid_bh7VTFj9Il"
 
 func TestMapEndpoint_Ok(t *testing.T) {

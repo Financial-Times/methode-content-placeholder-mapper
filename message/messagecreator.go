@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/Financial-Times/message-queue-go-producer/producer"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/Financial-TimesFinancial-Times/methode-content-placeholder-mapper/v2/model"
 	"github.com/satori/go.uuid"
 )
 
