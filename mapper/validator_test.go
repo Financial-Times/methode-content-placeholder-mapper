@@ -3,7 +3,7 @@ package mapper
 import (
 	"testing"
 
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/v2/model"
 	"github.com/stretchr/testify/assert"
 )
 

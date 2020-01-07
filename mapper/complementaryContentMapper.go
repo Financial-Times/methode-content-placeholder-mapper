@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/v2/model"
 )
 
 const complementaryContentURI = "http://methode-content-placeholder-mapper-iw-uk-p.svc.ft.com/complementarycontent/"

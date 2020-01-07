@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/Financial-Times/message-queue-go-producer/producer"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	"github.com/satori/go.uuid"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/v2/model"
+	uuid "github.com/satori/go.uuid"
 )
 
 type MessageCreator interface {

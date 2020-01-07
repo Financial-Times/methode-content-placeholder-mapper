@@ -6,7 +6,7 @@ import (
 	"encoding/xml"
 	"fmt"
 
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/v2/model"
 )
 
 const contentPlaceholderSourceCode = "ContentPlaceholder"

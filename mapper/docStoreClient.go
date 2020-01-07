@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	"github.com/Financial-Times/transactionid-utils-go"
-	"github.com/Sirupsen/logrus"
+	transactionidutils "github.com/Financial-Times/transactionid-utils-go"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/v2/model"
+	"github.com/sirupsen/logrus"
 )
 
 type DocStoreClient interface {
