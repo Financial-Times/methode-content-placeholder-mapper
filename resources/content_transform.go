@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"time"
 
+	tidUtils "github.com/Financial-Times/transactionid-utils-go"
 	"github.com/Financial-TimesFinancial-Times/methode-content-placeholder-mapper/v2/mapper"
 	"github.com/Financial-TimesFinancial-Times/methode-content-placeholder-mapper/v2/message"
 	"github.com/Financial-TimesFinancial-Times/methode-content-placeholder-mapper/v2/model"
-	tidUtils "github.com/Financial-Times/transactionid-utils-go"
 	log "github.com/sirupsen/logrus"
 )
 
