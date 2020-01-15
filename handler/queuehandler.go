@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"github.com/Financial-Times/message-queue-go-producer/producer"
-	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/model"
-	log "github.com/Sirupsen/logrus"
+	consumer "github.com/Financial-Times/message-queue-gonsumer"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/v2/mapper"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/v2/message"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/v2/model"
+	log "github.com/sirupsen/logrus"
 )
 
 type MessageHandler interface {

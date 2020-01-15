@@ -1,5 +1,5 @@
 # methode-content-placeholder-mapper
-[![CircleCI](https://circleci.com/gh/Financial-Times/methode-content-placeholder-mapper.svg?style=svg)](https://circleci.com/gh/Financial-Times/methode-content-placeholder-mapper) [![Go Report Card](https://goreportcard.com/badge/github.com/Financial-Times/methode-content-placeholder-mapper)](https://goreportcard.com/report/github.com/Financial-Times/methode-content-placeholder-mapper) [![Coverage Status](https://coveralls.io/repos/github/Financial-Times/methode-content-placeholder-mapper/badge.svg)](https://coveralls.io/github/Financial-Times/methode-content-placeholder-mapper)
+[![CircleCI](https://circleci.com/gh/Financial-Times/methode-content-placeholder-mapper.svg?style=svg)](https://circleci.com/gh/Financial-Times/methode-content-placeholder-mapper) [![Go Report Card](https://goreportcard.com/badge/github.com/Financial-Times/methode-content-placeholder-mapper)](https://goreportcard.com/report/github.com/Financial-Times/methode-content-placeholder-mapper) [![Coverage Status](https://coveralls.io/repos/github/Financial-Times/methode-content-placeholder-mapper/badge.svg?branch=master)](https://coveralls.io/github/Financial-Times/methode-content-placeholder-mapper?branch=master)
 
 The Methode-content-placeholder-mapper (MCPM) is a microservice that maps a content placeholder from Methode to an UP piece of content, which is written in 2 parts: one in the content collection, and one in the complementarycontent collection (which keeps the CPHs promotional fields as of now).
 The microservice consumes a specific Apache Kafka topic group.
@@ -8,24 +8,21 @@ All the consumed messages that contain a Methode placeholder are mapped, then MC
 ## Installation
 
 Download the source code, dependencies and test dependencies:
-       curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-       mkdir $GOPATH/src/github.com/Financial-Times/methode-content-placeholder-mapper	
+       
        cd $GOPATH/src/github.com/Financial-Times	
-       git clone https://github.com/Financial-Times/methode-content-placeholder-mapper.git
-       cd methode-content-placeholder-mapper && dep ensure -vendor-only
-       go build .	 
-        
+       git clone https://github.com/Financial-Times/methode-content-placeholder-mapper.git   
+       go build .     
 
-## How to Build & Run the binary
+## Running locally
 
-* Build and test:
+1. Run the tests and install the binary:
 
 ```
-go build
-go test ./...
+go test ./... -race
+go install
 ```
 
-* Run by environment variables:
+2. Run by environment variables:
 
 ```
             export Q_READ_ADDR="http://source1.queue.ft.com:8080,http://source2.queue.ft.com:8080" \
@@ -37,7 +34,7 @@ go test ./...
                 && ./methode-content-placeholder-mapper
 ```
 
-* Run by command-line parameters:
+3. Run by command-line parameters:
 
 ```
             ./methode-content-placeholder-mapper \

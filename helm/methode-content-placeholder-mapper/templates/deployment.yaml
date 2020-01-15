@@ -39,12 +39,12 @@ spec:
           valueFrom:
             configMapKeyRef:
               name: global-config
-              key: kafka.proxy.url.with.protocol
+              key: kafka-msk.proxy.url.with.protocol
         - name: Q_WRITE_ADDR
           valueFrom:
             configMapKeyRef:
               name: global-config
-              key: kafka.proxy.url.with.protocol
+              key: kafka-msk.proxy.url.with.protocol
         - name: Q_GROUP
           value: {{ .Values.service.QueueGroup }}
         - name: Q_READ_TOPIC

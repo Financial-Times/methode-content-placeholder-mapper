@@ -5,22 +5,22 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"strconv"
 	"time"
 
 	fthealth "github.com/Financial-Times/go-fthealth/v1_1"
+	logger "github.com/Financial-Times/go-logger/v2"
 	"github.com/Financial-Times/message-queue-go-producer/producer"
-	"github.com/Financial-Times/message-queue-gonsumer/consumer"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/handler"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/mapper"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/message"
-	"github.com/Financial-Times/methode-content-placeholder-mapper/resources"
+	consumer "github.com/Financial-Times/message-queue-gonsumer"
 	"github.com/Financial-Times/service-status-go/httphandlers"
-	log "github.com/Sirupsen/logrus"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/v2/handler"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/v2/mapper"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/v2/message"
+	"github.com/Financial-Times/methode-content-placeholder-mapper/v2/resources"
 	"github.com/gorilla/mux"
-	"github.com/jawher/mow.cli"
+	cli "github.com/jawher/mow.cli"
+	log "github.com/sirupsen/logrus"
 )
 
 func init() {
@@ -119,7 +119,9 @@ func main() {
 		messageCreator := message.NewDefaultCPHMessageCreator()
 		messageProducer := producer.NewMessageProducerWithHTTPClient(producerConfig, httpClient)
 		h := handler.NewCPHMessageHandler(nil, messageProducer, aggregateMapper, nativeMapper, messageCreator)
-		messageConsumer := consumer.NewConsumer(consumerConfig, h.HandleMessage, httpClient)
+
+		l := logger.NewUnstructuredLogger()
+		messageConsumer := consumer.NewConsumer(consumerConfig, h.HandleMessage, httpClient, l)
 		h.MessageConsumer = messageConsumer
 		endpointHandler := resources.NewMapEndpointHandler(aggregateMapper, messageCreator, nativeMapper)
 
