@@ -1,4 +1,4 @@
-# UPP - Synthetic image publication monitor
+# UPP - Methode Content Placeholder Mapper
 
 This service reads content placeholders from a Kafka queue and transforms them into UP format.
 
@@ -59,8 +59,8 @@ No
 
 ## Dependencies
 
-- upp-prod-delivery-eu
-- upp-prod-delivery-us
+- kafka-proxy
+- document-store-api
 
 ## Failover Architecture Type
 
