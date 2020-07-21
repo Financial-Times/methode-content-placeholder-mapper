@@ -9,6 +9,7 @@ service:
   QueueWriteTopic: "CmsPublicationEvents"
   DocumentStoreAPIUrl: "http://document-store-api:8080"
   isResilient: "false"
+eksCluster: false
 replicaCount: 2
 image:
   repository: coco/methode-content-placeholder-mapper
