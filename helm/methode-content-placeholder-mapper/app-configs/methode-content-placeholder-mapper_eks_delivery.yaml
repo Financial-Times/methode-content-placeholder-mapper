@@ -2,4 +2,3 @@
 replicaCount: 2
 service:
   name: methode-content-placeholder-mapper
-eksCluster: true
